@@ -4,7 +4,14 @@
       "mcp__claude_ai_Notion__notion-create-pages",
       "mcp__claude_ai_Notion__notion-update-page",
       "mcp__claude_ai_Notion__notion-fetch",
-      "WebSearch"
+      "WebSearch",
+      "mcp__claude_ai_Notion__notion-search",
+      "Read(//c/Users/mc_mi/OneDrive/Desktop/civicom/app//**)",
+      "Read(//c/Users/mc_mi/OneDrive/Desktop/civicom/components//**)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
 }
