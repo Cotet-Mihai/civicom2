@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > **Design:** Aplicația este **mobile-first**. Orice componentă sau pagină se proiectează și se testează întâi pe mobil, apoi se adaptează pentru desktop. Versiunea desktop trebuie să arate bine, dar prioritatea absolută este experiența pe mobil.
 
-**Status:** Planificat complet, pregătit pentru implementare. Vezi `ROADMAP.md` pentru etape și ordine.
+**Status:** Planificat complet, pregătit pentru implementare. Vezi Notion (Roadmap & Structură Proiect) pentru etape și ordine.
 
 ## Stack Tehnologic
 
@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend:** Supabase (Auth + PostgreSQL + Storage)
 - **Logică server:** Server Actions (exclusiv în `/services`)
 - **UI:** shadcn/ui + Tailwind CSS
-- **Hărți:** Leaflet
+- **Hărți:** shadcn-map (built on Leaflet + React Leaflet) — instalare: `pnpm dlx shadcn@latest add @shadcn-map/map` · componente: `Map`, `MapMarker`, `MapPopup`, `MapTileLayer`, `MapZoomControl`
 - **Carusele:** Embla Carousel
 - **Notificări UI:** Sonner
 - **Analytics:** Vercel Analytics + PostHog
@@ -42,7 +42,7 @@ app/
     admin/         → exclusiv role=admin
 ```
 
-`middleware.ts`: verifică sesiunea, protejează rutele private, redirecționează neautorizații spre `/autentificare`. Dacă sesiunea există și userul accesează o rută `(auth)`, redirect spre `/panou`.
+`proxy.ts`: verifică sesiunea, protejează rutele private, redirecționează neautorizații spre `/autentificare`. Dacă sesiunea există și userul accesează o rută `(auth)`, redirect spre `/panou`.
 
 ### Structura de Foldere
 
@@ -245,7 +245,7 @@ Layout comun: **imagine stânga sticky (30%) + stepper dreapta (70%)**.
 - Orice feature nou → branch dedicat din `main`
 - Push-urile se fac exclusiv pe branch, nu direct pe `main`
 - Merge în `main` doar după finalizarea completă a feature-ului și cu aprobare explicită
-- Ordinea branch-urilor: vezi `ROADMAP.md`
+- Ordinea branch-urilor: vezi Notion (Roadmap & Structură Proiect)
 
 ## Notion (Planificare — toate paginile complete)
 
