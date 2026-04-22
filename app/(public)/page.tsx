@@ -1,9 +1,14 @@
 import type { Metadata } from 'next'
-import { getHomepageStats, getRecentEvents } from '@/services/homepage.service'
+import {
+  getHomepageStats,
+  getRecentEvents,
+  getApprovedOrgs,
+} from '@/services/homepage.service'
 import { HeroSection } from './_components/HeroSection'
 import { StatsSection } from './_components/StatsSection'
 import { ActionTypesSection } from './_components/ActionTypesSection'
 import { EventsSection } from './_components/EventsSection'
+import { OrganizationsSection } from './_components/OrganizationsSection'
 
 export const metadata: Metadata = {
   title: 'Acasă',
@@ -11,9 +16,10 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [stats, events] = await Promise.all([
+  const [stats, events, orgs] = await Promise.all([
     getHomepageStats(),
     getRecentEvents(6),
+    getApprovedOrgs(),
   ])
 
   return (
@@ -22,6 +28,7 @@ export default async function HomePage() {
       <StatsSection stats={stats} />
       <ActionTypesSection />
       <EventsSection events={events} />
+      <OrganizationsSection orgs={orgs} />
     </main>
   )
 }
