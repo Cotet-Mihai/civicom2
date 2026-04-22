@@ -10,6 +10,7 @@ import { ActionTypesSection } from './_components/ActionTypesSection'
 import { EventsSection } from './_components/EventsSection'
 import { OrganizationsSection } from './_components/OrganizationsSection'
 import { FaqSection } from './_components/FaqSection'
+import { CtaSection } from './_components/CtaSection'
 
 export const metadata: Metadata = {
   title: 'Acasă',
@@ -31,6 +32,7 @@ export default async function HomePage() {
       <EventsSection events={events} />
       <OrganizationsSection orgs={orgs} />
       <FaqSection />
+      <CtaSection />
     </main>
   )
 }
