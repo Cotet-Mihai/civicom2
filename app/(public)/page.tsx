@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
+import { HeroSection } from './_components/HeroSection'
 
 export const metadata: Metadata = {
   title: 'Acasă',
+  description: 'CIVICOM — platforma civică unde găsești și creezi proteste, petiții, boicoturi și acțiuni comunitare din România.',
 }
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <p className="text-muted-foreground">Homepage — în curând (Etapa 4)</p>
-    </div>
+    <main>
+      <HeroSection />
+    </main>
   )
 }
