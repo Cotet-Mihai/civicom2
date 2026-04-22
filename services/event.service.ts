@@ -8,7 +8,7 @@ export type EventPreview = {
   banner_url: string | null
   category: 'protest' | 'boycott' | 'petition' | 'community' | 'charity'
   subcategory: string | null
-  status: string
+  status: 'pending' | 'approved' | 'rejected' | 'contested' | 'completed'
   date: string
   created_at: string
   participants_count: number
@@ -17,7 +17,7 @@ export type EventPreview = {
 
 export type EventFilters = {
   cauta?: string
-  categorie?: string
+  categorie?: 'protest' | 'boycott' | 'petition' | 'community' | 'charity'
   sort?: 'data_desc' | 'data_asc' | 'participanti'
   data_de?: string
   data_pana?: string
@@ -54,7 +54,9 @@ export async function getEvents(
   if (filters.sort === 'data_asc') {
     query = query.order('date', { ascending: true })
   } else if (filters.sort === 'participanti') {
-    query = query.order('participants_count', { ascending: false })
+    query = query
+      .order('participants_count', { ascending: false })
+      .order('created_at', { ascending: false })
   } else {
     query = query.order('date', { ascending: false })
   }
