@@ -50,31 +50,33 @@ export async function getHomepageStats(): Promise<HomepageStats> {
     eventsCount: eventsResult.count ?? 0,
     volunteersCount: volunteersResult.count ?? 0,
     orgsCount: orgsResult.count ?? 0,
-    citiesCount: 12,
+    citiesCount: 12, // hardcodat — tabelul events nu are câmp city normalizat
   }
 }
 
 export async function getRecentEvents(limit: number): Promise<EventPreview[]> {
   const supabase = await createClient()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('events')
     .select('id, title, banner_url, category, subcategory, status, created_at, creator_id, organization_id, participants_count, view_count')
     .in('status', ['approved', 'completed'])
     .order('created_at', { ascending: false })
     .limit(limit)
 
+  if (error) console.error('[getRecentEvents]', error.message)
   return data ?? []
 }
 
 export async function getApprovedOrgs(): Promise<OrgPreview[]> {
   const supabase = await createClient()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('organizations')
     .select('id, name, logo_url')
     .eq('status', 'approved')
     .order('created_at', { ascending: true })
 
+  if (error) console.error('[getApprovedOrgs]', error.message)
   return data ?? []
 }
