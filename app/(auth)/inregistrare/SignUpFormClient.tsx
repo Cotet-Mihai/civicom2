@@ -23,7 +23,7 @@ export function SignUpFormClient() {
   if (success) {
     return (
       <div className="w-full max-w-sm animate-fade-in text-center">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Mail className="size-5" />
         </div>
         <h2 className="font-heading text-xl font-bold text-foreground">Verifică emailul</h2>
@@ -34,7 +34,7 @@ export function SignUpFormClient() {
         </p>
         <Link
           href="/autentificare"
-          className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-green-600 hover:text-green-700 transition-colors"
+          className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           Înapoi la autentificare <ArrowRight className="size-3.5" />
         </Link>
@@ -99,7 +99,7 @@ export function SignUpFormClient() {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
+          className="w-full gap-2"
         >
           {isLoading ? 'Se creează contul...' : (
             <>Creează cont <ArrowRight className="size-4" /></>
@@ -109,7 +109,7 @@ export function SignUpFormClient() {
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
         Ai deja cont?{' '}
-        <Link href="/autentificare" className="font-semibold text-green-600 hover:text-green-700 transition-colors">
+        <Link href="/autentificare" className="font-semibold text-primary hover:text-primary/80 transition-colors">
           Autentifică-te
         </Link>
       </p>

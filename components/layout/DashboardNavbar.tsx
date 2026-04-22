@@ -17,7 +17,7 @@ export async function DashboardNavbar() {
 
         <Link
           href="/"
-          className="font-heading text-xl font-extrabold tracking-tight text-green-700"
+          className="font-heading text-xl font-extrabold tracking-tight text-primary"
         >
           CIVICOM✨
         </Link>

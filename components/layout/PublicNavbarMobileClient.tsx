@@ -23,7 +23,7 @@ export function PublicNavbarMobileClient() {
 
       <SheetContent side="left" className="flex w-72 flex-col">
         <SheetHeader>
-          <SheetTitle className="text-left font-heading text-xl font-extrabold text-green-700">
+          <SheetTitle className="text-left font-heading text-xl font-extrabold text-primary">
             CIVICOM✨
           </SheetTitle>
         </SheetHeader>
@@ -58,7 +58,7 @@ export function PublicNavbarMobileClient() {
           </Link>
           <Link
             href="/inregistrare"
-            className={buttonVariants({ variant: 'default' }) + ' w-full justify-center bg-green-600 hover:bg-green-700 text-white'}
+            className={buttonVariants({ variant: 'default' }) + ' w-full justify-center'}
           >
             Înregistrează-te
           </Link>

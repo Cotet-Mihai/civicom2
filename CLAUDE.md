@@ -305,24 +305,49 @@ Documentația completă a proiectului se află în Notion (conectat prin MCP):
 
 > **Regulă:** Orice componentă nouă trebuie să respecte aceste convenții. Nu inventa stiluri ad-hoc — ancorează-te în tokens-urile și pattern-urile de mai jos.
 
-### Culori — Token-uri de referință
+### Culori — Sistem de token-uri (shadcn CSS variables)
 
-Proiectul folosește un **green civic theme**. Culorile de brand sunt exprimate exclusiv prin clase Tailwind `green-*`, nu prin token-uri CSS `--primary` (care în civicom2 este implicit negru/gri din shadcn default).
+**Regula de aur: folosește exclusiv variabilele CSS shadcn (`bg-primary`, `text-primary`, etc.) — niciodată clase Tailwind hardcodate precum `bg-green-600` sau `text-green-700`.**
 
-| Rol | Clasa Tailwind | Utilizare |
+Token-urile sunt definite în `app/globals.css` → `:root`. Dacă o componentă nouă necesită o culoare care nu are token, adaugă token-ul în `:root`, nu hardcoda culoarea în componentă.
+
+#### Token-urile CIVICOM (`app/globals.css`)
+
+| Token CSS | Valoare | Utilizare |
 |---|---|---|
-| Brand / CTA principal | `bg-green-600`, `text-green-700`, `hover:bg-green-700` | Butoane primare, logo, accente active |
-| Brand deschis | `bg-green-100`, `text-green-600` | Avatar fallback, badge-uri soft, iconuri |
-| Brand hover ring | `hover:ring-green-500` | Avatar trigger, elemente interactive |
-| Accent verde link | `hover:text-green-400` | Linkuri în footer dark |
-| Background pagină | `bg-background` | Pagini standard (alb/near-white) |
-| Suprafețe muted | `bg-muted/50` | Secțiuni alternante (NGO carousel, events) |
-| Dark footer | `bg-foreground` | Footer — text cu `text-background` |
-| Text principal | `text-foreground` | Titluri, labels |
-| Text secundar | `text-muted-foreground` | Descrieri, metadate, subtitluri |
-| Decorativ danger | `hover:bg-red-50 hover:text-red-500` | Butoane donate/distructive secondare |
+| `--primary` | `oklch(0.52 0.18 145)` — verde civic | Butoane principale, logo, linkuri active, iconuri decorative, ring focus |
+| `--primary-foreground` | alb | Text pe fundal `bg-primary` |
+| `--secondary` | `oklch(0.78 0.17 80)` — galben auriu | Accent tipografic în headings mari, badge-uri subtipe |
+| `--secondary-foreground` | dark | Text pe `bg-secondary` |
+| `--background` | `oklch(0.985 0.005 145)` — alb cu tentă verde | Pagini publice, suprafețe principale |
+| `--foreground` | dark green-tinted | Text principal |
+| `--muted` | `oklch(0.963 0.006 145)` | Secțiuni alternante (`bg-muted/50`) |
+| `--muted-foreground` | medium gray | Descrieri, metadate, subtitluri |
+| `--accent` | light green | Hover states, accent soft |
+| `--accent-foreground` | dark green | Text pe `bg-accent` |
+| `--border` | subtle green-tinted | Borduri card, separator |
+| `--destructive` | roșu | Erori, butoane distructive |
 
-**Niciodată** `text-primary` sau `bg-primary` pentru verde — în civicom2 `--primary` e negru. Folosește mereu `green-600` / `green-700` explicit.
+#### Utilizare corectă
+
+```tsx
+// ✅ CORECT — token shadcn
+<Link className="text-primary hover:text-primary/80">...</Link>
+<Button>Acțiune</Button>                    // default = bg-primary automat
+<div className="bg-primary/10 text-primary"> // soft accent
+
+// ❌ GREȘIT — culori hardcodate
+<Link className="text-green-700 hover:text-green-600">...</Link>
+<Button className="bg-green-600 hover:bg-green-700">...</Button>
+```
+
+#### Opacitate și variante
+- `bg-primary/10` → verde foarte deschis (avatar bg, icon bg)
+- `bg-primary/5` → verde aproape invizibil (decorații ambient)
+- `hover:text-primary/80` → verde mai închis la hover
+- `text-muted-foreground` → text secundar (nu `text-gray-500`)
+
+**Excepție permisă:** `InputPasswordStrength` folosește `bg-green-500` ca indicator semantic de forță parolă (verde = puternic) — este UI logic, nu identitate vizuală.
 
 ---
 
@@ -452,14 +477,14 @@ Zoom hover subtil: `scale-[1.02]` (nu `scale-110` ca pe carduri).
 
 #### Avatar cu inițiale (organizator, contact)
 ```tsx
-<div className="size-10 rounded-full bg-green-600/10 border border-green-600/20 flex items-center justify-center font-black text-xs text-green-700 shrink-0">
+<div className="size-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-black text-xs text-primary shrink-0">
   {initials}
 </div>
 ```
 
 #### Numere mari / statistici
 ```tsx
-<span className="text-3xl font-black italic tracking-tighter text-green-700">
+<span className="text-3xl font-black italic tracking-tighter text-primary">
   {count} / {max}
 </span>
 ```
@@ -467,10 +492,11 @@ Zoom hover subtil: `scale-[1.02]` (nu `scale-110` ca pe carduri).
 #### Butoane — convenții
 | Tip | Pattern |
 |---|---|
-| CTA principal | `bg-green-600 text-white hover:bg-green-700 gap-2` + `<ArrowRight>` |
-| Outline secondary | `variant="outline" border-green-600/30 text-green-700 hover:bg-green-50` |
+| CTA principal | `<Button>` sau `buttonVariants({ variant: 'default' })` — automat `bg-primary` |
+| Outline | `<Button variant="outline">` sau `buttonVariants({ variant: 'outline' })` |
 | Ghost nav | `buttonVariants({ variant: 'ghost' })` pe `<Link>` |
-| Destructive sheet | `variant="destructive" w-full gap-2` |
+| Destructive | `<Button variant="destructive">` |
+| Link cu stil buton | `<Link className={buttonVariants({ variant: 'default' })}>` — fără override culori |
 
 #### Progress bars
 ```tsx
@@ -501,5 +527,5 @@ CIVICOM are un caracter **civic, bold și autentic** — nu corporate, nu startu
 - Verde `green-600/700` e culoarea principală, nu albastrul sau mov-ul generic
 - Cardurile au umbre subtile și zoom la hover — se simte fluid, nu static
 - Secțiunile alternează fundal muted/white pentru ritm vizual
-- Iconuri lucide-react mereu cu `text-green-600` când sunt decorative, `text-muted-foreground` când sunt informative
+- Iconuri lucide-react mereu cu `text-primary` când sunt decorative, `text-muted-foreground` când sunt informative
 - Emoji ✨ apare strategic în titluri de brand — nu suprasaturat

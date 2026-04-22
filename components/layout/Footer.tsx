@@ -43,7 +43,7 @@ export function Footer() {
                   key={s.name}
                   href={s.href}
                   aria-label={s.name}
-                  className="flex size-9 items-center justify-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-green-600 hover:text-white"
+                  className="flex size-9 items-center justify-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-primary hover:text-primary-foreground"
                 >
                   <s.Icon />
                 </a>
@@ -62,7 +62,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-background/60 transition-colors hover:text-green-400"
+                      className="text-sm text-background/60 transition-colors hover:text-primary"
                     >
                       {link.label}
                     </Link>

@@ -54,7 +54,7 @@ export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Pro
       <div className="hidden items-center gap-3 md:flex">
         <Link
           href="/creeaza"
-          className={buttonVariants({ size: 'sm' }) + ' gap-1.5 bg-green-600 hover:bg-green-700 text-white'}
+          className={buttonVariants({ size: 'sm' }) + ' gap-1.5'}
         >
           <Plus className="size-4" />
           Creează eveniment
@@ -62,11 +62,11 @@ export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Pro
 
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="rounded-full ring-2 ring-transparent hover:ring-green-500 transition-all focus:outline-none"
+            className="rounded-full ring-2 ring-transparent hover:ring-primary transition-all focus:outline-none"
             aria-label="Meniu utilizator"
           >
             <Avatar className="size-8 cursor-pointer">
-              <AvatarFallback className="bg-green-100 text-sm font-semibold text-green-700">
+              <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
                 {initial}
               </AvatarFallback>
             </Avatar>
@@ -133,7 +133,7 @@ export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Pro
 
         <SheetContent side="left" className="flex w-72 flex-col">
           <SheetHeader>
-            <SheetTitle className="text-left font-heading text-xl font-extrabold text-green-700">
+            <SheetTitle className="text-left font-heading text-xl font-extrabold text-primary">
               CIVICOM✨
             </SheetTitle>
           </SheetHeader>

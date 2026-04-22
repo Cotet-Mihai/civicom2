@@ -73,7 +73,7 @@ export function SignInFormClient() {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full gap-2 bg-green-600 text-white hover:bg-green-700"
+          className="w-full gap-2"
         >
           {isLoading ? 'Se autentifică...' : (
             <>Autentifică-te <ArrowRight className="size-4" /></>
@@ -83,7 +83,7 @@ export function SignInFormClient() {
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
         Nu ai cont?{' '}
-        <Link href="/inregistrare" className="font-semibold text-green-600 hover:text-green-700 transition-colors">
+        <Link href="/inregistrare" className="font-semibold text-primary hover:text-primary/80 transition-colors">
           Înregistrează-te
         </Link>
       </p>
