@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Menu } from 'lucide-react'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import {
   Sheet,
   SheetContent,
@@ -14,15 +14,11 @@ import {
 export function PublicNavbarMobileClient() {
   return (
     <Sheet>
-      <SheetTrigger>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          aria-label="Deschide meniul"
-        >
-          <Menu className="size-5" />
-        </Button>
+      <SheetTrigger
+        className={buttonVariants({ variant: 'ghost', size: 'icon' }) + ' md:hidden'}
+        aria-label="Deschide meniul"
+      >
+        <Menu className="size-5" />
       </SheetTrigger>
 
       <SheetContent side="left" className="flex w-72 flex-col">
