@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import type { EventPreview } from './event.service'
 export type { EventPreview } from './event.service'
 
 export type HomepageStats = {
@@ -35,11 +36,11 @@ export async function getHomepageStats(): Promise<HomepageStats> {
     eventsCount: eventsResult.count ?? 0,
     volunteersCount: volunteersResult.count ?? 0,
     orgsCount: orgsResult.count ?? 0,
-    citiesCount: 12,
+    citiesCount: 12, // hardcodat — tabelul events nu are câmp city normalizat
   }
 }
 
-export async function getRecentEvents(limit: number) {
+export async function getRecentEvents(limit: number): Promise<EventPreview[]> {
   const supabase = await createClient()
 
   const { data, error } = await supabase
