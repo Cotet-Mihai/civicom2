@@ -1,0 +1,73 @@
+'use client'
+
+import Link from 'next/link'
+import { Menu } from 'lucide-react'
+import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+
+export function PublicNavbarMobileClient() {
+  return (
+    <Sheet>
+      <SheetTrigger>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          aria-label="Deschide meniul"
+        >
+          <Menu className="size-5" />
+        </Button>
+      </SheetTrigger>
+
+      <SheetContent side="left" className="flex w-72 flex-col">
+        <SheetHeader>
+          <SheetTitle className="text-left font-heading text-xl font-extrabold text-green-700">
+            CIVICOM✨
+          </SheetTitle>
+        </SheetHeader>
+
+        <nav className="mt-6 flex flex-1 flex-col gap-1">
+          <Link
+            href="/"
+            className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}
+          >
+            Acasă
+          </Link>
+          <Link
+            href="/evenimente"
+            className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}
+          >
+            Evenimente
+          </Link>
+          <Link
+            href="/organizatii"
+            className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}
+          >
+            Organizații
+          </Link>
+        </nav>
+
+        <div className="flex flex-col gap-2 border-t border-border pt-4">
+          <Link
+            href="/autentificare"
+            className={buttonVariants({ variant: 'outline' }) + ' w-full justify-center'}
+          >
+            Autentifică-te
+          </Link>
+          <Link
+            href="/inregistrare"
+            className={buttonVariants({ variant: 'default' }) + ' w-full justify-center bg-green-600 hover:bg-green-700 text-white'}
+          >
+            Înregistrează-te
+          </Link>
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
