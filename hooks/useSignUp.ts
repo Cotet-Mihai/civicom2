@@ -12,11 +12,18 @@ export function useSignUp() {
     name: string
     email: string
     password: string
+    confirmPassword: string
   }) {
     setIsLoading(true)
     setError(null)
 
-    const result = await signUp(formData)
+    if (formData.password !== formData.confirmPassword) {
+      setError('Parolele nu coincid.')
+      setIsLoading(false)
+      return
+    }
+
+    const result = await signUp({ name: formData.name, email: formData.email, password: formData.password })
 
     if (result?.error) {
       setError(result.error)
