@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition, useRef } from 'react'
 import { getEvents } from '@/services/event.service'
 import type { EventPreview, EventFilters } from '@/services/event.service'
 import { EventCard } from '@/components/shared/EventCard'
@@ -19,18 +19,21 @@ export function EventsListClient({ initialEvents, total, filters }: Props) {
   const [events, setEvents] = useState<EventPreview[]>(initialEvents)
   const [page, setPage] = useState(1)
   const [isPending, startTransition] = useTransition()
+  const loadingRef = useRef(false)
 
   const hasMore = events.length < total
 
   const loadMore = useCallback(() => {
-    if (isPending || !hasMore) return
+    if (loadingRef.current || !hasMore) return
+    loadingRef.current = true
     startTransition(async () => {
       const nextPage = page + 1
       const { events: newEvents } = await getEvents(filters, nextPage, PAGE_SIZE)
       setEvents((prev) => [...prev, ...newEvents])
       setPage(nextPage)
+      loadingRef.current = false
     })
-  }, [isPending, hasMore, page, filters])
+  }, [hasMore, page, filters])
 
   return (
     <div className="space-y-8">
