@@ -12,7 +12,7 @@ export function PublicNavbar() {
           <PublicNavbarMobileClient />
           <Link
             href="/"
-            className="font-heading text-xl font-extrabold tracking-tight text-green-700"
+            className="font-heading text-xl font-extrabold tracking-tight text-primary"
           >
             CIVICOM✨
           </Link>
@@ -44,7 +44,7 @@ export function PublicNavbar() {
           </Link>
           <Link
             href="/inregistrare"
-            className={buttonVariants({ variant: 'default', size: 'sm' }) + ' bg-green-600 hover:bg-green-700 text-white'}
+            className={buttonVariants({ variant: 'default', size: 'sm' })}
           >
             Înregistrează-te
           </Link>
