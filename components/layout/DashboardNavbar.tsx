@@ -7,7 +7,7 @@ export async function DashboardNavbar() {
   const session = await getSession()
   const user = session?.user
 
-  const userName: string = user?.user_metadata?.name ?? user?.email ?? 'Utilizator'
+  const userName: string = user?.user_metadata?.name ?? user?.user_metadata?.full_name ?? 'Utilizator'
   const userEmail: string = user?.email ?? ''
   const orgId: string | null = user ? await getUserOrgId(user.id) : null
 
