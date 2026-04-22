@@ -300,3 +300,206 @@ Documentația completă a proiectului se află în Notion (conectat prin MCP):
 - **User Stories** — 60+ stories pe 14 domenii funcționale
 - **RLS Policies** — politici SQL complete + funcții helper
 - **SEO & Metadata** — metadata, generateMetadata, JSON-LD, robots.ts, sitemap.ts
+
+## Design System — Identitate Vizuală CIVICOM
+
+> **Regulă:** Orice componentă nouă trebuie să respecte aceste convenții. Nu inventa stiluri ad-hoc — ancorează-te în tokens-urile și pattern-urile de mai jos.
+
+### Culori — Token-uri de referință
+
+Proiectul folosește un **green civic theme**. Culorile de brand sunt exprimate exclusiv prin clase Tailwind `green-*`, nu prin token-uri CSS `--primary` (care în civicom2 este implicit negru/gri din shadcn default).
+
+| Rol | Clasa Tailwind | Utilizare |
+|---|---|---|
+| Brand / CTA principal | `bg-green-600`, `text-green-700`, `hover:bg-green-700` | Butoane primare, logo, accente active |
+| Brand deschis | `bg-green-100`, `text-green-600` | Avatar fallback, badge-uri soft, iconuri |
+| Brand hover ring | `hover:ring-green-500` | Avatar trigger, elemente interactive |
+| Accent verde link | `hover:text-green-400` | Linkuri în footer dark |
+| Background pagină | `bg-background` | Pagini standard (alb/near-white) |
+| Suprafețe muted | `bg-muted/50` | Secțiuni alternante (NGO carousel, events) |
+| Dark footer | `bg-foreground` | Footer — text cu `text-background` |
+| Text principal | `text-foreground` | Titluri, labels |
+| Text secundar | `text-muted-foreground` | Descrieri, metadate, subtitluri |
+| Decorativ danger | `hover:bg-red-50 hover:text-red-500` | Butoane donate/distructive secondare |
+
+**Niciodată** `text-primary` sau `bg-primary` pentru verde — în civicom2 `--primary` e negru. Folosește mereu `green-600` / `green-700` explicit.
+
+---
+
+### Tipografie
+
+#### Fonturi
+- **`font-heading`** (Montserrat ExtraBold/Black) — logo, titluri de secțiune, numere statistice
+- **`font-sans`** (Inter) — tot restul: body, labels, metadate
+
+#### Titluri de secțiune — stilul editorial
+Titlurile de secțiune mari folosesc un stil **editorial fragmentat** — cuvinte de mărimi diferite, aliniate pe linii separate, alternând weight-uri și culori:
+
+```tsx
+<h2 className="flex flex-col">
+  <div>
+    <span className="text-4xl lg:text-7xl font-black text-green-700">✨EVENIMENTE</span>
+    <span className="text-xl lg:text-3xl font-bold text-muted-foreground">CARE</span>
+  </div>
+  <div>
+    <span className="text-2xl lg:text-5xl font-black text-foreground">SCHIMBĂ</span>
+    <span className="text-4xl lg:text-7xl font-black text-green-700">COMUNITATEA✨</span>
+  </div>
+</h2>
+```
+
+Reguli:
+- Cuvintele-cheie: `font-black text-green-700` la dimensiune maximă (`lg:text-7xl`)
+- Cuvintele de legătură: `font-bold text-muted-foreground` la dimensiune medie (`lg:text-3xl`)
+- `✨` inline la capătul sau începutul textului de brand (nu separat)
+- Pe mobile: dimensiunile se înjumătățesc (`text-4xl` → `text-2xl`)
+
+#### Titluri de pagini eveniment
+```tsx
+<h1 className="text-2xl md:text-4xl font-black tracking-tighter leading-tight uppercase text-green-700 italic">
+```
+Caracteristic: `font-black`, `uppercase`, `italic`, `tracking-tighter` — agresiv și civic.
+
+#### Labels de secțiune internă (sub-headings)
+```tsx
+<h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+  <IconComponent size={14} /> Titlu Secțiune
+</h3>
+```
+
+#### Metadate eveniment (dată, ore, views)
+```tsx
+<span className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
+  <Calendar size={14} className="text-green-600" />
+  {data}
+</span>
+```
+Views: badge distinct cu `bg-muted px-2.5 py-1 rounded-md text-xs font-bold border border-border/50`.
+
+---
+
+### Layout
+
+#### Container standard
+```tsx
+<div className="mx-auto max-w-7xl px-4 lg:px-8">
+```
+
+#### Secțiuni publice
+```tsx
+<section className="py-20 lg:py-28">          // secțiune normală
+<section className="min-h-screen py-20 ...">  // secțiune full-height
+<section className="bg-muted/50 ...">         // secțiune alternantă (muted bg)
+<section className="bg-foreground py-16 ..."> // secțiune dark (stats, CTA dark)
+```
+Secțiunile alternează: `bg-background` → `bg-muted/50` → `bg-background` — niciodată două `bg-muted/50` consecutive.
+
+#### Pagini eveniment — grid 8/4
+```tsx
+<div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+  <div className="lg:col-span-8 space-y-8">   {/* conținut principal */}
+  <aside className="lg:col-span-4 space-y-6"> {/* sidebar */}
+```
+
+#### Decorații de fundal (ambient circles)
+Pe secțiunile hero și FAQ, background-ul are cercuri blurred subtile:
+```tsx
+<div className="pointer-events-none absolute inset-0">
+  <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-green-600/5" />
+  <div className="absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-green-600/10" />
+</div>
+```
+Opacitate maximă: `/10`. Nu pe fiecare secțiune — doar hero și secțiuni full-screen.
+
+---
+
+### Componente — Pattern-uri
+
+#### Banner eveniment
+```tsx
+<div className="relative w-full aspect-[21/9] group rounded-3xl overflow-hidden border border-border shadow-xl">
+  <Image fill className="object-cover transition-transform duration-700 group-hover:scale-[1.02]" />
+  {/* Badge tip eveniment */}
+  <div className="absolute top-4 left-4 z-20"><Badge>Protest: Marș</Badge></div>
+  {/* Overlay interior shadow */}
+  <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.1)] pointer-events-none z-10" />
+</div>
+```
+Zoom hover subtil: `scale-[1.02]` (nu `scale-110` ca pe carduri).
+
+#### Card eveniment
+```tsx
+<Card className="group relative flex flex-col overflow-hidden pt-0 transition-shadow duration-300 hover:shadow-lg">
+  {/* Banner cu zoom agresiv la hover */}
+  <div className="relative aspect-video overflow-hidden">
+    <Image className="object-cover transition-transform duration-500 group-hover:scale-110" />
+    <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 to-transparent" />
+    {/* Badge tip — stânga sus */}
+    <div className="absolute left-3 top-3"><Badge variant="secondary">{tip}</Badge></div>
+    {/* Badge dată — dreapta sus */}
+    <div className="absolute right-3 top-3">
+      <div className="flex items-center gap-1 rounded-full bg-background/90 px-2 py-1 backdrop-blur-sm">
+        <Calendar className="text-green-600 h-4 w-4" /><span>{data}</span>
+      </div>
+    </div>
+  </div>
+```
+
+#### Card sidebar (participare, info)
+```tsx
+<Card className="p-6 space-y-2 shadow-lg bg-white shadow-black/5 border-border">
+```
+
+#### Avatar cu inițiale (organizator, contact)
+```tsx
+<div className="size-10 rounded-full bg-green-600/10 border border-green-600/20 flex items-center justify-center font-black text-xs text-green-700 shrink-0">
+  {initials}
+</div>
+```
+
+#### Numere mari / statistici
+```tsx
+<span className="text-3xl font-black italic tracking-tighter text-green-700">
+  {count} / {max}
+</span>
+```
+
+#### Butoane — convenții
+| Tip | Pattern |
+|---|---|
+| CTA principal | `bg-green-600 text-white hover:bg-green-700 gap-2` + `<ArrowRight>` |
+| Outline secondary | `variant="outline" border-green-600/30 text-green-700 hover:bg-green-50` |
+| Ghost nav | `buttonVariants({ variant: 'ghost' })` pe `<Link>` |
+| Destructive sheet | `variant="destructive" w-full gap-2` |
+
+#### Progress bars
+```tsx
+<Progress value={pct} className="h-2 bg-muted" />
+```
+Textul deasupra: `flex items-center justify-between text-sm` cu icon verde stânga și `font-semibold text-foreground` dreapta.
+
+---
+
+### Animații scroll-triggered
+
+Pe secțiunile publice (homepage, liste), elementele apar la scroll cu `opacity-0` inițial și tranziție la `opacity-100` via intersection observer sau CSS. Pattern-ul din `globals.css`:
+
+```css
+/* Elementele animate încep invizibile */
+[data-animate] { opacity: 0; transform: translateY(12px); transition: opacity 0.5s ease, transform 0.5s ease; }
+[data-animate].in-view { opacity: 1; transform: none; }
+```
+
+Pe componente server (fără `useEffect`), folosim exclusiv clase CSS ca `animate-fade-in-up` — niciodată state React pentru animații de intrare.
+
+---
+
+### Tonul vizual general
+
+CIVICOM are un caracter **civic, bold și autentic** — nu corporate, nu startup-ish. Câteva principii:
+- Titlurile sunt mari, agresive, cu uppercase și font-black — transmit energie și urgență civică
+- Verde `green-600/700` e culoarea principală, nu albastrul sau mov-ul generic
+- Cardurile au umbre subtile și zoom la hover — se simte fluid, nu static
+- Secțiunile alternează fundal muted/white pentru ritm vizual
+- Iconuri lucide-react mereu cu `text-green-600` când sunt decorative, `text-muted-foreground` când sunt informative
+- Emoji ✨ apare strategic în titluri de brand — nu suprasaturat
