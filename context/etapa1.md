@@ -1,8 +1,8 @@
-# Etapa 1 — Autentificare (COMPLETATĂ PARȚIAL)
+# Etapa 1 — Autentificare (COMPLETATĂ)
 
 **Data:** 2026-04-22
 **Branch:** `feat/auth` (creat din `feat/setup-infrastructure`)
-**Status:** Implementată tehnic 100%, design pagini de refăcut după restart sesiune (skill `frontend-design` instalat, necesar restart)
+**Status:** ✅ Implementare tehnică + design finalizate
 
 ---
 
@@ -23,7 +23,7 @@ updatePassword(password)                 // Actualizare parolă → redirect('/p
 getSession()                             // Returnează sesiunea curentă
 ```
 
-> **IMPORTANT:** `signIn` și `signOut` și `updatePassword` folosesc `redirect()` din next/navigation direct în server action — nu returnează erori în caz de succes, returnează `{ error: string }` doar la eșec.
+> **IMPORTANT:** `signIn`, `signOut` și `updatePassword` folosesc `redirect()` din next/navigation direct în server action — nu returnează erori în caz de succes, returnează `{ error: string }` doar la eșec.
 
 ---
 
@@ -74,29 +74,39 @@ const { handleSendReset, handleUpdatePassword, isLoading, error, success } = use
 
 ---
 
-### 4. Route Group `(auth)`
+### 4. Route Group `(auth)` — Design final
 
 #### `app/(auth)/layout.tsx`
 - `metadata robots: { index: false, follow: false }` — moștenit de toate paginile auth
-- Layout centrat: `min-h-screen flex items-center justify-center bg-muted/30 p-4`
+- **Layout split-screen:**
+  - Stânga: panou alb cu logo `CIVICOM✨` + formular centrat + footer "Termeni de utilizare"
+  - Dreapta (doar desktop `lg:`): imagine `public/auth_panel.webp` cu `next/image fill` + gradient overlay la bază cu tagline „Fii vocea schimbării."
+  - Mobil: doar panoul cu formularul, imaginea ascunsă (`hidden lg:block`)
+- Structura layout cu clase Tailwind native (nu custom CSS) pentru a garanta că `next/image fill` are container cu dimensiuni corecte
+
+> **Lecție:** `next/image fill` necesită parent cu `position: relative` + height definit. Folosind clase Tailwind (`relative hidden overflow-hidden lg:block lg:flex-1`) în loc de custom CSS se evită probleme de încărcare a stilurilor.
 
 #### `app/(auth)/autentificare/page.tsx` + `SignInFormClient.tsx`
 - Form: Email + Parolă (InputPassword) + link "Ai uitat parola?"
 - Link spre `/inregistrare`
-- Animație intrare: `animate-fade-in-up` (CSS din globals.css)
+- Animație intrare: `animate-fade-in-up`
 - Traducere erori Supabase în română: `translateError()` local în fișier
 - Erori traduse: "Invalid login credentials" · "Email not confirmed" · "Too many requests"
+- Buton submit: shadcn `Button` cu `bg-green-600 hover:bg-green-700 text-white`
+- Subtitle afișează: `CIVICOM✨`
 
 #### `app/(auth)/inregistrare/page.tsx` + `SignUpFormClient.tsx`
 - Form: Nume complet + Email + Parolă (InputPasswordStrength)
-- La succes → ecran confirmare email (fără redirect, arată mesaj cu adresa)
+- La succes → ecran confirmare email cu icon `<Mail>` în cerc verde, fără redirect
 - Animație: `animate-fade-in-up` (form) · `animate-fade-in` (ecran confirmare)
 - Erori traduse: "User already registered" · "Password should be" · "Unable to validate email"
+- Subtitle afișează: `CIVICOM✨`
 
 #### `app/(auth)/reseteaza-parola/page.tsx` + `ResetPasswordFormClient.tsx`
 - Form: doar Email
 - La succes → ecran confirmare (mesaj neutru — nu dezvăluie dacă emailul există)
-- Link înapoi la `/autentificare`
+- Icon `<Mail>` cu cerc verde pe ecranul de succes
+- Link înapoi la `/autentificare` cu `<ArrowLeft>`
 
 ---
 
@@ -121,7 +131,22 @@ const { handleSendReset, handleUpdatePassword, isLoading, error, success } = use
 
 ---
 
-## Structura fișierelor create
+### 7. Asset adăugat
+
+#### `public/auth_panel.webp`
+- Copiat din proiectul vechi (`civicom/public/images/signin_page.webp`)
+- Imagine cu voluntari în tricouri verzi — folosit ca panou decorativ pe desktop în toate paginile auth
+
+---
+
+### 8. Reguli adăugate în `CLAUDE.md`
+
+- **Brand:** `CIVICOM✨` oriunde în UI vizibil; fără emoji în metadata SEO
+- **Pagini noi:** Consultă obligatoriu Notion → Pagini & Rute înainte de implementare
+
+---
+
+## Structura fișierelor create/modificate
 
 ```
 services/
@@ -138,9 +163,13 @@ components/ui/
   input.tsx          ← shadcn
   label.tsx          ← shadcn
 
+public/
+  auth_panel.webp    ← imagine panou decorativ desktop
+
 app/
+  globals.css        ← animații fadeInUp, fadeIn + secțiune auth CSS (clase decorative)
   (auth)/
-    layout.tsx
+    layout.tsx       ← split-screen: form stânga + imagine dreapta
     autentificare/
       page.tsx
       SignInFormClient.tsx
@@ -169,6 +198,7 @@ pnpm build          → succes
 Route (app)
 ┌ ○ /
 ├ ○ /_not-found
+├ ƒ /api/signout
 ├ ○ /autentificare
 ├ ƒ /auth/callback
 ├ ○ /inregistrare
@@ -183,19 +213,15 @@ Route (app)
 
 ### Sesiune Supabase rămasă din Etapa 0
 - **Problemă:** `proxy.ts` detecta sesiunea veche → redirect la `/panou` (inexistent) când se accesa `/autentificare`
-- **Fix:** Creat `/api/signout` route pentru delogare directă. Utilizatorul poate naviga la `http://localhost:3000/api/signout` sau poate șterge cookie-urile `sb-*` pentru localhost din DevTools.
+- **Fix:** Creat `/api/signout` route pentru delogare directă.
 
----
+### `next/image fill` acoperea tot ecranul
+- **Problemă:** Custom CSS classes din `globals.css` nu garantau că `position: relative` și `height` erau aplicate pe containerul imaginii — imaginea se poziționa absolut față de viewport
+- **Fix:** Structura layout-ului rescrisă cu clase Tailwind native (`relative hidden overflow-hidden lg:block lg:flex-1`) care sunt compilate garantat în bundle-ul CSS
 
-## Ce rămâne de făcut în această etapă
-
-### Design pages — DE REFĂCUT
-Paginile de autentificare au un design minimal. Skill-ul `frontend-design` (instalat din marketplace-ul oficial Anthropic) trebuie invocat după restart sesiune pentru a reproiecta paginile conform indicațiilor de design.
-
-**Skill instalat:** `frontend-design@claude-plugins-official`
-**Locație skill:** `C:\Users\mc_mi\.claude\plugins\cache\claude-plugins-official\frontend-design\unknown\skills\frontend-design`
-
-> La restart sesiune: invocă skill-ul `plugin:frontend-design:frontend-design` înainte de a reproiecta paginile de autentificare.
+### Formulare fără stilizare
+- **Problemă:** Formularele foloseau clase CSS custom (`auth-form-wrap`, `auth-submit-btn` etc.) care nu se aplicau corect
+- **Fix:** Rescrise cu shadcn `Button` / `Input` / `Label` + Tailwind classes directe
 
 ---
 
@@ -203,5 +229,6 @@ Paginile de autentificare au un design minimal. Skill-ul `frontend-design` (inst
 
 - Server Actions din `auth.service.ts` folosesc `redirect()` direct → nu pot fi testate cu `await` simplu (throw la redirect în test environment)
 - `sendPasswordResetEmail` folosește `process.env.NEXT_PUBLIC_SITE_URL` cu fallback `http://localhost:3000` — în producție trebuie setat `NEXT_PUBLIC_SITE_URL=https://civicom.ro` în Vercel
-- `updatePassword` este apelat din `/reseteaza-parola/actualizeaza` — această pagină NU există încă, va fi creată când se reproiectează secțiunea
-- Componentele `SignInFormClient`, `SignUpFormClient`, `ResetPasswordFormClient` sunt locale în folderele paginilor (nu în `/components/shared`) — conform regulii arhitecturale: componente locale până când sunt necesare pe altă pagină
+- `updatePassword` este apelat din `/reseteaza-parola/actualizeaza` — această pagină **NU există încă**, va fi creată în etapa dedicată
+- Componentele `SignInFormClient`, `SignUpFormClient`, `ResetPasswordFormClient` sunt locale în folderele paginilor (nu în `/components/shared`) — conform regulii arhitecturale
+- Clasele CSS custom din `globals.css` (secțiunea `/* AUTH PAGES */`) rămân pentru elementele pur decorative (overlay imagine, tagline), nu pentru structura de layout

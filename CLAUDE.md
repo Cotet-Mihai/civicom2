@@ -12,6 +12,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > **Design:** Aplicația este **mobile-first**. Orice componentă sau pagină se proiectează și se testează întâi pe mobil, apoi se adaptează pentru desktop. Versiunea desktop trebuie să arate bine, dar prioritatea absolută este experiența pe mobil.
 
+> **Brand:** Oriunde apare **CIVICOM** ca nume de brand vizibil în UI (logo, subtitluri, texte promoționale), se scrie întotdeauna **CIVICOM✨**. Excepție: metadata SEO (title, description, og:title etc.) unde emoji-ul nu se include.
+
+> **Pagini noi — obligatoriu:** Înainte de a crea sau implementa orice pagină nouă, consultă **Notion → Pagini & Rute** pentru indicațiile de design specifice acelei pagini (structură, componente, layout, date necesare). Nu începe implementarea fără să fi verificat mai întâi această sursă.
+
 **Status:** Planificat complet, pregătit pentru implementare. Vezi Notion (Roadmap & Structură Proiect) pentru etape și ordine.
 
 ## Stack Tehnologic
@@ -202,13 +206,13 @@ Layout comun: **coloana stângă (8/12) + sidebar dreapta (4/12)**. `ActionButto
 
 | Tip | Stânga | Sidebar |
 |---|---|---|
-| Protest | Banner · titlu · descriere · reguli · echipament · galerie | ParticipationCardClient · hartă Leaflet · contact |
-| Petiție | Banner · titlu · descriere · why_important · what_is_requested · galerie | SignatureCardClient (progress auto-scale) · requested_from · RecentSignersClient · contact |
-| Boycott | Banner · reason+method badges · titlu · descriere · Branduri & Alternative · galerie | ParticipationCardClient · info organizator |
-| Activitate comunitară (aer liber/workshop) | Banner · titlu · descriere · what_organizer_offers · equipment · galerie | ParticipationCardClient · hartă Leaflet · contact |
-| Donații | Banner · titlu · descriere · what_is_needed (material=listă / monetar=progress bar) · galerie | ParticipationCardClient · contact |
-| Caritabil (concert/meet&greet/sport) | Banner · titlu · descriere · performers/guests · galerie | Progress bar donații · Cumpără bilet · ParticipationCardClient · hartă Leaflet |
-| Caritabil (livestream) | Banner · titlu · descriere · cause · guests · galerie | Progress bar donații · Urmărește live |
+| Protest | Banner · badge subtip · view count · titlu · descriere · reguli · echipament · galerie | ParticipationCardClient · hartă shadcn-map · contact |
+| Petiție | Banner · badge "Petiție" · view count · titlu · descriere · why_important · what_is_requested · galerie | SignatureCardClient (progress auto-scale) · requested_from · RecentSignersClient · contact |
+| Boycott | Banner · badge "Boycott" · view count · reason+method badges · titlu · descriere · Branduri & Alternative · galerie | ParticipationCardClient · info organizator |
+| Activitate comunitară (aer liber/workshop) | Banner · badge subtip · view count · titlu · descriere · what_organizer_offers · equipment · galerie | ParticipationCardClient · hartă shadcn-map · contact |
+| Donații | Banner · badge "Donații" · view count · titlu · descriere · what_is_needed (material=listă / monetar=progress bar) · galerie | ParticipationCardClient · contact |
+| Caritabil (concert/meet&greet/sport) | Banner · badge subtip · view count · titlu · descriere · performers/guests · galerie | Progress bar donații · Cumpără bilet · ParticipationCardClient · hartă shadcn-map |
+| Caritabil (livestream) | Banner · badge "Livestream" · view count · titlu · descriere · cause · guests · galerie | Progress bar donații · Urmărește live |
 
 **Stare `completed`** (comună tuturor): ParticipationCardClient → contor final fără buton Participă · buton „Evaluează evenimentul" (doar participant fără feedback) · `FeedbackSection` cu rating mediu + lista feedback-uri · badge `completed` pe banner.
 
@@ -240,12 +244,51 @@ Layout comun: **imagine stânga sticky (30%) + stepper dreapta (70%)**.
 - `app/robots.ts` + `app/sitemap.ts` (include events `approved`/`completed` + orgs `approved`)
 - JSON-LD: `WebSite` pe homepage · `Event` pe pagini eveniment · `Organization` pe pagini ONG
 
+## Animații
+
+### Enter Animations — exclusiv CSS
+
+Animațiile de intrare (care pornesc când apare prima dată o componentă pe pagină) se implementează **exclusiv din CSS** definit în `globals.css` sau într-un fișier separat importat în `globals.css`.
+
+**Interzis:** crearea de state React (`useState`, `useEffect`) pentru a urmări prima apariție a unei componente — consumă resurse inutil și forțează componenta să devină `"use client"`.
+
+```css
+/* CORECT — în globals.css */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease forwards;
+}
+```
+
+```tsx
+/* GREȘIT — state doar pentru animație de intrare */
+const [visible, setVisible] = useState(false);
+useEffect(() => setVisible(true), []);
+```
+
 ## Workflow Git
 
 - Orice feature nou → branch dedicat din `main`
 - Push-urile se fac exclusiv pe branch, nu direct pe `main`
 - Merge în `main` doar după finalizarea completă a feature-ului și cu aprobare explicită
-- Ordinea branch-urilor: vezi Notion (Roadmap & Structură Proiect)
+- Ordinea branch-urilor:
+  1. `feat/setup-infrastructure`
+  2. `feat/auth`
+  3. `feat/layout-navigation`
+  4. `feat/homepage`
+  5. `feat/events-list`
+  6. `feat/event-detail`
+  7. `feat/create-events`
+  8. `feat/participation`
+  9. `feat/user-dashboard`
+  10. `feat/admin-moderation`
+  11. `feat/appeals`
+  12. `feat/organizations`
+  13. `feat/event-completion-feedback`
+  14. `feat/seo-performance`
 
 ## Notion (Planificare — toate paginile complete)
 
