@@ -12,7 +12,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -74,10 +73,10 @@ export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Pro
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="flex flex-col gap-0.5">
-              <span className="font-semibold">{userName}</span>
-              <span className="text-xs font-normal text-muted-foreground">{userEmail}</span>
-            </DropdownMenuLabel>
+            <div className="flex flex-col gap-0.5 px-2 py-1.5">
+              <span className="text-sm font-semibold">{userName}</span>
+              <span className="text-xs text-muted-foreground">{userEmail}</span>
+            </div>
 
             <DropdownMenuSeparator />
 
