@@ -3,7 +3,7 @@
 import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from 'embla-carousel-autoplay'
 import type { EventPreview } from '@/services/homepage.service'
-import { EventCard } from './EventCard'
+import { EventCard } from '@/components/shared/EventCard'
 
 type Props = { events: EventPreview[] }
 
