@@ -1,26 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+export type { EventPreview } from './event.service'
 
 export type HomepageStats = {
   eventsCount: number
   volunteersCount: number
   orgsCount: number
   citiesCount: number
-}
-
-export type EventPreview = {
-  id: string
-  title: string
-  banner_url: string | null
-  category: string
-  subcategory: string | null
-  status: string
-  created_at: string
-  creator_id: string
-  organization_id: string | null
-  participants_count: number
-  view_count: number
 }
 
 export type OrgPreview = {
@@ -37,9 +24,7 @@ export async function getHomepageStats(): Promise<HomepageStats> {
       .from('events')
       .select('*', { count: 'exact', head: true })
       .in('status', ['approved', 'completed']),
-    supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true }),
+    supabase.from('users').select('*', { count: 'exact', head: true }),
     supabase
       .from('organizations')
       .select('*', { count: 'exact', head: true })
@@ -50,16 +35,18 @@ export async function getHomepageStats(): Promise<HomepageStats> {
     eventsCount: eventsResult.count ?? 0,
     volunteersCount: volunteersResult.count ?? 0,
     orgsCount: orgsResult.count ?? 0,
-    citiesCount: 12, // hardcodat — tabelul events nu are câmp city normalizat
+    citiesCount: 12,
   }
 }
 
-export async function getRecentEvents(limit: number): Promise<EventPreview[]> {
+export async function getRecentEvents(limit: number) {
   const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('events')
-    .select('id, title, banner_url, category, subcategory, status, created_at, creator_id, organization_id, participants_count, view_count')
+    .select(
+      'id, title, banner_url, category, subcategory, status, date, created_at, participants_count, view_count'
+    )
     .in('status', ['approved', 'completed'])
     .order('created_at', { ascending: false })
     .limit(limit)
