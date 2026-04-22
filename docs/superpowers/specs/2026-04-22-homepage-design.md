@@ -57,11 +57,11 @@ type HomepageStats = {
   eventsCount: number       // COUNT(*) FROM events WHERE status IN ('approved','completed')
   volunteersCount: number   // COUNT(*) FROM users
   orgsCount: number         // COUNT(*) FROM organizations WHERE status = 'approved'
-  citiesCount: number       // COUNT(DISTINCT city) FROM events WHERE status IN ('approved','completed') AND city IS NOT NULL
+  citiesCount: number       // valoare statică hardcodată: 12 (tabelul events nu are câmp city direct)
 }
 ```
 
-> **Notă:** `events` nu are câmp `city` direct — `citiesCount` se poate omite sau aproxima cu numărul de events cu locație (gatherings + outdoor_activities etc.). De folosit o valoare statică hardcodată dacă query-ul devine prea complex.
+> **Notă:** `citiesCount` este o valoare statică `12` returnată direct din funcție — nu necesită query. Celelalte 3 valori vin din DB.
 
 ### `getRecentEvents(limit: number)` → `EventPreview[]`
 
@@ -76,10 +76,12 @@ type EventPreview = {
   created_at: string
   creator_id: string
   organization_id: string | null
+  participants_count: number
+  view_count: number
 }
 ```
 
-Query: `SELECT id, title, banner_url, category, subcategory, status, created_at, creator_id, organization_id FROM events WHERE status IN ('approved','completed') ORDER BY created_at DESC LIMIT limit`
+Query: `SELECT id, title, banner_url, category, subcategory, status, created_at, creator_id, organization_id, participants_count, view_count FROM events WHERE status IN ('approved','completed') ORDER BY created_at DESC LIMIT limit`
 
 ### `getApprovedOrgs()` → `OrgPreview[]`
 
