@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getHomepageStats } from '@/services/homepage.service'
 import { HeroSection } from './_components/HeroSection'
 import { StatsSection } from './_components/StatsSection'
+import { ActionTypesSection } from './_components/ActionTypesSection'
 
 export const metadata: Metadata = {
   title: 'Acasă',
@@ -15,6 +16,7 @@ export default async function HomePage() {
     <main>
       <HeroSection />
       <StatsSection stats={stats} />
+      <ActionTypesSection />
     </main>
   )
 }
