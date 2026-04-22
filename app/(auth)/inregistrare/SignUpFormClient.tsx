@@ -6,6 +6,7 @@ import { ArrowRight, Mail } from 'lucide-react'
 import { useSignUp } from '@/hooks/useSignUp'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { InputPassword } from '@/components/ui/InputPassword'
 import { InputPasswordStrength } from '@/components/ui/InputPasswordStrength'
 import { Label } from '@/components/ui/label'
 
@@ -14,10 +15,11 @@ export function SignUpFormClient() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    await handleSignUp({ name, email, password })
+    await handleSignUp({ name, email, password, confirmPassword })
   }
 
   if (success) {
@@ -89,6 +91,18 @@ export function SignUpFormClient() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="confirmPassword">Confirmă parola</Label>
+          <InputPassword
+            id="confirmPassword"
+            placeholder="••••••••"
+            autoComplete="new-password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </div>
 
         {error && (
           <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
