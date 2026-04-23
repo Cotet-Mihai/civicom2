@@ -64,15 +64,16 @@ export async function getUserFeedback(
   if (error) console.error('[getUserFeedback]', error.message)
   if (!data) return null
 
+  const row = data as any
   return {
-    id: data.id,
-    user_id: data.user_id,
-    rating: data.rating,
-    comment: data.comment ?? null,
-    created_at: data.created_at,
+    id: row.id,
+    user_id: row.user_id,
+    rating: row.rating,
+    comment: row.comment ?? null,
+    created_at: row.created_at,
     user: {
-      name: (data as any).user?.name ?? 'Anonim',
-      avatar_url: (data as any).user?.avatar_url ?? null,
+      name: row.user?.name ?? 'Anonim',
+      avatar_url: row.user?.avatar_url ?? null,
     },
   }
 }

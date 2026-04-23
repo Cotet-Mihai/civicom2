@@ -2,22 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Calendar, Eye, Users } from 'lucide-react'
 import type { EventPreview } from '@/services/event.service'
-
-const CATEGORY_ROUTES: Record<string, string> = {
-  protest: 'protest',
-  boycott: 'boycott',
-  petition: 'petitie',
-  community: 'comunitar',
-  charity: 'caritabil',
-}
-
-const CATEGORY_LABELS: Record<string, string> = {
-  protest: 'Protest',
-  boycott: 'Boycott',
-  petition: 'Petiție',
-  community: 'Comunitar',
-  charity: 'Caritabil',
-}
+import { CATEGORY_LABELS, CATEGORY_ROUTES } from '@/lib/constants'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('ro-RO', {
