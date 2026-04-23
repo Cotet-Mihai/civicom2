@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > **Pagini noi — obligatoriu:** Înainte de a crea sau implementa orice pagină nouă, consultă **Notion → Pagini & Rute** pentru indicațiile de design specifice acelei pagini (structură, componente, layout, date necesare). Nu începe implementarea fără să fi verificat mai întâi această sursă.
 
-**Status:** Planificat complet, pregătit pentru implementare. Vezi Notion (Roadmap & Structură Proiect) pentru etape și ordine.
+**Status:** În implementare. Vezi secțiunea [Roadmap](#roadmap--progres-etape) de mai jos pentru starea curentă.
 
 ## Stack Tehnologic
 
@@ -236,6 +236,8 @@ Layout comun: **imagine stânga sticky (30%) + stepper dreapta (70%)**.
 - Subtabelele de nivel 3 verifică prin JOIN dublu (ex: `gatherings → protests → events`)
 - `event_feedback`: INSERT validat dublu — eveniment `completed` + user participant cu `status = joined`
 
+> **CRITICĂ — SECURITY DEFINER pe funcții helper RLS:** Orice funcție helper (`is_org_admin`, `is_org_member` etc.) care interogă un tabel protejat de RLS **trebuie** să fie `SECURITY DEFINER`. Fără ea, apelul funcției declanșează propriile politici ale tabelului, ceea ce poate produce recursivitate infinită (`infinite recursion detected in policy`). Exemplu confirmat: `is_org_admin()` fără `SECURITY DEFINER` → politica `org_members_select` se auto-apela → crash la `getApprovedOrgs`.
+
 ## SEO
 
 - **Static** (`/`, `/evenimente`, `/organizatii`): `export const metadata` în `page.tsx`
@@ -289,6 +291,60 @@ useEffect(() => setVisible(true), []);
   12. `feat/organizations`
   13. `feat/event-completion-feedback`
   14. `feat/seo-performance`
+
+## Roadmap — Progres Etape
+
+> Actualizează manual această secțiune la finalul fiecărei etape (marchează ✅ / 🟡 / ⬜).
+
+| Simbol | Semnificație |
+|---|---|
+| ✅ | Finalizat complet |
+| 🟡 | În progres (branch activ) |
+| ⬜ | Neînceput |
+
+### ✅ Etapa 0 — Setup & Infrastructură (`feat/setup-infrastructure`)
+Supabase · `.env.local` · shadcn/ui · Tailwind · Embla · Sonner · Lucide · Schema SQL completă · Enums · Helper SQL · RLS + Policies · Storage buckets · Trigger auth.users→users · `proxy.ts` · Root `layout.tsx` · Seed
+
+### ✅ Etapa 1 — Autentificare (`feat/auth`)
+`auth.service.ts` · `useSignIn` · `useSignUp` · `useResetPassword` · `InputPassword` · `InputPasswordStrength` · `/autentificare` · `/inregistrare` · `/reseteaza-parola` · `/auth/callback`
+
+### ✅ Etapa 2 — Layout & Navigație (`feat/layout-navigation`)
+`Footer` · `PublicNavbar` · `DashboardNavbar` (cu Sheet pe mobil) · `getUserOrganization` · `(public)/layout.tsx` · `(private)/layout.tsx`
+
+### ✅ Etapa 3 — Homepage `/` (`feat/homepage`)
+`HeroSection` · `OrganizationsSection` + `NgoCarouselClient` · `ActionTypesSection` · `StatsSection` + `StatsCounterClient` · `EventsSection` + `EventsCarouselClient` · `FaqSection` + `FaqAccordionClient` · `CtaSection` · JSON-LD `WebSite` + Sitelinks Searchbox (`cauta=`)
+
+### ✅ Etapa 4 — Lista Evenimente `/evenimente` (`feat/events-list`)
+`event.service.ts` + `getEvents` · `EventCard` (shared) · `FilterPanel` + `FilterPanelClient` · `ActiveFiltersBarClient` · `ResultsCount` · `EmptyState` · `EventsGridSkeleton` · `EventsListClient` · `InfiniteScrollTrigger` · metadata + canonical
+
+### ⬜ Etapa 5 — Pagina Eveniment `/evenimente/[id]` (`feat/event-detail`)
+`getEventById` · `incrementViewCount` · `ActionButtons` · `ParticipationCardClient` · Pagini per tip (Protest, Petiție, Boycott, Comunitar, Donații, Caritabil) · `generateMetadata` + OG + JSON-LD `Event` · Stare `completed` · `FeedbackSection` · `feedback.service.ts`
+
+### ⬜ Etapa 6 — Creare Evenimente `(private)/creeaza/` (`feat/create-events`)
+Grid selector 5 tipuri · `StepperUI` reutilizabil · 5 stepper-uri individuale (protest/boycott/petitie/comunitar/caritabil) · Upload banner+galerie Supabase Storage · Toate `create*` în services · Toast + redirect
+
+### ⬜ Etapa 7 — Participare & Semnare (`feat/participation`)
+`joinProtest/leave` · `joinBoycott/leave` · `joinCommunityActivity/leave` · `joinCharityEvent/leave` · `signPetition` + `getRecentSigners` · `useEventParticipation` · `usePetitionSign` · Stări loading/success/cancel
+
+### ⬜ Etapa 8 — Dashboard Utilizator & Profil (`feat/user-dashboard`)
+`getUserDashboardStats` · `getUserProfile` · `updateUserProfile` · `getUserCreatedEvents` · `getUserParticipations` · `/panou` + sub-rute · `/profil` · `/profil/editare` · `AvatarUpload`
+
+### ⬜ Etapa 9 — Moderare Admin (`feat/admin-moderation`)
+`admin.service.ts` (approve/reject events + orgs) · `notification.service.ts` · `/admin` + sub-rute · Notificări creator la aprobare/respingere
+
+### ⬜ Etapa 10 — Contestații (`feat/appeals`)
+`createAppeal` · `getAllAppeals` · `resolveAppeal` · `/evenimente/[id]/contestatie` · `/admin/contestatii` · Notificări decizie
+
+### ⬜ Etapa 11 — ONG-uri (`feat/organizations`)
+`organization.service.ts` complet · `/organizatii` + `/organizatii/[id]` · `/organizatie/creeaza` · Panou ONG + membri + setari · `generateMetadata` + JSON-LD `Organization` · Notificări aprobare ONG
+
+### ⬜ Etapa 12 — Finalizare Evenimente & Feedback (`feat/event-completion-feedback`)
+`completeEvent` (service_role) · Cron job pg_cron (auto-complete la expirare) · Buton "Marchează ca finalizat" în dashboard · `FeedbackSection` + `FeedbackFormClient` · Notificări la completion → participanți
+
+### ⬜ Etapa 13 — SEO & Performance (`feat/seo-performance`)
+`robots.ts` · `sitemap.ts` · JSON-LD pe toate paginile · Optimizare `next/image` · Lazy loading Leaflet/carusele · Vercel Analytics + PostHog
+
+---
 
 ## Notion (Planificare — toate paginile complete)
 
@@ -529,3 +585,11 @@ CIVICOM are un caracter **civic, bold și autentic** — nu corporate, nu startu
 - Secțiunile alternează fundal muted/white pentru ritm vizual
 - Iconuri lucide-react mereu cu `text-primary` când sunt decorative, `text-muted-foreground` când sunt informative
 - Emoji ✨ apare strategic în titluri de brand — nu suprasaturat
+
+---
+
+## Instrucțiuni pentru Claude
+
+> **Salvare automată în CLAUDE.md:** Ori de câte ori userul spune că ceva este important sau că trebuie reținut, acel lucru se salvează automat și în acest fișier (CLAUDE.md), nu doar în memorie sau context. Nu mai e nevoie de o cerere separată.
+
+> **Fișiere de context per etapă:** La finalul fiecărei etape se creează `context/etapaN.md` cu tot ce s-a implementat — componente, tipuri, bug-uri rezolvate, decizii arhitecturale.
