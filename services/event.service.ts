@@ -114,3 +114,109 @@ export async function getRecentEvents(limit: number): Promise<EventPreview[]> {
   if (error) console.error('[getRecentEvents]', error.message)
   return (data ?? []).map(mapRow)
 }
+
+// ─── Protest Detail ──────────────────────────────────────────────────────────
+
+const SELECT_PROTEST = `
+  id, title, description, banner_url, gallery_urls, category, subcategory,
+  status, creator_id, creator_type, organization_id, view_count, participants_count, created_at,
+  protests(
+    date, time_start, time_end, max_participants, recommended_equipment, safety_rules, contact_person,
+    gatherings(location),
+    marches(locations),
+    pickets(location)
+  ),
+  creator:users!creator_id(name, avatar_url),
+  organization:organizations!organization_id(name, logo_url)
+`
+
+export type ProtestDetail = {
+  id: string
+  title: string
+  description: string
+  banner_url: string | null
+  gallery_urls: string[]
+  category: 'protest'
+  subcategory: 'gathering' | 'march' | 'picket'
+  status: 'pending' | 'approved' | 'rejected' | 'contested' | 'completed'
+  creator_id: string
+  creator_type: 'user' | 'ngo'
+  organization_id: string | null
+  view_count: number
+  participants_count: number
+  created_at: string
+  protest: {
+    date: string
+    time_start: string
+    time_end: string | null
+    max_participants: number
+    recommended_equipment: string | null
+    safety_rules: string | null
+    contact_person: string | null
+    gathering: { location: [number, number] } | null
+    march: { locations: [number, number][] } | null
+    picket: { location: [number, number] } | null
+  }
+  creator: { name: string; avatar_url: string | null }
+  organization: { name: string; logo_url: string | null } | null
+}
+
+function mapProtestRow(row: any): ProtestDetail {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    banner_url: row.banner_url,
+    gallery_urls: row.gallery_urls ?? [],
+    category: 'protest',
+    subcategory: row.subcategory,
+    status: row.status,
+    creator_id: row.creator_id,
+    creator_type: row.creator_type,
+    organization_id: row.organization_id,
+    view_count: row.view_count,
+    participants_count: row.participants_count,
+    created_at: row.created_at,
+    protest: {
+      date: row.protests.date,
+      time_start: row.protests.time_start,
+      time_end: row.protests.time_end ?? null,
+      max_participants: row.protests.max_participants,
+      recommended_equipment: row.protests.recommended_equipment ?? null,
+      safety_rules: row.protests.safety_rules ?? null,
+      contact_person: row.protests.contact_person ?? null,
+      gathering: row.protests.gatherings ?? null,
+      march: row.protests.marches ?? null,
+      picket: row.protests.pickets ?? null,
+    },
+    creator: {
+      name: row.creator?.name ?? 'Anonim',
+      avatar_url: row.creator?.avatar_url ?? null,
+    },
+    organization: row.organization
+      ? { name: row.organization.name, logo_url: row.organization.logo_url ?? null }
+      : null,
+  }
+}
+
+export async function getProtestById(id: string): Promise<ProtestDetail | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('events')
+    .select(SELECT_PROTEST)
+    .eq('id', id)
+    .eq('category', 'protest')
+    .in('status', ['approved', 'completed'])
+    .maybeSingle()
+
+  if (error) console.error('[getProtestById]', error.message)
+  if (!data) return null
+
+  return mapProtestRow(data)
+}
+
+export async function incrementViewCount(id: string): Promise<void> {
+  const supabase = await createClient()
+  await supabase.rpc('increment_view_count', { event_id: id })
+}
