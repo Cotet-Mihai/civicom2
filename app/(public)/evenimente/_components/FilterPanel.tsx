@@ -21,7 +21,7 @@ export function FilterPanel({ filters }: Props) {
         <p className="mb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
           Filtre
         </p>
-        <FilterPanelClient key={filters.cauta ?? ''} filters={filters} />
+        <FilterPanelClient filters={filters} />
       </div>
 
       {/* Mobile Sheet trigger — hidden on desktop */}
@@ -40,7 +40,7 @@ export function FilterPanel({ filters }: Props) {
               <SheetTitle>Filtre</SheetTitle>
             </SheetHeader>
             <div className="mt-6">
-              <FilterPanelClient key={filters.cauta ?? ''} filters={filters} />
+              <FilterPanelClient filters={filters} />
             </div>
           </SheetContent>
         </Sheet>
