@@ -178,16 +178,16 @@ function mapProtestRow(row: any): ProtestDetail {
     participants_count: row.participants_count,
     created_at: row.created_at,
     protest: {
-      date: row.protests.date,
-      time_start: row.protests.time_start,
-      time_end: row.protests.time_end ?? null,
-      max_participants: row.protests.max_participants,
-      recommended_equipment: row.protests.recommended_equipment ?? null,
-      safety_rules: row.protests.safety_rules ?? null,
-      contact_person: row.protests.contact_person ?? null,
-      gathering: row.protests.gatherings ?? null,
-      march: row.protests.marches ?? null,
-      picket: row.protests.pickets ?? null,
+      date: row.protests?.date ?? '',
+      time_start: row.protests?.time_start ?? '',
+      time_end: row.protests?.time_end ?? null,
+      max_participants: row.protests?.max_participants ?? 0,
+      recommended_equipment: row.protests?.recommended_equipment ?? null,
+      safety_rules: row.protests?.safety_rules ?? null,
+      contact_person: row.protests?.contact_person ?? null,
+      gathering: row.protests?.gatherings ?? null,
+      march: row.protests?.marches ?? null,
+      picket: row.protests?.pickets ?? null,
     },
     creator: {
       name: row.creator?.name ?? 'Anonim',
@@ -218,5 +218,6 @@ export async function getProtestById(id: string): Promise<ProtestDetail | null> 
 
 export async function incrementViewCount(id: string): Promise<void> {
   const supabase = await createClient()
-  await supabase.rpc('increment_view_count', { event_id: id })
+  const { error } = await supabase.rpc('increment_view_count', { event_id: id })
+  if (error) console.error('[incrementViewCount]', error.message)
 }
