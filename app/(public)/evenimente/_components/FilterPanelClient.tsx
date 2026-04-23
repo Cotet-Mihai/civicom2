@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -30,6 +30,11 @@ export function FilterPanelClient({ filters }: Props) {
 
   // State local pentru search — permite typing fluid cu debounce pe URL
   const [searchValue, setSearchValue] = useState(filters.cauta ?? '')
+
+  // Sincronizează când filtrul e șters extern (chip X) fără a remonta componenta
+  useEffect(() => {
+    setSearchValue(filters.cauta ?? '')
+  }, [filters.cauta])
 
   function updateParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString())
