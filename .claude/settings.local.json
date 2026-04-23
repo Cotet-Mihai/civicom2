@@ -7,7 +7,21 @@
       "WebSearch",
       "mcp__claude_ai_Notion__notion-search",
       "Read(//c/Users/mc_mi/OneDrive/Desktop/civicom/app//**)",
-      "Read(//c/Users/mc_mi/OneDrive/Desktop/civicom/components//**)"
+      "Read(//c/Users/mc_mi/OneDrive/Desktop/civicom/components//**)",
+      "Bash(npx skills *)",
+      "mcp__supabase__get_project_url",
+      "Bash(git -C C:\\\\Users\\\\mc_mi\\\\OneDrive\\\\Desktop\\\\civicom2 log --oneline -5)",
+      "Bash(git -C /c/Users/mc_mi/OneDrive/Desktop/civicom2 log --oneline -5)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm dlx *)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(pnpm *)",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__apply_migration"
     ]
   },
   "enableAllProjectMcpServers": true,
