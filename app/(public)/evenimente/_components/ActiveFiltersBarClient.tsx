@@ -13,6 +13,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 const SORT_LABELS: Record<string, string> = {
+  data_desc: 'Cele mai recente',
   data_asc: 'Dată crescătoare',
   participanti: 'Popularitate',
 }
