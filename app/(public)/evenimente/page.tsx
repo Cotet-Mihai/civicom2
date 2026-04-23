@@ -24,13 +24,20 @@ type PageProps = {
   }>
 }
 
+const VALID_CATEGORIES = ['protest', 'boycott', 'petition', 'community', 'charity'] as const
+const VALID_SORTS = ['data_desc', 'data_asc', 'participanti'] as const
+
 export default async function EventsPage({ searchParams }: PageProps) {
   const params = await searchParams
 
   const filters: EventFilters = {
     cauta: params.cauta,
-    categorie: params.categorie as EventFilters['categorie'],
-    sort: params.sort as EventFilters['sort'],
+    categorie: VALID_CATEGORIES.includes(params.categorie as never)
+      ? (params.categorie as EventFilters['categorie'])
+      : undefined,
+    sort: VALID_SORTS.includes(params.sort as never)
+      ? (params.sort as EventFilters['sort'])
+      : undefined,
     data_de: params.data_de,
     data_pana: params.data_pana,
   }
