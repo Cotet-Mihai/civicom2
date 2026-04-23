@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { buttonVariants } from '@/components/ui/button'
+import {Button, buttonVariants } from '@/components/ui/button'
+import {ArrowRight, Calendar} from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden py-20 lg:py-28">
+    <section className="relative overflow-hidden py-20 lg:py-28 min-h-screen flex justify-center items-start">
       {/* Cercuri ambient */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/5" />
@@ -28,31 +29,44 @@ export function HeroSection() {
               </span>
             </h1>
 
-            <p className="mt-6 max-w-md text-lg text-muted-foreground">
-              Platforma civică unde găsești proteste, petiții, boicoturi și acțiuni
-              comunitare din toată România.
+            <p className="mt-6 max-w-md text-sm text-muted-foreground">
+                Aducem voluntari, ONG-uri și instituții împreună pentru evenimente, petiții și donații. Descoperă, implică-te și susține cauze care contează. ✨
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/evenimente" className={buttonVariants({ size: 'lg' })}>
-                Descoperă evenimente
-              </Link>
-              <Link href="/creeaza" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
-                Creează un eveniment
-              </Link>
+            <div className="mt-8 flex flex-col gap-3  sm:flex-row">
+                <Link href={'/evenimente'}>
+                    <Button
+                        size="lg"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 px-6"
+                    >
+                        Descoperă evenimente
+                        <ArrowRight className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <Link href={'#'}>
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        className="gap-2 border-primary/30 text-primary hover:bg-accent hover:text-accent-foreground px-6 bg-transparent"
+                    >
+                        <Calendar className="h-4 w-4" />
+                        Creează un eveniment
+                    </Button>
+                </Link>
             </div>
           </div>
 
           {/* Imagine */}
-          <div className="relative hidden aspect-[4/3] overflow-hidden rounded-3xl lg:block">
-            <Image
-              src="/auth_panel.webp"
-              alt="Voluntari CIVICOM"
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/10" />
+          <div className={'relative hidden lg:block'}>
+              <div className="absolute -inset-4 rounded-3xl bg-primary/5 blur-2xl " />
+              <Image
+                  src="/home_image.webp"
+                  alt="Sigla Civicom - Mâini ridicate ținând o inimă verde"
+                  width={460}
+                  height={460}
+                  className="relative rounded-2xl object-contain"
+                  priority
+              />
           </div>
 
         </div>
