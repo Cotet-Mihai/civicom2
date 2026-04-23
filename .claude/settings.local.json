@@ -21,7 +21,10 @@
       "mcp__plugin_context7_context7__query-docs",
       "Bash(pnpm *)",
       "mcp__supabase__execute_sql",
-      "mcp__supabase__apply_migration"
+      "mcp__supabase__apply_migration",
+      "Bash(echo \"exit:$?\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"TSC EXIT:$?\")"
     ]
   },
   "enableAllProjectMcpServers": true,
