@@ -41,7 +41,7 @@ export function ProtestMapClient({ subcategory, location, locations }: Props) {
               <>
                 <MapPolyline
                   positions={locations}
-                  pathOptions={{ color: '#16a34a', weight: 4 }}
+                  pathOptions={{ color: '#16a34a', weight: 4 }} // #16a34a: Leaflet pathOptions — CSS token not applicable to SVG path in this renderer
                 />
                 <MapMarker position={locations[0]} />
                 <MapMarker position={locations[locations.length - 1]} />

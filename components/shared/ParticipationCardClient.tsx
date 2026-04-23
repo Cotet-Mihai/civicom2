@@ -31,7 +31,7 @@ export function ParticipationCardClient({
   timeEnd,
   status,
 }: Props) {
-  const pct = Math.min(100, Math.round((participantsCount / maxParticipants) * 100))
+  const pct = maxParticipants > 0 ? Math.min(100, Math.round((participantsCount / maxParticipants) * 100)) : 0
   const isCompleted = status === 'completed'
 
   return (
