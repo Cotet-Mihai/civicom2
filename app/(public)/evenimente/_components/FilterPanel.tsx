@@ -16,8 +16,8 @@ type Props = { filters: EventFilters }
 export function FilterPanel({ filters }: Props) {
   return (
     <>
-      {/* Desktop sidebar — hidden on mobile */}
-      <div className="hidden w-[280px] shrink-0 lg:block">
+      {/* Desktop sidebar — hidden on mobile, sticky so it doesn't move with content */}
+      <div className="hidden lg:block lg:sticky lg:top-20">
         <p className="mb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
           Filtre
         </p>
