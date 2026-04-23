@@ -54,9 +54,12 @@ export default async function EventsPage({ searchParams }: PageProps) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-16">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr] lg:items-start lg:gap-8">
-        <FilterPanel filters={filters} />
+        {/* aside = un singur grid item; FilterPanel randează intern desktop+mobile via Tailwind */}
+        <aside className="lg:sticky lg:top-20">
+          <FilterPanel filters={filters} />
+        </aside>
 
-        <div className="min-w-0 flex-1 space-y-6">
+        <div className="min-w-0 space-y-6">
           <h1 className="text-2xl font-black uppercase tracking-tighter text-foreground lg:text-3xl">
             Evenimente
           </h1>
