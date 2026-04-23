@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { Eye } from 'lucide-react'
+import { CATEGORY_LABELS } from '@/lib/constants'
 
 const SUBCATEGORY_LABELS: Record<string, string> = {
   gathering: 'Protest: Adunare',
@@ -12,14 +13,6 @@ const SUBCATEGORY_LABELS: Record<string, string> = {
   meet_greet: 'Meet & Greet',
   livestream: 'Livestream Caritabil',
   sports: 'Sport Caritabil',
-}
-
-const CATEGORY_LABELS: Record<string, string> = {
-  protest: 'Protest',
-  boycott: 'Boycott',
-  petition: 'Petiție',
-  community: 'Comunitar',
-  charity: 'Caritabil',
 }
 
 type Props = {

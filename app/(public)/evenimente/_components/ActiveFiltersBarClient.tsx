@@ -3,14 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { X } from 'lucide-react'
 import type { EventFilters } from '@/services/event.service'
-
-const CATEGORY_LABELS: Record<string, string> = {
-  protest: 'Protest',
-  boycott: 'Boycott',
-  petition: 'Petiție',
-  community: 'Comunitar',
-  charity: 'Caritabil',
-}
+import { CATEGORY_LABELS } from '@/lib/constants'
 
 const SORT_LABELS: Record<string, string> = {
   data_desc: 'Cele mai recente',
