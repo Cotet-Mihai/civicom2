@@ -3,6 +3,14 @@ import Image from 'next/image'
 import { Calendar, Eye, Users } from 'lucide-react'
 import type { EventPreview } from '@/services/event.service'
 
+const CATEGORY_ROUTES: Record<string, string> = {
+  protest: 'protest',
+  boycott: 'boycott',
+  petition: 'petitie',
+  community: 'comunitar',
+  charity: 'caritabil',
+}
+
 const CATEGORY_LABELS: Record<string, string> = {
   protest: 'Protest',
   boycott: 'Boycott',
@@ -24,7 +32,7 @@ type Props = { event: EventPreview }
 export function EventCard({ event }: Props) {
   return (
     <Link
-      href={`/evenimente/${event.id}`}
+      href={`/evenimente/${CATEGORY_ROUTES[event.category] ?? event.category}/${event.id}`}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow duration-300 hover:shadow-lg"
     >
       <div className="relative aspect-video overflow-hidden">
