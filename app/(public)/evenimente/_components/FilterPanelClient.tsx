@@ -1,7 +1,6 @@
-// app/(public)/evenimente/_components/FilterPanelClient.tsx
 'use client'
 
-import { useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -29,6 +28,9 @@ export function FilterPanelClient({ filters }: Props) {
   const searchParams = useSearchParams()
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // State local pentru search — permite typing fluid cu debounce pe URL
+  const [searchValue, setSearchValue] = useState(filters.cauta ?? '')
+
   function updateParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString())
     if (value) {
@@ -40,6 +42,7 @@ export function FilterPanelClient({ filters }: Props) {
   }
 
   function handleSearch(value: string) {
+    setSearchValue(value)
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
     searchTimeout.current = setTimeout(() => {
       updateParam('cauta', value || null)
@@ -58,7 +61,7 @@ export function FilterPanelClient({ filters }: Props) {
           <Input
             type="search"
             placeholder="Titlu eveniment..."
-            defaultValue={filters.cauta ?? ''}
+            value={searchValue}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-9"
           />
@@ -111,13 +114,13 @@ export function FilterPanelClient({ filters }: Props) {
         <div className="space-y-2">
           <Input
             type="date"
-            defaultValue={filters.data_de ?? ''}
+            value={filters.data_de ?? ''}
             onChange={(e) => updateParam('data_de', e.target.value || null)}
             className="text-sm"
           />
           <Input
             type="date"
-            defaultValue={filters.data_pana ?? ''}
+            value={filters.data_pana ?? ''}
             onChange={(e) => updateParam('data_pana', e.target.value || null)}
             className="text-sm"
           />
