@@ -224,3 +224,91 @@ export async function incrementViewCount(id: string): Promise<void> {
     const { error } = await supabase.rpc('increment_view_count', { event_id: id })
     if (error) console.error('[incrementViewCount]', error.message)
 }
+
+// ─── Petition Detail ─────────────────────────────────────────────────────────
+
+const SELECT_PETITION = `
+  id, title, description, banner_url, gallery_urls, category, subcategory,
+  status, creator_id, creator_type, organization_id, view_count, participants_count, created_at,
+  petitions(
+    what_is_requested, requested_from, target_signatures, why_important, contact_person
+  ),
+  creator:users!creator_id(name, avatar_url),
+  organization:organizations!organization_id(name, logo_url)
+`
+
+export type PetitionDetail = {
+    id: string
+    title: string
+    description: string
+    banner_url: string | null
+    gallery_urls: string[]
+    category: 'petition'
+    subcategory: null
+    status: 'pending' | 'approved' | 'rejected' | 'contested' | 'completed'
+    creator_id: string
+    creator_type: 'user' | 'ngo'
+    organization_id: string | null
+    view_count: number
+    participants_count: number
+    created_at: string
+    petition: {
+        what_is_requested: string
+        requested_from: string
+        target_signatures: number
+        why_important: string
+        contact_person: string | null
+    }
+    creator: { name: string; avatar_url: string | null }
+    organization: { name: string; logo_url: string | null } | null
+}
+
+function mapPetitionRow(row: any): PetitionDetail {
+    return {
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        banner_url: row.banner_url,
+        gallery_urls: row.gallery_urls ?? [],
+        category: 'petition',
+        subcategory: null,
+        status: row.status,
+        creator_id: row.creator_id,
+        creator_type: row.creator_type,
+        organization_id: row.organization_id,
+        view_count: row.view_count,
+        participants_count: row.participants_count,
+        created_at: row.created_at,
+        petition: {
+            what_is_requested: row.petitions?.what_is_requested ?? '',
+            requested_from: row.petitions?.requested_from ?? '',
+            target_signatures: row.petitions?.target_signatures ?? 0,
+            why_important: row.petitions?.why_important ?? '',
+            contact_person: row.petitions?.contact_person ?? null,
+        },
+        creator: {
+            name: row.creator?.name ?? 'Anonim',
+            avatar_url: row.creator?.avatar_url ?? null,
+        },
+        organization: row.organization
+            ? { name: row.organization.name, logo_url: row.organization.logo_url ?? null }
+            : null,
+    }
+}
+
+export const getPetitionById = cache(async (id: string): Promise<PetitionDetail | null> => {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('events')
+        .select(SELECT_PETITION)
+        .eq('id', id)
+        .eq('category', 'petition')
+        .in('status', ['approved', 'completed'])
+        .maybeSingle()
+
+    if (error) console.error('[getPetitionById]', error.message)
+    if (!data) return null
+
+    return mapPetitionRow(data)
+})
