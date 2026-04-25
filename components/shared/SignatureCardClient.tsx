@@ -8,7 +8,7 @@ import { FileSignature } from 'lucide-react'
 type Props = {
   signaturesCount: number
   targetSignatures: number
-  status: string
+  status: 'pending' | 'approved' | 'rejected' | 'contested' | 'completed'
 }
 
 export function SignatureCardClient({ signaturesCount, targetSignatures, status }: Props) {
