@@ -1,30 +1,43 @@
 'use client'
 
-import useEmblaCarousel from 'embla-carousel-react'
+import { useRef } from 'react'
 import Autoplay from 'embla-carousel-autoplay'
 import type { EventPreview } from '@/services/homepage.service'
 import { EventCard } from '@/components/shared/EventCard'
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+} from '@/components/ui/carousel'
 
 type Props = { events: EventPreview[] }
 
 export function EventsCarouselClient({ events }: Props) {
-  const [emblaRef] = useEmblaCarousel(
-    { loop: true, align: 'start' },
-    [Autoplay({ delay: 5000, stopOnInteraction: true })]
-  )
+    const plugin = useRef(
+        Autoplay({ delay: 5000, stopOnInteraction: true })
+    )
 
-  return (
-    <div className="overflow-hidden" ref={emblaRef}>
-      <div className="flex gap-6">
-        {events.map((event) => (
-          <div
-            key={event.id}
-            className="min-w-0 shrink-0 grow-0 basis-full md:basis-1/2 lg:basis-1/3"
-          >
-            <EventCard event={event} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+    return (
+        <Carousel
+            opts={{
+                align: 'start',
+                loop: true,
+            }}
+            plugins={[plugin.current]}
+            className="w-full"
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
+        >
+            <CarouselContent className="-ml-6 py-4">
+                {events.map((event) => (
+                    <CarouselItem
+                        key={event.id}
+                        className="pl-6 basis-full md:basis-1/2 lg:basis-1/3"
+                    >
+                        <EventCard event={event} />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+        </Carousel>
+    )
 }

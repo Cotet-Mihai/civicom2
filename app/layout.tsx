@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Montserrat, Inter } from 'next/font/google'
 import './globals.css'
+import {TooltipProvider} from "@/components/ui/tooltip";
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -33,7 +34,7 @@ export default function RootLayout({
       lang="ro"
       className={`${montserrat.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><TooltipProvider>{children}</TooltipProvider></body>
     </html>
   )
 }
