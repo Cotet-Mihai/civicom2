@@ -152,6 +152,7 @@ export default async function CharityPage({ params }: Props) {
                         )}
 
                         <ParticipationCardClient
+                            eventId={event.id}
                             participantsCount={event.participants_count}
                             maxParticipants={maxParticipants}
                             date={date}
