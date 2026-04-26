@@ -68,6 +68,7 @@ export default async function PetitionPage({ params }: Props) {
                     {/* Sidebar — apare primul pe mobil */}
                     <aside className="lg:col-span-4 space-y-4 order-first lg:order-last">
                         <SignatureCardClient
+                            eventId={event.id}
                             signaturesCount={event.participants_count}
                             targetSignatures={petition.target_signatures}
                             status={event.status}

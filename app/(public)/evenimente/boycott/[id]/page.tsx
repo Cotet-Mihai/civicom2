@@ -69,6 +69,7 @@ export default async function BoycottPage({ params }: Props) {
                     {/* Sidebar */}
                     <aside className="lg:col-span-4 space-y-4 order-first lg:order-last">
                         <ParticipationCardClient
+                            eventId={event.id}
                             participantsCount={event.participants_count}
                             status={event.status}
                         />

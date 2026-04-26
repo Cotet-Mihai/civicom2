@@ -3,17 +3,21 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { FileSignature } from 'lucide-react'
+import { FileSignature, Loader2, CheckCircle2 } from 'lucide-react'
+import { usePetitionSign } from '@/hooks/usePetitionSign'
 
 type Props = {
+  eventId: string
   signaturesCount: number
   targetSignatures: number
   status: 'pending' | 'approved' | 'rejected' | 'contested' | 'completed'
 }
 
-export function SignatureCardClient({ signaturesCount, targetSignatures, status }: Props) {
+export function SignatureCardClient({ eventId, signaturesCount, targetSignatures, status }: Props) {
+  const { isSigned, isLoading, sign } = usePetitionSign(eventId)
   const pct = targetSignatures > 0 ? Math.min(100, Math.round((signaturesCount / targetSignatures) * 100)) : 0
   const isCompleted = status === 'completed'
+  const isApproved = status === 'approved'
 
   return (
     <Card className="shadow-lg shadow-black/5 border-border">
@@ -40,11 +44,20 @@ export function SignatureCardClient({ signaturesCount, targetSignatures, status 
           <div className="rounded-lg bg-primary/10 border border-primary/20 px-4 py-2.5 text-center text-sm font-semibold text-primary">
             Petiție finalizată
           </div>
-        ) : (
-          <Button className="w-full" disabled>
-            Semnează
-          </Button>
-        )}
+        ) : isApproved ? (
+          isSigned ? (
+            <Button variant="outline" className="w-full gap-2" disabled>
+              <CheckCircle2 size={16} className="text-primary" />
+              Ai semnat
+            </Button>
+          ) : (
+            <Button className="w-full" onClick={sign} disabled={isLoading}>
+              {isLoading
+                ? <Loader2 size={16} className="animate-spin" />
+                : 'Semnează petiția'}
+            </Button>
+          )
+        ) : null}
       </CardContent>
     </Card>
   )
