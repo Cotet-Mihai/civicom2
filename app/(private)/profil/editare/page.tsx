@@ -28,9 +28,9 @@ export default async function ProfilEditarePage() {
       <Card className="shadow-sm shadow-black/5 border-border">
         <CardContent className="p-6 space-y-8">
           <div className="space-y-3">
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               Fotografie profil
-            </h2>
+            </h3>
             <AvatarUploadClient
               currentAvatarUrl={profile.avatar_url}
               name={profile.name}
@@ -38,9 +38,9 @@ export default async function ProfilEditarePage() {
           </div>
 
           <div className="border-t border-border pt-6 space-y-3">
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               Informații cont
-            </h2>
+            </h3>
             <ProfileEditFormClient initialName={profile.name} />
           </div>
         </CardContent>
