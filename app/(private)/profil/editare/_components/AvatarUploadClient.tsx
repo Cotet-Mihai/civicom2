@@ -37,6 +37,9 @@ export function AvatarUploadClient({ currentAvatarUrl, name }: Props) {
       return
     }
 
+    if (preview && preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview)
+    }
     const localPreview = URL.createObjectURL(file)
     setPreview(localPreview)
     setIsLoading(true)
