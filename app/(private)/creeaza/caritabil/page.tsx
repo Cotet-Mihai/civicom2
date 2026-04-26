@@ -133,7 +133,7 @@ export default function CreateCharityPage() {
             <div className="space-y-5">
               <div className="space-y-2">
                 <Label>Subtip *</Label>
-                <RadioGroup value={form.subcategory} onValueChange={v => { set('subcategory', v as Subcategory); setStep(1) }} className="grid grid-cols-2 gap-2">
+                <RadioGroup value={form.subcategory} onValueChange={(v: string) => { set('subcategory', v as Subcategory); setStep(1) }} className="grid grid-cols-2 gap-2">
                   {([['concert', 'Concert'], ['meet_greet', 'Meet & Greet'], ['livestream', 'Livestream'], ['sport', 'Sport']] as const).map(([val, label]) => (
                     <div key={val} className="flex items-center gap-2">
                       <RadioGroupItem value={val} id={val} />
