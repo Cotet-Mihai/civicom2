@@ -22,7 +22,9 @@ export async function getParticipationStatus(eventId: string): Promise<'joined' 
     .eq('user_id', userId)
     .maybeSingle()
 
-  return (data?.status as 'joined' | 'cancelled') ?? null
+  const s = data?.status
+  if (s === 'joined' || s === 'cancelled') return s
+  return null
 }
 
 export async function joinEvent(eventId: string): Promise<{ ok: true } | { error: string }> {
@@ -51,6 +53,7 @@ export async function leaveEvent(eventId: string): Promise<{ ok: true } | { erro
     .update({ status: 'cancelled' })
     .eq('event_id', eventId)
     .eq('user_id', userId)
+    .eq('status', 'joined')
 
   if (error) return { error: error.message }
   return { ok: true }
