@@ -71,13 +71,16 @@ export async function createProtest(
 
   if (eventBase.subcategory === 'gathering') {
     const d = subtypeData as GatheringData
-    await supabase.from('gatherings').insert({ protest_id: pr.id, location: d.location })
+    const { error: stErr } = await supabase.from('gatherings').insert({ protest_id: pr.id, location: d.location })
+    if (stErr) return { error: stErr.message }
   } else if (eventBase.subcategory === 'march') {
     const d = subtypeData as MarchData
-    await supabase.from('marches').insert({ protest_id: pr.id, locations: d.locations })
+    const { error: stErr } = await supabase.from('marches').insert({ protest_id: pr.id, locations: d.locations })
+    if (stErr) return { error: stErr.message }
   } else {
     const d = subtypeData as PicketData
-    await supabase.from('pickets').insert({ protest_id: pr.id, location: d.location })
+    const { error: stErr } = await supabase.from('pickets').insert({ protest_id: pr.id, location: d.location })
+    if (stErr) return { error: stErr.message }
   }
 
   return { id: evt.id }

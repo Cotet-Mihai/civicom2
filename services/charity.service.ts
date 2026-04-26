@@ -49,16 +49,20 @@ export async function createCharityEvent(
 
   if (eventBase.subcategory === 'concert') {
     const d = subtypeData as ConcertData
-    await supabase.from('charity_concerts').insert({ charity_event_id: ce.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, performers: d.performers, ticket_price: d.ticket_price ?? null, ticket_link: d.ticket_link ?? null, max_participants: d.max_participants ?? null })
+    const { error: stErr } = await supabase.from('charity_concerts').insert({ charity_event_id: ce.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, performers: d.performers, ticket_price: d.ticket_price ?? null, ticket_link: d.ticket_link ?? null, max_participants: d.max_participants ?? null })
+    if (stErr) return { error: stErr.message }
   } else if (eventBase.subcategory === 'meet_greet') {
     const d = subtypeData as MeetGreetData
-    await supabase.from('meet_greets').insert({ charity_event_id: ce.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, guests: d.guests, ticket_price: d.ticket_price ?? null, ticket_link: d.ticket_link ?? null, max_participants: d.max_participants ?? null })
+    const { error: stErr } = await supabase.from('meet_greets').insert({ charity_event_id: ce.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, guests: d.guests, ticket_price: d.ticket_price ?? null, ticket_link: d.ticket_link ?? null, max_participants: d.max_participants ?? null })
+    if (stErr) return { error: stErr.message }
   } else if (eventBase.subcategory === 'livestream') {
     const d = subtypeData as LivestreamData
-    await supabase.from('charity_livestreams').insert({ charity_event_id: ce.id, stream_link: d.stream_link, cause: d.cause, time_start: d.time_start, time_end: d.time_end ?? null, guests: d.guests ?? null })
+    const { error: stErr } = await supabase.from('charity_livestreams').insert({ charity_event_id: ce.id, stream_link: d.stream_link, cause: d.cause, time_start: d.time_start, time_end: d.time_end ?? null, guests: d.guests ?? null })
+    if (stErr) return { error: stErr.message }
   } else {
     const d = subtypeData as SportData
-    await supabase.from('sports_activities').insert({ charity_event_id: ce.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, guests: d.guests ?? null, ticket_price: d.ticket_price ?? null, ticket_link: d.ticket_link ?? null, max_participants: d.max_participants ?? null })
+    const { error: stErr } = await supabase.from('sports_activities').insert({ charity_event_id: ce.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, guests: d.guests ?? null, ticket_price: d.ticket_price ?? null, ticket_link: d.ticket_link ?? null, max_participants: d.max_participants ?? null })
+    if (stErr) return { error: stErr.message }
   }
 
   return { id: evt.id }
