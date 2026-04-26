@@ -95,6 +95,7 @@ export default async function CommunityPage({ params }: Props) {
                     {/* Sidebar */}
                     <aside className="lg:col-span-4 space-y-4 order-first lg:order-last">
                         <ParticipationCardClient
+                            eventId={event.id}
                             participantsCount={event.participants_count}
                             maxParticipants={maxParticipants}
                             date={date}

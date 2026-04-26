@@ -325,8 +325,8 @@ Componente shared gata: `EventBanner` · `ActionButtons` · `ParticipationCardCl
 ### ✅ Etapa 6 — Creare Evenimente `(private)/creeaza/` (`feat/create-events`)
 Grid selector 5 tipuri · `StepperUI` reutilizabil · `LocationPickerClient` + `RoutePickerClient` (Leaflet) · `ImageUploadClient` (Supabase Storage) · 5 stepper-uri individuale (protest/boycott/petitie/comunitar/caritabil) · `lib/upload.ts` · `createProtest` · `createBoycott` · `createPetition` · `createCommunityActivity` · `createCharityEvent` · `radio-group` shadcn · Toast + redirect · `useEffect` pentru userId init
 
-### ⬜ Etapa 7 — Participare & Semnare (`feat/participation`)
-`joinProtest/leave` · `joinBoycott/leave` · `joinCommunityActivity/leave` · `joinCharityEvent/leave` · `signPetition` + `getRecentSigners` · `useEventParticipation` · `usePetitionSign` · Stări loading/success/cancel
+### ✅ Etapa 7 — Participare & Semnare (`feat/participation`)
+`participation.service.ts` (joinEvent/leaveEvent/signPetition/getParticipationStatus/getSignatureStatus) · `useEventParticipation` · `usePetitionSign` · `ParticipationCardClient` funcțional (Participă/Renunță/Complet) · `SignatureCardClient` funcțional (Semnează/Ai semnat) · `router.refresh()` după mutații · toate 5 pagini eveniment wire-uite cu `eventId`
 
 ### ⬜ Etapa 8 — Dashboard Utilizator & Profil (`feat/user-dashboard`)
 `getUserDashboardStats` · `getUserProfile` · `updateUserProfile` · `getUserCreatedEvents` · `getUserParticipations` · `/panou` + sub-rute · `/profil` · `/profil/editare` · `AvatarUpload`
