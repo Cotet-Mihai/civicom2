@@ -115,7 +115,7 @@ export default function CreateProtestPage() {
             <div className="space-y-5">
               <div className="space-y-2">
                 <Label>Subtip protest *</Label>
-                <RadioGroup value={form.subcategory} onValueChange={v => set('subcategory', v as Form['subcategory'])} className="flex gap-4">
+                <RadioGroup value={form.subcategory} onValueChange={(v: string) => set('subcategory', v as Form['subcategory'])} className="flex gap-4">
                   {([['gathering', 'Adunare'], ['march', 'Marș'], ['picket', 'Pichet']] as const).map(([val, label]) => (
                     <div key={val} className="flex items-center gap-2">
                       <RadioGroupItem value={val} id={val} />

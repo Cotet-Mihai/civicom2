@@ -119,7 +119,7 @@ export default function CreateCommunityPage() {
             <div className="space-y-5">
               <div className="space-y-2">
                 <Label>Subtip *</Label>
-                <RadioGroup value={form.subcategory} onValueChange={v => { set('subcategory', v as Subcategory); setStep(1) }} className="flex gap-4">
+                <RadioGroup value={form.subcategory} onValueChange={(v: string) => { set('subcategory', v as Subcategory); setStep(1) }} className="flex gap-4">
                   {([['outdoor', 'Aer liber'], ['workshop', 'Workshop'], ['donations', 'Donații']] as const).map(([val, label]) => (
                     <div key={val} className="flex items-center gap-2">
                       <RadioGroupItem value={val} id={val} />
@@ -153,7 +153,7 @@ export default function CreateCommunityPage() {
             <div className="space-y-5">
               <div className="space-y-2">
                 <Label>Tip donație *</Label>
-                <RadioGroup value={form.donation_type} onValueChange={v => set('donation_type', v as DonationType)} className="flex gap-4">
+                <RadioGroup value={form.donation_type} onValueChange={(v: string) => set('donation_type', v as DonationType)} className="flex gap-4">
                   <div className="flex items-center gap-2"><RadioGroupItem value="material" id="mat" /><Label htmlFor="mat">Materiale</Label></div>
                   <div className="flex items-center gap-2"><RadioGroupItem value="monetary" id="mon" /><Label htmlFor="mon">Monetar</Label></div>
                 </RadioGroup>
