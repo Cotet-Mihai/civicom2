@@ -11,10 +11,12 @@ export function useEventParticipation(eventId: string) {
   const router = useRouter()
 
   useEffect(() => {
-    getParticipationStatus(eventId).then(status => {
-      setIsJoined(status === 'joined')
-      setIsLoading(false)
-    })
+    getParticipationStatus(eventId)
+      .then(status => {
+        setIsJoined(status === 'joined')
+        setIsLoading(false)
+      })
+      .catch(() => setIsLoading(false))
   }, [eventId])
 
   async function join() {
