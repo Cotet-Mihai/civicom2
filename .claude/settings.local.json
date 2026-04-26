@@ -24,7 +24,9 @@
       "mcp__supabase__apply_migration",
       "Bash(echo \"exit:$?\")",
       "Bash(npx tsc *)",
-      "Bash(echo \"TSC EXIT:$?\")"
+      "Bash(echo \"TSC EXIT:$?\")",
+      "Bash(node *)",
+      "WebFetch(domain:localhost)"
     ]
   },
   "enableAllProjectMcpServers": true,
