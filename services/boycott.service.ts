@@ -59,16 +59,19 @@ export async function createBoycott(
   if (boErr || !bo) return { error: boErr?.message ?? 'Eroare creare boycott' }
 
   for (const brand of boycottData.brands) {
-    const { data: b } = await supabase.from('boycott_brands').insert({
+    const { data: b, error: brandErr } = await supabase.from('boycott_brands').insert({
       boycott_id: bo.id,
       name: brand.name,
       link: brand.link ?? null,
     }).select('id').single()
 
+    if (brandErr) return { error: brandErr.message }
+
     if (b && brand.alternatives?.length) {
-      await supabase.from('boycott_alternatives').insert(
+      const { error: altErr } = await supabase.from('boycott_alternatives').insert(
         brand.alternatives.map(a => ({ brand_id: b.id, name: a.name, link: a.link, reason: a.reason ?? null }))
       )
+      if (altErr) return { error: altErr.message }
     }
   }
 

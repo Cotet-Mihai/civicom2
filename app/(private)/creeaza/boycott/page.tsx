@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react'
@@ -36,7 +36,7 @@ export default function CreateBoycottPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const router = useRouter()
 
-  useState(() => { createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null)) })
+  useEffect(() => { createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null)) }, [])
 
   function set<K extends keyof Form>(key: K, val: Form[K]) { setForm(f => ({ ...f, [key]: val })) }
 
@@ -185,8 +185,10 @@ export default function CreateBoycottPage() {
             </div>
           )}
 
-          {step === 3 && userId && (
-            <ImageUploadClient userId={userId} bannerUrl={form.banner_url} galleryUrls={form.gallery_urls} onBannerChange={v => set('banner_url', v)} onGalleryChange={v => set('gallery_urls', v)} />
+          {step === 3 && (
+            userId
+              ? <ImageUploadClient userId={userId} bannerUrl={form.banner_url} galleryUrls={form.gallery_urls} onBannerChange={v => set('banner_url', v)} onGalleryChange={v => set('gallery_urls', v)} />
+              : <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">Se încarcă...</div>
           )}
 
         </StepperUI>

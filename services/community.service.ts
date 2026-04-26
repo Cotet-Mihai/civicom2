@@ -66,13 +66,16 @@ export async function createCommunityActivity(
 
   if (eventBase.subcategory === 'outdoor') {
     const d = subtypeData as OutdoorData
-    await supabase.from('outdoor_activities').insert({ community_activity_id: ca.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, max_participants: d.max_participants ?? null, recommended_equipment: d.recommended_equipment ?? null, what_organizer_offers: d.what_organizer_offers ?? null })
+    const { error: stErr } = await supabase.from('outdoor_activities').insert({ community_activity_id: ca.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, max_participants: d.max_participants ?? null, recommended_equipment: d.recommended_equipment ?? null, what_organizer_offers: d.what_organizer_offers ?? null })
+    if (stErr) return { error: stErr.message }
   } else if (eventBase.subcategory === 'donations') {
     const d = subtypeData as DonationData
-    await supabase.from('donations').insert({ community_activity_id: ca.id, donation_type: d.donation_type, what_is_needed: d.what_is_needed ?? null, target_amount: d.target_amount ?? null })
+    const { error: stErr } = await supabase.from('donations').insert({ community_activity_id: ca.id, donation_type: d.donation_type, what_is_needed: d.what_is_needed ?? null, target_amount: d.target_amount ?? null })
+    if (stErr) return { error: stErr.message }
   } else {
     const d = subtypeData as WorkshopData
-    await supabase.from('workshops').insert({ community_activity_id: ca.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, max_participants: d.max_participants ?? null, recommended_equipment: d.recommended_equipment ?? null, what_organizer_offers: d.what_organizer_offers ?? null })
+    const { error: stErr } = await supabase.from('workshops').insert({ community_activity_id: ca.id, location: d.location, date: d.date, time_start: d.time_start, time_end: d.time_end ?? null, max_participants: d.max_participants ?? null, recommended_equipment: d.recommended_equipment ?? null, what_organizer_offers: d.what_organizer_offers ?? null })
+    if (stErr) return { error: stErr.message }
   }
 
   return { id: evt.id }
