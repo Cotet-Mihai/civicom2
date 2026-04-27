@@ -28,7 +28,7 @@ export default async function AdminPage() {
       <h1 className="text-2xl font-black tracking-tight text-foreground">Admin</h1>
       <AdminTabsClient />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCardDashboard label="Evenimente în așteptare" value={stats.pendingEvents} icon={Clock} />
         <StatCardDashboard label="Organizații în așteptare" value={stats.pendingOrgs} icon={Building2} />
       </div>
