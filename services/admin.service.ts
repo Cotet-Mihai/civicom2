@@ -393,10 +393,14 @@ export async function rejectEvent(eventId: string, note: string): Promise<{ ok: 
 
   const { data: evt } = await supabase
     .from('events')
-    .select('id, title, creator_id')
+    .select('id, title, creator_id, status')
     .eq('id', eventId)
     .single()
   if (!evt) return { error: 'Eveniment negăsit' }
+  const evtStatus = (evt as any).status
+  if (evtStatus !== 'pending' && evtStatus !== 'contested') {
+    return { error: 'Evenimentul nu poate fi respins în starea curentă' }
+  }
 
   const { error } = await supabase
     .from('events')
@@ -453,6 +457,9 @@ export async function rejectOrg(orgId: string, note: string): Promise<{ ok: true
     .eq('id', orgId)
     .single()
   if (!org) return { error: 'Organizație negăsită' }
+  if ((org as any).status !== 'pending') {
+    return { error: 'Organizația nu poate fi respinsă în starea curentă' }
+  }
 
   const { error } = await supabase
     .from('organizations')
