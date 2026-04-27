@@ -433,10 +433,13 @@ export async function approveOrg(orgId: string): Promise<{ ok: true } | { error:
 
   const { data: org } = await supabase
     .from('organizations')
-    .select('id, name, owner_id')
+    .select('id, name, owner_id, status')
     .eq('id', orgId)
     .single()
   if (!org) return { error: 'Organizație negăsită' }
+  if ((org as any).status !== 'pending') {
+    return { error: 'Organizația nu poate fi aprobată în starea curentă' }
+  }
 
   const { error } = await supabase
     .from('organizations')
