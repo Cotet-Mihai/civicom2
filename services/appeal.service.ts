@@ -140,9 +140,9 @@ export async function getAllAppeals(): Promise<AdminAppeal[]> {
 export async function resolveAppeal(
   appealId: string,
   decision: 'approved' | 'rejected',
-  adminNote: string
+  adminNote: string | null
 ): Promise<{ ok: true } | { error: string }> {
-  if (decision === 'rejected' && adminNote.trim().length < 10) {
+  if (decision === 'rejected' && (adminNote ?? '').trim().length < 10) {
     return { error: 'Motivul respingerii trebuie să aibă minim 10 caractere' }
   }
 
@@ -183,7 +183,7 @@ export async function resolveAppeal(
   } else {
     const { error: evtErr } = await supabase
       .from('events')
-      .update({ status: 'rejected', rejection_note: adminNote.trim() })
+      .update({ status: 'rejected', rejection_note: (adminNote ?? '').trim() })
       .eq('id', eventId)
     if (evtErr) return { error: evtErr.message }
   }
@@ -193,7 +193,7 @@ export async function resolveAppeal(
     .from('appeals')
     .update({
       status: 'resolved',
-      admin_note: adminNote.trim() || null,
+      admin_note: (adminNote ?? '').trim() || null,
       reviewed_by: adminRow.id,
       reviewed_at: new Date().toISOString(),
     })
@@ -212,7 +212,7 @@ export async function resolveAppeal(
     await createNotification(
       creatorId,
       'Contestație respinsă ❌',
-      `Contestația ta pentru evenimentul "${eventTitle}" a fost respinsă. Motiv: ${adminNote.trim()}`,
+      `Contestația ta pentru evenimentul "${eventTitle}" a fost respinsă. Motiv: ${(adminNote ?? '').trim()}`,
       'appeal_rejected'
     )
   }
