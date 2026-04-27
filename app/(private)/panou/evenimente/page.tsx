@@ -24,7 +24,19 @@ export default async function PanouEvenimentePage() {
           </div>
         ) : (
           events.map(event => (
-            <DashboardEventRow key={event.id} event={event} showStatus />
+            <div key={event.id}>
+              <DashboardEventRow event={event} showStatus />
+              {event.status === 'rejected' && (
+                <div className="pl-3 pb-1">
+                  <Link
+                    href={`/evenimente/${event.id}/contestatie`}
+                    className="text-xs text-destructive hover:text-destructive/80 font-medium transition-colors"
+                  >
+                    Contestează decizia →
+                  </Link>
+                </div>
+              )}
+            </div>
           ))
         )}
       </div>

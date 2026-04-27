@@ -174,15 +174,25 @@ export async function checkIsAdmin(): Promise<boolean> {
 // READ FUNCTIONS
 // ============================================================
 
-export async function getAdminStats(): Promise<{ pendingEvents: number; pendingOrgs: number }> {
+export async function getAdminStats(): Promise<{ pendingEvents: number; pendingOrgs: number; pendingAppeals: number }> {
   const supabase = await createClient()
-  const [{ count: pendingEvents, error: e1 }, { count: pendingOrgs, error: e2 }] = await Promise.all([
+  const [
+    { count: pendingEvents, error: e1 },
+    { count: pendingOrgs, error: e2 },
+    { count: pendingAppeals, error: e3 },
+  ] = await Promise.all([
     supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('organizations').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('appeals').select('*', { count: 'exact', head: true }).in('status', ['pending', 'under_review']),
   ])
   if (e1) console.error('[getAdminStats] events', e1.message)
   if (e2) console.error('[getAdminStats] orgs', e2.message)
-  return { pendingEvents: pendingEvents ?? 0, pendingOrgs: pendingOrgs ?? 0 }
+  if (e3) console.error('[getAdminStats] appeals', e3.message)
+  return {
+    pendingEvents: pendingEvents ?? 0,
+    pendingOrgs: pendingOrgs ?? 0,
+    pendingAppeals: pendingAppeals ?? 0,
+  }
 }
 
 export async function getPendingEvents(limit?: number): Promise<AdminEvent[]> {
