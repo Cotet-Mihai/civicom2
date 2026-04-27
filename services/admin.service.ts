@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { createNotification } from '@/services/notification.service'
 
 // ============================================================
 // TYPES
@@ -32,7 +31,7 @@ export type AdminOrg = {
   logo_url: string | null
 }
 
-type ProtesteDetail = {
+type ProtestDetail = {
   date: string
   time_start: string
   time_end: string | null
@@ -42,7 +41,7 @@ type ProtesteDetail = {
   contact_person: string | null
 }
 
-type PetitieDetail = {
+type PetitionDetail = {
   target_signatures: number
   what_is_requested: string
   requested_from: string
@@ -80,8 +79,8 @@ type CharityDetail = {
 }
 
 export type AdminEventDetail =
-  | { kind: 'protest'; event: AdminEvent; description: string; gallery_urls: string[]; detail: ProtesteDetail }
-  | { kind: 'petition'; event: AdminEvent; description: string; gallery_urls: string[]; detail: PetitieDetail }
+  | { kind: 'protest'; event: AdminEvent; description: string; gallery_urls: string[]; detail: ProtestDetail }
+  | { kind: 'petition'; event: AdminEvent; description: string; gallery_urls: string[]; detail: PetitionDetail }
   | { kind: 'boycott'; event: AdminEvent; description: string; gallery_urls: string[]; detail: BoycottDetail }
   | { kind: 'community'; event: AdminEvent; description: string; gallery_urls: string[]; detail: CommunityDetail }
   | { kind: 'charity'; event: AdminEvent; description: string; gallery_urls: string[]; detail: CharityDetail }
@@ -108,10 +107,12 @@ export async function checkIsAdmin(): Promise<boolean> {
 
 export async function getAdminStats(): Promise<{ pendingEvents: number; pendingOrgs: number }> {
   const supabase = await createClient()
-  const [{ count: pendingEvents }, { count: pendingOrgs }] = await Promise.all([
+  const [{ count: pendingEvents, error: e1 }, { count: pendingOrgs, error: e2 }] = await Promise.all([
     supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('organizations').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
   ])
+  if (e1) console.error('[getAdminStats] events', e1.message)
+  if (e2) console.error('[getAdminStats] orgs', e2.message)
   return { pendingEvents: pendingEvents ?? 0, pendingOrgs: pendingOrgs ?? 0 }
 }
 
@@ -122,7 +123,8 @@ export async function getPendingEvents(limit?: number): Promise<AdminEvent[]> {
     .select('id, title, category, subcategory, status, rejection_note, creator_id, banner_url, created_at, creator:users!creator_id(name)')
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
-  const { data } = limit ? await query.limit(limit) : await query
+  const { data, error } = limit ? await query.limit(limit) : await query
+  if (error) console.error('[getPendingEvents]', error.message)
   return ((data ?? []) as any[]).map((row: any) => ({
     id: row.id,
     title: row.title,
@@ -139,11 +141,12 @@ export async function getPendingEvents(limit?: number): Promise<AdminEvent[]> {
 
 export async function getPendingOrgs(): Promise<AdminOrg[]> {
   const supabase = await createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('organizations')
     .select('id, name, description, owner_id, status, rejection_note, logo_url, created_at, owner:users!owner_id(name)')
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
+  if (error) console.error('[getPendingOrgs]', error.message)
   return ((data ?? []) as any[]).map((row: any) => ({
     id: row.id,
     name: row.name,
