@@ -29,6 +29,7 @@ export type DashboardAppeal = {
 }
 
 export type UserProfile = {
+  id: string
   name: string
   email: string
   avatar_url: string | null
@@ -138,12 +139,13 @@ export async function getUserProfile(): Promise<UserProfile | null> {
 
   const { data } = await supabase
     .from('users')
-    .select('name, avatar_url, created_at')
+    .select('id, name, avatar_url, created_at')
     .eq('auth_users_id', user.id)
     .single()
 
   if (!data) return null
   return {
+    id: data.id,
     name: data.name,
     email: user.email ?? '',
     avatar_url: data.avatar_url ?? null,
