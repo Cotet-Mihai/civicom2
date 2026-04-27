@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 const tabs = [
   { label: 'Evenimente', href: '/admin/evenimente' },
   { label: 'Organizații', href: '/admin/organizatii' },
+  { label: 'Contestații', href: '/admin/contestatii' },
 ]
 
 export function AdminTabsClient() {
