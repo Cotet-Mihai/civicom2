@@ -112,6 +112,14 @@ export async function getUserPetitionsSigned(limit?: number): Promise<DashboardE
   return ((data ?? []) as any[]).map((row: any) => row.event as DashboardEvent).filter(Boolean)
 }
 
+type AppealListRow = {
+  id: string
+  event_id: string
+  status: string
+  created_at: string
+  event: { title: string } | null
+}
+
 export async function getUserAppeals(): Promise<DashboardAppeal[]> {
   const supabase = await createClient()
   const userId = await getUserId()
@@ -123,7 +131,7 @@ export async function getUserAppeals(): Promise<DashboardAppeal[]> {
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
-  return ((data ?? []) as any[]).map((row: any) => ({
+  return ((data ?? []) as unknown as AppealListRow[]).map(row => ({
     id: row.id,
     event_id: row.event_id,
     event_title: row.event?.title ?? 'Eveniment necunoscut',

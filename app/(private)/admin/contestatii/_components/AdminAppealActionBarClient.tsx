@@ -16,13 +16,14 @@ type Props = {
 export function AdminAppealActionBarClient({ appealId, eventId }: Props) {
   const [isRejecting, setIsRejecting] = useState(false)
   const [note, setNote] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isApproving, setIsApproving] = useState(false)
+  const [isSubmittingRejection, setIsSubmittingRejection] = useState(false)
   const router = useRouter()
 
   async function handleApprove() {
-    setIsLoading(true)
-    const result = await resolveAppeal(appealId, 'approved', '')
-    setIsLoading(false)
+    setIsApproving(true)
+    const result = await resolveAppeal(appealId, 'approved', null)
+    setIsApproving(false)
     if ('error' in result) { toast.error(result.error); return }
     toast.success('Contestație aprobată — evenimentul este acum public')
     router.refresh()
@@ -33,9 +34,9 @@ export function AdminAppealActionBarClient({ appealId, eventId }: Props) {
       toast.error('Motivul trebuie să aibă minim 10 caractere')
       return
     }
-    setIsLoading(true)
+    setIsSubmittingRejection(true)
     const result = await resolveAppeal(appealId, 'rejected', note)
-    setIsLoading(false)
+    setIsSubmittingRejection(false)
     if ('error' in result) { toast.error(result.error); return }
     toast.success('Contestație respinsă')
     setIsRejecting(false)
@@ -46,8 +47,8 @@ export function AdminAppealActionBarClient({ appealId, eventId }: Props) {
     <div className="space-y-2 mt-3">
       {!isRejecting && (
         <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={handleApprove} disabled={isLoading} size="sm">
-            {isLoading
+          <Button onClick={handleApprove} disabled={isApproving} size="sm">
+            {isApproving
               ? <Loader2 size={14} className="animate-spin" />
               : <><CheckCircle size={14} className="mr-1.5" />Aprobă evenimentul</>
             }
@@ -56,13 +57,11 @@ export function AdminAppealActionBarClient({ appealId, eventId }: Props) {
             variant="outline"
             size="sm"
             onClick={() => setIsRejecting(true)}
-            disabled={isLoading}
+            disabled={isApproving}
             className="text-destructive border-destructive/30 hover:bg-destructive/5"
           >
-            {isLoading
-              ? <Loader2 size={14} className="animate-spin" />
-              : <><XCircle size={14} className="mr-1.5" />Respinge contestația</>
-            }
+            <XCircle size={14} className="mr-1.5" />
+            Respinge contestația
           </Button>
         </div>
       )}
@@ -81,9 +80,9 @@ export function AdminAppealActionBarClient({ appealId, eventId }: Props) {
               size="sm"
               variant="destructive"
               onClick={handleReject}
-              disabled={isLoading || note.trim().length < 10}
+              disabled={isSubmittingRejection || note.trim().length < 10}
             >
-              {isLoading ? <Loader2 size={14} className="animate-spin" /> : 'Confirmă respingerea'}
+              {isSubmittingRejection ? <Loader2 size={14} className="animate-spin" /> : 'Confirmă respingerea'}
             </Button>
             <Button size="sm" variant="outline" onClick={() => { setIsRejecting(false); setNote('') }}>
               Anulează

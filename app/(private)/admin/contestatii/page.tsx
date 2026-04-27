@@ -16,8 +16,8 @@ const APPEAL_STATUS_LABEL: Record<string, string> = {
 }
 
 const APPEAL_STATUS_CLASSES: Record<string, string> = {
-  pending: 'bg-amber-50 text-amber-700 border-amber-200',
-  under_review: 'bg-orange-50 text-orange-700 border-orange-200',
+  pending: 'bg-secondary/20 text-secondary-foreground border-secondary/30',
+  under_review: 'bg-primary/10 text-primary border-primary/20',
   resolved: 'bg-muted text-muted-foreground border-border',
 }
 
