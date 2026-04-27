@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createNotification } from '@/services/notification.service'
 
 // ============================================================
 // TYPES
@@ -350,4 +351,120 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
   }
 
   return null
+}
+
+// ============================================================
+// MUTATION FUNCTIONS
+// ============================================================
+
+export async function approveEvent(eventId: string): Promise<{ ok: true } | { error: string }> {
+  const supabase = await createClient()
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { error: 'Acces interzis' }
+
+  const { data: evt } = await supabase
+    .from('events')
+    .select('id, title, creator_id')
+    .eq('id', eventId)
+    .single()
+  if (!evt) return { error: 'Eveniment negăsit' }
+
+  const { error } = await supabase
+    .from('events')
+    .update({ status: 'approved', rejection_note: null })
+    .eq('id', eventId)
+  if (error) return { error: error.message }
+
+  await createNotification(
+    (evt as any).creator_id,
+    'Eveniment aprobat ✅',
+    `Evenimentul tău "${(evt as any).title}" a fost aprobat și este acum vizibil public.`,
+    'event_approved'
+  )
+  return { ok: true }
+}
+
+export async function rejectEvent(eventId: string, note: string): Promise<{ ok: true } | { error: string }> {
+  if (note.trim().length < 10) return { error: 'Motivul trebuie să aibă minim 10 caractere' }
+
+  const supabase = await createClient()
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { error: 'Acces interzis' }
+
+  const { data: evt } = await supabase
+    .from('events')
+    .select('id, title, creator_id')
+    .eq('id', eventId)
+    .single()
+  if (!evt) return { error: 'Eveniment negăsit' }
+
+  const { error } = await supabase
+    .from('events')
+    .update({ status: 'rejected', rejection_note: note.trim() })
+    .eq('id', eventId)
+  if (error) return { error: error.message }
+
+  await createNotification(
+    (evt as any).creator_id,
+    'Eveniment respins ❌',
+    `Evenimentul tău "${(evt as any).title}" a fost respins. Motiv: ${note.trim()}`,
+    'event_rejected'
+  )
+  return { ok: true }
+}
+
+export async function approveOrg(orgId: string): Promise<{ ok: true } | { error: string }> {
+  const supabase = await createClient()
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { error: 'Acces interzis' }
+
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('id, name, owner_id')
+    .eq('id', orgId)
+    .single()
+  if (!org) return { error: 'Organizație negăsită' }
+
+  const { error } = await supabase
+    .from('organizations')
+    .update({ status: 'approved', rejection_note: null })
+    .eq('id', orgId)
+  if (error) return { error: error.message }
+
+  await createNotification(
+    (org as any).owner_id,
+    'Organizație aprobată ✅',
+    `Organizația "${(org as any).name}" a fost aprobată și este acum vizibilă public.`,
+    'org_approved'
+  )
+  return { ok: true }
+}
+
+export async function rejectOrg(orgId: string, note: string): Promise<{ ok: true } | { error: string }> {
+  if (note.trim().length < 10) return { error: 'Motivul trebuie să aibă minim 10 caractere' }
+
+  const supabase = await createClient()
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { error: 'Acces interzis' }
+
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('id, name, owner_id')
+    .eq('id', orgId)
+    .single()
+  if (!org) return { error: 'Organizație negăsită' }
+
+  const { error } = await supabase
+    .from('organizations')
+    .update({ status: 'rejected', rejection_note: note.trim() })
+    .eq('id', orgId)
+  if (error) return { error: error.message }
+
+  await createNotification(
+    (org as any).owner_id,
+    'Organizație respinsă ❌',
+    `Organizația "${(org as any).name}" a fost respinsă. Motiv: ${note.trim()}`,
+    'org_rejected'
+  )
+  return { ok: true }
 }
