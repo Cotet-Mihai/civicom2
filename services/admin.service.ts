@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createNotification } from '@/services/notification.service'
 
 // ============================================================
-// TYPES
+// PUBLIC TYPES
 // ============================================================
 
 export type AdminEvent = {
@@ -87,6 +87,74 @@ export type AdminEventDetail =
   | { kind: 'charity'; event: AdminEvent; description: string; gallery_urls: string[]; detail: CharityDetail }
 
 // ============================================================
+// INTERNAL ROW TYPES (Supabase query shapes — no generated DB types)
+// ============================================================
+
+type EventListRow = {
+  id: string; title: string; category: string; subcategory: string | null
+  status: string; rejection_note: string | null; creator_id: string
+  banner_url: string | null; created_at: string
+  creator: { name: string } | null
+}
+
+type OrgListRow = {
+  id: string; name: string; description: string | null; owner_id: string
+  status: string; rejection_note: string | null; logo_url: string | null
+  created_at: string
+  owner: { name: string } | null
+}
+
+type EventDetailRow = {
+  id: string; title: string; description: string | null; category: string
+  subcategory: string | null; status: string; rejection_note: string | null
+  creator_id: string; banner_url: string | null; gallery_urls: string[] | null
+  created_at: string
+  creator: { name: string } | null
+}
+
+type ProtestRow = {
+  date: string; time_start: string; time_end: string | null
+  max_participants: number; safety_rules: string | null
+  recommended_equipment: string | null; contact_person: string | null
+}
+
+type PetitionRow = {
+  what_is_requested: string; requested_from: string
+  target_signatures: number; why_important: string; contact_person: string | null
+}
+
+type BoycottRow = {
+  reason: string; method: string
+  boycott_brands: { name: string; link: string | null }[]
+}
+
+type CommunityActivityRow = { id: string; contact_person: string | null }
+
+type OutdoorActivityRow = {
+  date: string; time_start: string; time_end: string | null
+  what_organizer_offers: string | null
+}
+
+type DonationRow = {
+  donation_type: string; target_amount: number | null; what_is_needed: string[] | null
+}
+
+type WorkshopRow = {
+  date: string; time_start: string; time_end: string | null
+  what_organizer_offers: string | null
+}
+
+type CharityEventRow = { id: string; target_amount: number | null }
+
+type CharityConcertRow = { date: string; time_start: string; performers: string[] | null }
+type MeetGreetRow = { date: string; time_start: string; guests: string[] | null }
+type LivestreamRow = { cause: string | null; time_start: string; stream_link: string | null }
+type SportActivityRow = { date: string; time_start: string; guests: string[] | null }
+
+type EventMutationRow = { id: string; title: string; creator_id: string; status: string }
+type OrgMutationRow = { id: string; name: string; owner_id: string; status: string }
+
+// ============================================================
 // HELPERS
 // ============================================================
 
@@ -126,7 +194,7 @@ export async function getPendingEvents(limit?: number): Promise<AdminEvent[]> {
     .order('created_at', { ascending: true })
   const { data, error } = limit ? await query.limit(limit) : await query
   if (error) console.error('[getPendingEvents]', error.message)
-  return ((data ?? []) as any[]).map((row: any) => ({
+  return ((data ?? []) as unknown as EventListRow[]).map(row => ({
     id: row.id,
     title: row.title,
     category: row.category,
@@ -148,7 +216,7 @@ export async function getPendingOrgs(): Promise<AdminOrg[]> {
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
   if (error) console.error('[getPendingOrgs]', error.message)
-  return ((data ?? []) as any[]).map((row: any) => ({
+  return ((data ?? []) as unknown as OrgListRow[]).map(row => ({
     id: row.id,
     name: row.name,
     description: row.description ?? null,
@@ -164,142 +232,150 @@ export async function getPendingOrgs(): Promise<AdminOrg[]> {
 export async function getAdminEventDetail(id: string): Promise<AdminEventDetail | null> {
   const supabase = await createClient()
 
-  const { data: evt } = await supabase
+  const { data: evtRaw } = await supabase
     .from('events')
     .select('id, title, description, category, subcategory, status, rejection_note, creator_id, banner_url, gallery_urls, created_at, creator:users!creator_id(name)')
     .eq('id', id)
     .single()
 
-  if (!evt) return null
+  if (!evtRaw) return null
+  const evt = evtRaw as unknown as EventDetailRow
 
   const event: AdminEvent = {
-    id: (evt as any).id,
-    title: (evt as any).title,
-    category: (evt as any).category,
-    subcategory: (evt as any).subcategory ?? null,
-    status: (evt as any).status,
-    rejection_note: (evt as any).rejection_note ?? null,
-    creator_id: (evt as any).creator_id,
-    creator_name: ((evt as any).creator as any)?.name ?? 'Necunoscut',
-    created_at: (evt as any).created_at,
-    banner_url: (evt as any).banner_url ?? null,
+    id: evt.id,
+    title: evt.title,
+    category: evt.category,
+    subcategory: evt.subcategory ?? null,
+    status: evt.status,
+    rejection_note: evt.rejection_note ?? null,
+    creator_id: evt.creator_id,
+    creator_name: evt.creator?.name ?? 'Necunoscut',
+    created_at: evt.created_at,
+    banner_url: evt.banner_url ?? null,
   }
-  const description: string = (evt as any).description ?? ''
-  const gallery_urls: string[] = (evt as any).gallery_urls ?? []
-  const category: string = (evt as any).category
-  const subcategory: string = (evt as any).subcategory ?? ''
+  const description: string = evt.description ?? ''
+  const gallery_urls: string[] = evt.gallery_urls ?? []
+  const category: string = evt.category
+  const subcategory: string = evt.subcategory ?? ''
 
   if (category === 'protest') {
-    const { data: p, error: pErr } = await supabase
+    const { data: pRaw, error: pErr } = await supabase
       .from('protests')
       .select('date, time_start, time_end, max_participants, safety_rules, recommended_equipment, contact_person')
       .eq('event_id', id)
       .single()
     if (pErr) console.error('[getAdminEventDetail] protests', pErr.message)
-    if (!p) return null
+    if (!pRaw) return null
+    const p = pRaw as unknown as ProtestRow
     return {
       kind: 'protest', event, description, gallery_urls,
       detail: {
-        date: (p as any).date,
-        time_start: (p as any).time_start,
-        time_end: (p as any).time_end ?? null,
-        max_participants: (p as any).max_participants,
-        safety_rules: (p as any).safety_rules ?? null,
-        recommended_equipment: (p as any).recommended_equipment ?? null,
-        contact_person: (p as any).contact_person ?? null,
+        date: p.date,
+        time_start: p.time_start,
+        time_end: p.time_end ?? null,
+        max_participants: p.max_participants,
+        safety_rules: p.safety_rules ?? null,
+        recommended_equipment: p.recommended_equipment ?? null,
+        contact_person: p.contact_person ?? null,
       },
     }
   }
 
   if (category === 'petition') {
-    const { data: p, error: pErr } = await supabase
+    const { data: pRaw, error: pErr } = await supabase
       .from('petitions')
       .select('what_is_requested, requested_from, target_signatures, why_important, contact_person')
       .eq('event_id', id)
       .single()
     if (pErr) console.error('[getAdminEventDetail] petitions', pErr.message)
-    if (!p) return null
+    if (!pRaw) return null
+    const p = pRaw as unknown as PetitionRow
     return {
       kind: 'petition', event, description, gallery_urls,
       detail: {
-        target_signatures: (p as any).target_signatures,
-        what_is_requested: (p as any).what_is_requested,
-        requested_from: (p as any).requested_from,
-        why_important: (p as any).why_important,
-        contact_person: (p as any).contact_person ?? null,
+        target_signatures: p.target_signatures,
+        what_is_requested: p.what_is_requested,
+        requested_from: p.requested_from,
+        why_important: p.why_important,
+        contact_person: p.contact_person ?? null,
       },
     }
   }
 
   if (category === 'boycott') {
-    const { data: b, error: bErr } = await supabase
+    const { data: bRaw, error: bErr } = await supabase
       .from('boycotts')
       .select('reason, method, boycott_brands(name, link)')
       .eq('event_id', id)
       .single()
     if (bErr) console.error('[getAdminEventDetail] boycotts', bErr.message)
-    if (!b) return null
+    if (!bRaw) return null
+    const b = bRaw as unknown as BoycottRow
     return {
       kind: 'boycott', event, description, gallery_urls,
       detail: {
-        reason: (b as any).reason,
-        method: (b as any).method,
-        brands: ((b as any).boycott_brands ?? []).map((br: any) => ({ name: br.name, link: br.link ?? null })),
+        reason: b.reason,
+        method: b.method,
+        brands: (b.boycott_brands ?? []).map(br => ({ name: br.name, link: br.link ?? null })),
       },
     }
   }
 
   if (category === 'community') {
-    const { data: ca, error: caErr } = await supabase
+    const { data: caRaw, error: caErr } = await supabase
       .from('community_activities')
       .select('id, contact_person')
       .eq('event_id', id)
       .single()
     if (caErr) console.error('[getAdminEventDetail] community_activities', caErr.message)
-    if (!ca) return null
+    if (!caRaw) return null
+    const ca = caRaw as unknown as CommunityActivityRow
 
     const detail: CommunityDetail = {
       subcategory,
       date: null, time_start: null, time_end: null,
       what_organizer_offers: null,
       donation_type: null, target_amount: null, what_is_needed: null,
-      contact_person: (ca as any).contact_person ?? null,
+      contact_person: ca.contact_person ?? null,
     }
 
     if (subcategory === 'outdoor') {
-      const { data: oa } = await supabase
+      const { data: oaRaw } = await supabase
         .from('outdoor_activities')
         .select('date, time_start, time_end, what_organizer_offers')
-        .eq('community_activity_id', (ca as any).id)
+        .eq('community_activity_id', ca.id)
         .single()
-      if (oa) {
-        detail.date = (oa as any).date
-        detail.time_start = (oa as any).time_start
-        detail.time_end = (oa as any).time_end ?? null
-        detail.what_organizer_offers = (oa as any).what_organizer_offers ?? null
+      if (oaRaw) {
+        const oa = oaRaw as unknown as OutdoorActivityRow
+        detail.date = oa.date
+        detail.time_start = oa.time_start
+        detail.time_end = oa.time_end ?? null
+        detail.what_organizer_offers = oa.what_organizer_offers ?? null
       }
     } else if (subcategory === 'donation') {
-      const { data: don } = await supabase
+      const { data: donRaw } = await supabase
         .from('donations')
         .select('donation_type, target_amount, what_is_needed')
-        .eq('community_activity_id', (ca as any).id)
+        .eq('community_activity_id', ca.id)
         .single()
-      if (don) {
-        detail.donation_type = (don as any).donation_type
-        detail.target_amount = (don as any).target_amount ?? null
-        detail.what_is_needed = (don as any).what_is_needed ?? null
+      if (donRaw) {
+        const don = donRaw as unknown as DonationRow
+        detail.donation_type = don.donation_type
+        detail.target_amount = don.target_amount ?? null
+        detail.what_is_needed = don.what_is_needed ?? null
       }
     } else if (subcategory === 'workshop') {
-      const { data: ws } = await supabase
+      const { data: wsRaw } = await supabase
         .from('workshops')
         .select('date, time_start, time_end, what_organizer_offers')
-        .eq('community_activity_id', (ca as any).id)
+        .eq('community_activity_id', ca.id)
         .single()
-      if (ws) {
-        detail.date = (ws as any).date
-        detail.time_start = (ws as any).time_start
-        detail.time_end = (ws as any).time_end ?? null
-        detail.what_organizer_offers = (ws as any).what_organizer_offers ?? null
+      if (wsRaw) {
+        const ws = wsRaw as unknown as WorkshopRow
+        detail.date = ws.date
+        detail.time_start = ws.time_start
+        detail.time_end = ws.time_end ?? null
+        detail.what_organizer_offers = ws.what_organizer_offers ?? null
       }
     }
 
@@ -307,49 +383,62 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
   }
 
   if (category === 'charity') {
-    const { data: ce, error: ceErr } = await supabase
+    const { data: ceRaw, error: ceErr } = await supabase
       .from('charity_events')
       .select('id, target_amount')
       .eq('event_id', id)
       .single()
     if (ceErr) console.error('[getAdminEventDetail] charity_events', ceErr.message)
-    if (!ce) return null
+    if (!ceRaw) return null
+    const ce = ceRaw as unknown as CharityEventRow
 
     const detail: CharityDetail = {
       subcategory,
       date: null, time_start: null,
-      target_amount: (ce as any).target_amount ?? null,
+      target_amount: ce.target_amount ?? null,
       cause: null, performers: null, guests: null, stream_link: null,
     }
 
     if (subcategory === 'concert') {
-      const { data: cc } = await supabase
+      const { data: ccRaw } = await supabase
         .from('charity_concerts')
         .select('date, time_start, performers')
-        .eq('charity_event_id', (ce as any).id)
+        .eq('charity_event_id', ce.id)
         .single()
-      if (cc) { detail.date = (cc as any).date; detail.time_start = (cc as any).time_start; detail.performers = (cc as any).performers }
+      if (ccRaw) {
+        const cc = ccRaw as unknown as CharityConcertRow
+        detail.date = cc.date; detail.time_start = cc.time_start; detail.performers = cc.performers
+      }
     } else if (subcategory === 'meet_greet') {
-      const { data: mg } = await supabase
+      const { data: mgRaw } = await supabase
         .from('meet_greets')
         .select('date, time_start, guests')
-        .eq('charity_event_id', (ce as any).id)
+        .eq('charity_event_id', ce.id)
         .single()
-      if (mg) { detail.date = (mg as any).date; detail.time_start = (mg as any).time_start; detail.guests = (mg as any).guests }
+      if (mgRaw) {
+        const mg = mgRaw as unknown as MeetGreetRow
+        detail.date = mg.date; detail.time_start = mg.time_start; detail.guests = mg.guests
+      }
     } else if (subcategory === 'livestream') {
-      const { data: ls } = await supabase
+      const { data: lsRaw } = await supabase
         .from('charity_livestreams')
         .select('cause, time_start, stream_link')
-        .eq('charity_event_id', (ce as any).id)
+        .eq('charity_event_id', ce.id)
         .single()
-      if (ls) { detail.cause = (ls as any).cause; detail.time_start = (ls as any).time_start; detail.stream_link = (ls as any).stream_link }
+      if (lsRaw) {
+        const ls = lsRaw as unknown as LivestreamRow
+        detail.cause = ls.cause; detail.time_start = ls.time_start; detail.stream_link = ls.stream_link
+      }
     } else if (subcategory === 'sport') {
-      const { data: sa } = await supabase
+      const { data: saRaw } = await supabase
         .from('sports_activities')
         .select('date, time_start, guests')
-        .eq('charity_event_id', (ce as any).id)
+        .eq('charity_event_id', ce.id)
         .single()
-      if (sa) { detail.date = (sa as any).date; detail.time_start = (sa as any).time_start; detail.guests = (sa as any).guests ?? null }
+      if (saRaw) {
+        const sa = saRaw as unknown as SportActivityRow
+        detail.date = sa.date; detail.time_start = sa.time_start; detail.guests = sa.guests ?? null
+      }
     }
 
     return { kind: 'charity', event, description, gallery_urls, detail }
@@ -367,14 +456,14 @@ export async function approveEvent(eventId: string): Promise<{ ok: true } | { er
   const isAdmin = await checkIsAdmin()
   if (!isAdmin) return { error: 'Acces interzis' }
 
-  const { data: evt } = await supabase
+  const { data: evtRaw } = await supabase
     .from('events')
     .select('id, title, creator_id, status')
     .eq('id', eventId)
     .single()
-  if (!evt) return { error: 'Eveniment negăsit' }
-  const evtStatus = (evt as any).status
-  if (evtStatus !== 'pending' && evtStatus !== 'contested') {
+  if (!evtRaw) return { error: 'Eveniment negăsit' }
+  const evt = evtRaw as unknown as EventMutationRow
+  if (evt.status !== 'pending' && evt.status !== 'contested') {
     return { error: 'Evenimentul nu poate fi aprobat în starea curentă' }
   }
 
@@ -385,9 +474,9 @@ export async function approveEvent(eventId: string): Promise<{ ok: true } | { er
   if (error) return { error: error.message }
 
   await createNotification(
-    (evt as any).creator_id,
+    evt.creator_id,
     'Eveniment aprobat ✅',
-    `Evenimentul tău "${(evt as any).title}" a fost aprobat și este acum vizibil public.`,
+    `Evenimentul tău "${evt.title}" a fost aprobat și este acum vizibil public.`,
     'event_approved'
   )
   return { ok: true }
@@ -400,14 +489,14 @@ export async function rejectEvent(eventId: string, note: string): Promise<{ ok: 
   const isAdmin = await checkIsAdmin()
   if (!isAdmin) return { error: 'Acces interzis' }
 
-  const { data: evt } = await supabase
+  const { data: evtRaw } = await supabase
     .from('events')
     .select('id, title, creator_id, status')
     .eq('id', eventId)
     .single()
-  if (!evt) return { error: 'Eveniment negăsit' }
-  const evtStatus = (evt as any).status
-  if (evtStatus !== 'pending' && evtStatus !== 'contested') {
+  if (!evtRaw) return { error: 'Eveniment negăsit' }
+  const evt = evtRaw as unknown as EventMutationRow
+  if (evt.status !== 'pending' && evt.status !== 'contested') {
     return { error: 'Evenimentul nu poate fi respins în starea curentă' }
   }
 
@@ -418,9 +507,9 @@ export async function rejectEvent(eventId: string, note: string): Promise<{ ok: 
   if (error) return { error: error.message }
 
   await createNotification(
-    (evt as any).creator_id,
+    evt.creator_id,
     'Eveniment respins ❌',
-    `Evenimentul tău "${(evt as any).title}" a fost respins. Motiv: ${note.trim()}`,
+    `Evenimentul tău "${evt.title}" a fost respins. Motiv: ${note.trim()}`,
     'event_rejected'
   )
   return { ok: true }
@@ -431,13 +520,14 @@ export async function approveOrg(orgId: string): Promise<{ ok: true } | { error:
   const isAdmin = await checkIsAdmin()
   if (!isAdmin) return { error: 'Acces interzis' }
 
-  const { data: org } = await supabase
+  const { data: orgRaw } = await supabase
     .from('organizations')
     .select('id, name, owner_id, status')
     .eq('id', orgId)
     .single()
-  if (!org) return { error: 'Organizație negăsită' }
-  if ((org as any).status !== 'pending') {
+  if (!orgRaw) return { error: 'Organizație negăsită' }
+  const org = orgRaw as unknown as OrgMutationRow
+  if (org.status !== 'pending') {
     return { error: 'Organizația nu poate fi aprobată în starea curentă' }
   }
 
@@ -448,9 +538,9 @@ export async function approveOrg(orgId: string): Promise<{ ok: true } | { error:
   if (error) return { error: error.message }
 
   await createNotification(
-    (org as any).owner_id,
+    org.owner_id,
     'Organizație aprobată ✅',
-    `Organizația "${(org as any).name}" a fost aprobată și este acum vizibilă public.`,
+    `Organizația "${org.name}" a fost aprobată și este acum vizibilă public.`,
     'org_approved'
   )
   return { ok: true }
@@ -463,13 +553,14 @@ export async function rejectOrg(orgId: string, note: string): Promise<{ ok: true
   const isAdmin = await checkIsAdmin()
   if (!isAdmin) return { error: 'Acces interzis' }
 
-  const { data: org } = await supabase
+  const { data: orgRaw } = await supabase
     .from('organizations')
-    .select('id, name, owner_id')
+    .select('id, name, owner_id, status')
     .eq('id', orgId)
     .single()
-  if (!org) return { error: 'Organizație negăsită' }
-  if ((org as any).status !== 'pending') {
+  if (!orgRaw) return { error: 'Organizație negăsită' }
+  const org = orgRaw as unknown as OrgMutationRow
+  if (org.status !== 'pending') {
     return { error: 'Organizația nu poate fi respinsă în starea curentă' }
   }
 
@@ -480,9 +571,9 @@ export async function rejectOrg(orgId: string, note: string): Promise<{ ok: true
   if (error) return { error: error.message }
 
   await createNotification(
-    (org as any).owner_id,
+    org.owner_id,
     'Organizație respinsă ❌',
-    `Organizația "${(org as any).name}" a fost respinsă. Motiv: ${note.trim()}`,
+    `Organizația "${org.name}" a fost respinsă. Motiv: ${note.trim()}`,
     'org_rejected'
   )
   return { ok: true }
