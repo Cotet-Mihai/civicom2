@@ -331,7 +331,7 @@ Grid selector 5 tipuri · `StepperUI` reutilizabil · `LocationPickerClient` + `
 ### ✅ Etapa 8 — Dashboard Utilizator & Profil (`feat/user-dashboard`)
 `getUserDashboardStats` · `getUserProfile` · `updateUserProfile` · `getUserCreatedEvents` · `getUserParticipations` · `/panou` + sub-rute · `/profil` · `/profil/editare` · `AvatarUpload`
 
-### ⬜ Etapa 9 — Moderare Admin (`feat/admin-moderation`)
+### ✅ Etapa 9 — Moderare Admin (`feat/admin-moderation`)
 `admin.service.ts` (approve/reject events + orgs) · `notification.service.ts` · `/admin` + sub-rute · Notificări creator la aprobare/respingere
 
 ### ⬜ Etapa 10 — Contestații (`feat/appeals`)
