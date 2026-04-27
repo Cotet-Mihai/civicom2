@@ -190,11 +190,12 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
   const subcategory: string = (evt as any).subcategory ?? ''
 
   if (category === 'protest') {
-    const { data: p } = await supabase
+    const { data: p, error: pErr } = await supabase
       .from('protests')
       .select('date, time_start, time_end, max_participants, safety_rules, recommended_equipment, contact_person')
       .eq('event_id', id)
       .single()
+    if (pErr) console.error('[getAdminEventDetail] protests', pErr.message)
     if (!p) return null
     return {
       kind: 'protest', event, description, gallery_urls,
@@ -211,11 +212,12 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
   }
 
   if (category === 'petition') {
-    const { data: p } = await supabase
+    const { data: p, error: pErr } = await supabase
       .from('petitions')
       .select('what_is_requested, requested_from, target_signatures, why_important, contact_person')
       .eq('event_id', id)
       .single()
+    if (pErr) console.error('[getAdminEventDetail] petitions', pErr.message)
     if (!p) return null
     return {
       kind: 'petition', event, description, gallery_urls,
@@ -230,11 +232,12 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
   }
 
   if (category === 'boycott') {
-    const { data: b } = await supabase
+    const { data: b, error: bErr } = await supabase
       .from('boycotts')
       .select('reason, method, boycott_brands(name, link)')
       .eq('event_id', id)
       .single()
+    if (bErr) console.error('[getAdminEventDetail] boycotts', bErr.message)
     if (!b) return null
     return {
       kind: 'boycott', event, description, gallery_urls,
@@ -247,11 +250,12 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
   }
 
   if (category === 'community') {
-    const { data: ca } = await supabase
+    const { data: ca, error: caErr } = await supabase
       .from('community_activities')
       .select('id, contact_person')
       .eq('event_id', id)
       .single()
+    if (caErr) console.error('[getAdminEventDetail] community_activities', caErr.message)
     if (!ca) return null
 
     const detail: CommunityDetail = {
@@ -303,11 +307,12 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
   }
 
   if (category === 'charity') {
-    const { data: ce } = await supabase
+    const { data: ce, error: ceErr } = await supabase
       .from('charity_events')
       .select('id, target_amount')
       .eq('event_id', id)
       .single()
+    if (ceErr) console.error('[getAdminEventDetail] charity_events', ceErr.message)
     if (!ce) return null
 
     const detail: CharityDetail = {
@@ -364,10 +369,14 @@ export async function approveEvent(eventId: string): Promise<{ ok: true } | { er
 
   const { data: evt } = await supabase
     .from('events')
-    .select('id, title, creator_id')
+    .select('id, title, creator_id, status')
     .eq('id', eventId)
     .single()
   if (!evt) return { error: 'Eveniment negăsit' }
+  const evtStatus = (evt as any).status
+  if (evtStatus !== 'pending' && evtStatus !== 'contested') {
+    return { error: 'Evenimentul nu poate fi aprobat în starea curentă' }
+  }
 
   const { error } = await supabase
     .from('events')
