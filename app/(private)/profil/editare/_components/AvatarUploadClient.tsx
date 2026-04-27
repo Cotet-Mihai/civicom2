@@ -11,11 +11,13 @@ import { updateAvatar } from '@/services/user.service'
 type Props = {
   currentAvatarUrl: string | null
   name: string
+  userId: string
 }
 
 const MAX_SIZE_BYTES = 2 * 1024 * 1024 // 2MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
-export function AvatarUploadClient({ currentAvatarUrl, name }: Props) {
+export function AvatarUploadClient({ currentAvatarUrl, name, userId }: Props) {
   const [preview, setPreview] = useState<string | null>(currentAvatarUrl)
   const [isLoading, setIsLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -23,6 +25,7 @@ export function AvatarUploadClient({ currentAvatarUrl, name }: Props) {
 
   const initials = name
     .split(' ')
+    .filter(w => w.length > 0)
     .map(w => w[0])
     .join('')
     .slice(0, 2)
@@ -34,6 +37,11 @@ export function AvatarUploadClient({ currentAvatarUrl, name }: Props) {
 
     if (file.size > MAX_SIZE_BYTES) {
       toast.error('Fișierul trebuie să fie mai mic de 2MB')
+      return
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error('Tip neacceptat. Sunt permise: JPG, PNG, WebP, GIF')
       return
     }
 
@@ -50,7 +58,7 @@ export function AvatarUploadClient({ currentAvatarUrl, name }: Props) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
       const ext = file.name.split('.').pop() ?? 'jpg'
-      const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+      const path = `${userId}.${ext}`
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')

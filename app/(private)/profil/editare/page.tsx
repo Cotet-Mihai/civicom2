@@ -34,6 +34,7 @@ export default async function ProfilEditarePage() {
             <AvatarUploadClient
               currentAvatarUrl={profile.avatar_url}
               name={profile.name}
+              userId={profile.id}
             />
           </div>
 
