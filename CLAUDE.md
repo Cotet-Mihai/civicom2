@@ -340,7 +340,7 @@ Grid selector 5 tipuri · `StepperUI` reutilizabil · `LocationPickerClient` + `
 ### ✅ Etapa 11 — ONG-uri (`feat/organizations`)
 `organization.service.ts` complet · `/organizatii` + `/organizatii/[id]` · `/organizatie/creeaza` · Panou ONG + membri + setari · `generateMetadata` + JSON-LD `Organization` · Notificări aprobare ONG
 
-### ⬜ Etapa 12 — Finalizare Evenimente & Feedback (`feat/event-completion-feedback`)
+### ✅ Etapa 12 — Finalizare Evenimente & Feedback (`feat/event-completion-feedback`)
 `completeEvent` (service_role) · Cron job pg_cron (auto-complete la expirare) · Buton "Marchează ca finalizat" în dashboard · `FeedbackSection` + `FeedbackFormClient` · Notificări la completion → participanți
 
 ### ⬜ Etapa 13 — SEO & Performance (`feat/seo-performance`)
