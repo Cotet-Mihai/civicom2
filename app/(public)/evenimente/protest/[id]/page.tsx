@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { Phone, ShieldCheck, Package, Images } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { getProtestById, incrementViewCount } from '@/services/event.service'
-import { getSession } from '@/services/auth.service'
+import { getAuthUser } from '@/services/auth.service'
 import { getParticipationStatus } from '@/services/participation.service'
 import { hasCurrentUserSubmittedFeedback } from '@/services/feedback.service'
 import { EventBanner } from '@/components/shared/EventBanner'
@@ -41,10 +41,10 @@ export default async function ProtestPage({ params }: Props) {
   // fire-and-forget — nu blochează randarea
   incrementViewCount(id)
 
-  const session = await getSession()
+  const user = await getAuthUser()
   let isParticipant = false
   let hasSubmittedFeedback = false
-  if (session && event.status === 'completed') {
+  if (user && event.status === 'completed') {
     const [participationStatus, feedbackExists] = await Promise.all([
       getParticipationStatus(event.id),
       hasCurrentUserSubmittedFeedback(event.id),
