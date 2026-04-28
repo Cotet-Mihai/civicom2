@@ -77,3 +77,56 @@ export async function getUserFeedback(
     },
   }
 }
+
+export async function hasCurrentUserSubmittedFeedback(eventId: string): Promise<boolean> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+
+  const { data: userData } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_users_id', user.id)
+    .single()
+  if (!userData) return false
+
+  const { data } = await supabase
+    .from('event_feedback')
+    .select('id')
+    .eq('event_id', eventId)
+    .eq('user_id', (userData as any).id)
+    .maybeSingle()
+
+  return !!data
+}
+
+export async function submitFeedback(
+  eventId: string,
+  rating: number,
+  comment: string | null
+): Promise<{ ok: true } | { error: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Neautentificat' }
+
+  const { data: userData } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_users_id', user.id)
+    .single()
+  if (!userData) return { error: 'Utilizator negăsit' }
+
+  const { error } = await supabase.from('event_feedback').insert({
+    event_id: eventId,
+    user_id: (userData as any).id,
+    rating,
+    comment: comment || null,
+  })
+
+  if (error) {
+    console.error('[submitFeedback]', error.message)
+    return { error: 'Feedback-ul nu a putut fi trimis' }
+  }
+
+  return { ok: true }
+}
