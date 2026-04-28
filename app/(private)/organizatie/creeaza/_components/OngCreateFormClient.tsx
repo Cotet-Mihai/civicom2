@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { createOrganization } from '@/services/organization.service'
-import { LogoUploadClient } from '../../../_components/LogoUploadClient'
+import { LogoUploadClient } from '../../_components/LogoUploadClient'
 
 const TEMP_ORG_ID = 'new'
 
