@@ -28,11 +28,16 @@ export function FeedbackFormClient({ eventId, isParticipant, hasSubmitted }: Pro
   async function handleSubmit() {
     if (rating === 0) { toast.error('Selectează un rating'); return }
     setLoading(true)
-    const result = await submitFeedback(eventId, rating, comment.trim() || null)
-    setLoading(false)
-    if ('error' in result) { toast.error(result.error); return }
-    toast.success('Feedback trimis! Mulțumim.')
-    router.refresh()
+    try {
+      const result = await submitFeedback(eventId, rating, comment.trim() || null)
+      if ('error' in result) { toast.error(result.error); return }
+      toast.success('Feedback trimis! Mulțumim.')
+      router.refresh()
+    } catch {
+      toast.error('Eroare de rețea. Încearcă din nou.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -61,6 +66,7 @@ export function FeedbackFormClient({ eventId, isParticipant, hasSubmitted }: Pro
                   }`}
                   onMouseEnter={() => setHovered(i)}
                   onMouseLeave={() => setHovered(0)}
+                  onTouchStart={() => setHovered(i)}
                   onClick={() => setRating(i)}
                 />
               ))}
