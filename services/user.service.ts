@@ -105,7 +105,7 @@ export async function getUserPetitionsSigned(limit?: number): Promise<DashboardE
 
   const query = supabase
     .from('petition_signatures')
-    .select('event:events!event_id(id, title, category, status, participants_count, created_at, banner_url)')
+    .select('event:events!event_id(id, title, category, subcategory, status, participants_count, created_at, banner_url)')
     .eq('user_id', userId)
     .order('joined_at', { ascending: false })
 
