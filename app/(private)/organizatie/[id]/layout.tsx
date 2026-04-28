@@ -4,11 +4,11 @@ import { OrgTabsClient } from './_components/OrgTabsClient'
 
 type Props = {
   children: React.ReactNode
-  params: Promise<{ id: string }>
+  params: Promise<unknown>
 }
 
 export default async function OrgLayout({ children, params }: Props) {
-  const { id } = await params
+  const { id } = (await params) as { id: string }
   const role = await getOrgMemberRole(id)
 
   if (!role) redirect('/panou')
