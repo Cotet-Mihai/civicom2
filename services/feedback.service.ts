@@ -91,10 +91,10 @@ async function getUserId(): Promise<string | null> {
 }
 
 export async function hasCurrentUserSubmittedFeedback(eventId: string): Promise<boolean> {
-  const supabase = await createClient()
   const userId = await getUserId()
   if (!userId) return false
 
+  const supabase = await createClient()
   const { data } = await supabase
     .from('event_feedback')
     .select('id')

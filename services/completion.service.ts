@@ -19,14 +19,21 @@ export async function completeEvent(
 
   const { data: evtRaw } = await supabase
     .from('events')
-    .select('id, title, creator_id, status')
+    .select('id, title, creator_id, status, category, subcategory')
     .eq('id', eventId)
     .single()
   if (!evtRaw) return { error: 'Eveniment negăsit' }
 
-  const evt = evtRaw as { id: string; title: string; creator_id: string; status: string }
+  const evt = evtRaw as { id: string; title: string; creator_id: string; status: string; category: string; subcategory: string | null }
   if (evt.creator_id !== (userData as { id: string }).id) return { error: 'Acces interzis' }
   if (evt.status !== 'approved') return { error: 'Evenimentul nu poate fi finalizat în starea curentă' }
+
+  const isManualComplete =
+    evt.category === 'boycott' ||
+    evt.category === 'petition' ||
+    (evt.category === 'community' && evt.subcategory === 'donations') ||
+    (evt.category === 'charity' && evt.subcategory === 'livestream')
+  if (!isManualComplete) return { error: 'Acest tip de eveniment se finalizează automat' }
 
   const admin = createAdminClient()
 

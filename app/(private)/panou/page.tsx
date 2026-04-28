@@ -6,6 +6,7 @@ import { StatCardDashboard } from '@/components/shared/StatCardDashboard'
 import { DashboardEventRow } from '@/components/shared/DashboardEventRow'
 import { Card, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
+import { CompleteEventButtonClient } from './_components/CompleteEventButtonClient'
 
 export const metadata: Metadata = { title: 'Panou' }
 
@@ -53,7 +54,17 @@ export default async function PanouPage() {
               </div>
             ) : (
               recentEvents.map(event => (
-                <DashboardEventRow key={event.id} event={event} showStatus />
+                <div key={event.id} className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <DashboardEventRow event={event} showStatus />
+                  </div>
+                  <CompleteEventButtonClient
+                    eventId={event.id}
+                    category={event.category}
+                    subcategory={event.subcategory}
+                    status={event.status}
+                  />
+                </div>
               ))
             )}
           </CardContent>
