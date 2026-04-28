@@ -30,3 +30,13 @@ export async function uploadGalleryImages(files: File[], userId: string): Promis
   }
   return urls
 }
+
+export async function uploadLogo(file: File, orgId: string): Promise<string | null> {
+  const supabase = getClient()
+  const ext = file.name.split('.').pop()
+  const path = `${orgId}/${Date.now()}.${ext}`
+  const { error } = await supabase.storage.from('logos').upload(path, file, { upsert: true })
+  if (error) { console.error('[uploadLogo]', error.message); return null }
+  const { data } = supabase.storage.from('logos').getPublicUrl(path)
+  return data.publicUrl
+}
