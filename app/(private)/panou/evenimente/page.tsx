@@ -4,6 +4,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { getUserCreatedEvents } from '@/services/user.service'
 import { DashboardEventRow } from '@/components/shared/DashboardEventRow'
 import { PanouTabsClient } from '../_components/PanouTabsClient'
+import { CompleteEventButtonClient } from '../_components/CompleteEventButtonClient'
 
 export const metadata: Metadata = { title: 'Evenimentele mele' }
 
@@ -24,7 +25,17 @@ export default async function PanouEvenimentePage() {
           </div>
         ) : (
           events.map(event => (
-            <DashboardEventRow key={event.id} event={event} showStatus />
+            <div key={event.id} className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <DashboardEventRow event={event} showStatus />
+              </div>
+              <CompleteEventButtonClient
+                eventId={event.id}
+                category={event.category}
+                subcategory={event.subcategory}
+                status={event.status}
+              />
+            </div>
           ))
         )}
       </div>

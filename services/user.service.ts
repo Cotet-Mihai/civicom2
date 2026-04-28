@@ -14,6 +14,7 @@ export type DashboardEvent = {
   id: string
   title: string
   category: string
+  subcategory: string | null
   status: string
   participants_count: number
   created_at: string
@@ -73,7 +74,7 @@ export async function getUserCreatedEvents(limit?: number): Promise<DashboardEve
 
   const query = supabase
     .from('events')
-    .select('id, title, category, status, participants_count, created_at, banner_url')
+    .select('id, title, category, subcategory, status, participants_count, created_at, banner_url')
     .eq('creator_id', userId)
     .order('created_at', { ascending: false })
 
@@ -88,7 +89,7 @@ export async function getUserParticipations(limit?: number): Promise<DashboardEv
 
   const query = supabase
     .from('event_participants')
-    .select('event:events!event_id(id, title, category, status, participants_count, created_at, banner_url)')
+    .select('event:events!event_id(id, title, category, subcategory, status, participants_count, created_at, banner_url)')
     .eq('user_id', userId)
     .eq('status', 'joined')
     .order('joined_at', { ascending: false })
