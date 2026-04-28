@@ -4,9 +4,13 @@ import Image from 'next/image'
 import { Phone, ShieldCheck, Package, Images } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { getProtestById, incrementViewCount } from '@/services/event.service'
+import { getSession } from '@/services/auth.service'
+import { getParticipationStatus } from '@/services/participation.service'
+import { hasCurrentUserSubmittedFeedback } from '@/services/feedback.service'
 import { EventBanner } from '@/components/shared/EventBanner'
 import { ActionButtons } from '@/components/shared/ActionButtons'
 import { ParticipationCardClient } from '@/components/shared/ParticipationCardClient'
+import { FeedbackFormClient } from '@/components/shared/FeedbackFormClient'
 import { FeedbackSection } from '@/components/shared/FeedbackSection'
 import { ProtestMapClient } from './_components/ProtestMapClient'
 
@@ -36,6 +40,18 @@ export default async function ProtestPage({ params }: Props) {
 
   // fire-and-forget — nu blochează randarea
   incrementViewCount(id)
+
+  const session = await getSession()
+  let isParticipant = false
+  let hasSubmittedFeedback = false
+  if (session && event.status === 'completed') {
+    const [participationStatus, feedbackExists] = await Promise.all([
+      getParticipationStatus(event.id),
+      hasCurrentUserSubmittedFeedback(event.id),
+    ])
+    isParticipant = participationStatus === 'joined'
+    hasSubmittedFeedback = feedbackExists
+  }
 
   const { protest } = event
   const mapLocation =
@@ -90,6 +106,12 @@ export default async function ProtestPage({ params }: Props) {
               timeStart={protest.time_start}
               timeEnd={protest.time_end}
               status={event.status}
+            />
+
+            <FeedbackFormClient
+              eventId={event.id}
+              isParticipant={isParticipant}
+              hasSubmitted={hasSubmittedFeedback}
             />
 
             <ProtestMapClient

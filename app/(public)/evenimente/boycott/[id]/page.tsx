@@ -6,9 +6,13 @@ import { ExternalLink, Images, AlertCircle, Zap, Building2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { getBoycottById, incrementViewCount } from '@/services/event.service'
+import { getSession } from '@/services/auth.service'
+import { getParticipationStatus } from '@/services/participation.service'
+import { hasCurrentUserSubmittedFeedback } from '@/services/feedback.service'
 import { EventBanner } from '@/components/shared/EventBanner'
 import { ActionButtons } from '@/components/shared/ActionButtons'
 import { ParticipationCardClient } from '@/components/shared/ParticipationCardClient'
+import { FeedbackFormClient } from '@/components/shared/FeedbackFormClient'
 import { FeedbackSection } from '@/components/shared/FeedbackSection'
 
 type Props = { params: Promise<{ id: string }> }
@@ -36,6 +40,18 @@ export default async function BoycottPage({ params }: Props) {
     if (!event) notFound()
 
     incrementViewCount(id)
+
+    const session = await getSession()
+    let isParticipant = false
+    let hasSubmittedFeedback = false
+    if (session && event.status === 'completed') {
+      const [participationStatus, feedbackExists] = await Promise.all([
+        getParticipationStatus(event.id),
+        hasCurrentUserSubmittedFeedback(event.id),
+      ])
+      isParticipant = participationStatus === 'joined'
+      hasSubmittedFeedback = feedbackExists
+    }
 
     const { boycott } = event
     const organizer = event.organization ?? { name: event.creator.name, logo_url: event.creator.avatar_url }
@@ -72,6 +88,12 @@ export default async function BoycottPage({ params }: Props) {
                             eventId={event.id}
                             participantsCount={event.participants_count}
                             status={event.status}
+                        />
+
+                        <FeedbackFormClient
+                            eventId={event.id}
+                            isParticipant={isParticipant}
+                            hasSubmitted={hasSubmittedFeedback}
                         />
 
                         <Card className="shadow-lg shadow-black/5 border-border">
