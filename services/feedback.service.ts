@@ -78,23 +78,28 @@ export async function getUserFeedback(
   }
 }
 
-export async function hasCurrentUserSubmittedFeedback(eventId: string): Promise<boolean> {
+async function getUserId(): Promise<string | null> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const { data: userData } = await supabase
+  if (!user) return null
+  const { data } = await supabase
     .from('users')
     .select('id')
     .eq('auth_users_id', user.id)
     .single()
-  if (!userData) return false
+  return (data as { id: string } | null)?.id ?? null
+}
+
+export async function hasCurrentUserSubmittedFeedback(eventId: string): Promise<boolean> {
+  const supabase = await createClient()
+  const userId = await getUserId()
+  if (!userId) return false
 
   const { data } = await supabase
     .from('event_feedback')
     .select('id')
     .eq('event_id', eventId)
-    .eq('user_id', (userData as any).id)
+    .eq('user_id', userId)
     .maybeSingle()
 
   return !!data
@@ -105,20 +110,17 @@ export async function submitFeedback(
   rating: number,
   comment: string | null
 ): Promise<{ ok: true } | { error: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Neautentificat' }
+  if (rating < 1 || rating > 5 || !Number.isInteger(rating)) {
+    return { error: 'Rating invalid' }
+  }
 
-  const { data: userData } = await supabase
-    .from('users')
-    .select('id')
-    .eq('auth_users_id', user.id)
-    .single()
-  if (!userData) return { error: 'Utilizator negăsit' }
+  const supabase = await createClient()
+  const userId = await getUserId()
+  if (!userId) return { error: 'Neautentificat' }
 
   const { error } = await supabase.from('event_feedback').insert({
     event_id: eventId,
-    user_id: (userData as any).id,
+    user_id: userId,
     rating,
     comment: comment || null,
   })
