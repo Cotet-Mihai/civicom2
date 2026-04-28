@@ -25,7 +25,7 @@ export async function completeEvent(
   if (!evtRaw) return { error: 'Eveniment negăsit' }
 
   const evt = evtRaw as { id: string; title: string; creator_id: string; status: string }
-  if (evt.creator_id !== (userData as any).id) return { error: 'Acces interzis' }
+  if (evt.creator_id !== (userData as { id: string }).id) return { error: 'Acces interzis' }
   if (evt.status !== 'approved') return { error: 'Evenimentul nu poate fi finalizat în starea curentă' }
 
   const admin = createAdminClient()
@@ -46,7 +46,7 @@ export async function completeEvent(
     .eq('status', 'joined')
 
   if (participants && participants.length > 0) {
-    await admin.from('notifications').insert(
+    const { error: notifError } = await admin.from('notifications').insert(
       (participants as { user_id: string }[]).map(p => ({
         user_id: p.user_id,
         title: 'Eveniment finalizat',
@@ -54,6 +54,7 @@ export async function completeEvent(
         type: 'event_completed',
       }))
     )
+    if (notifError) console.error('[completeEvent] notifications', notifError.message)
   }
 
   return { ok: true }
