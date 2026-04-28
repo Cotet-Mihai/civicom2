@@ -337,7 +337,7 @@ Grid selector 5 tipuri · `StepperUI` reutilizabil · `LocationPickerClient` + `
 ### ⬜ Etapa 10 — Contestații (`feat/appeals`)
 `createAppeal` · `getAllAppeals` · `resolveAppeal` · `/evenimente/[id]/contestatie` · `/admin/contestatii` · Notificări decizie
 
-### ⬜ Etapa 11 — ONG-uri (`feat/organizations`)
+### ✅ Etapa 11 — ONG-uri (`feat/organizations`)
 `organization.service.ts` complet · `/organizatii` + `/organizatii/[id]` · `/organizatie/creeaza` · Panou ONG + membri + setari · `generateMetadata` + JSON-LD `Organization` · Notificări aprobare ONG
 
 ### ⬜ Etapa 12 — Finalizare Evenimente & Feedback (`feat/event-completion-feedback`)
