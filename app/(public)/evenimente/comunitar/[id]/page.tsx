@@ -5,9 +5,13 @@ import { Phone, Package, Gift, Images, HandHeart, TrendingUp } from 'lucide-reac
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { getCommunityById, incrementViewCount } from '@/services/event.service'
+import { getSession } from '@/services/auth.service'
+import { getParticipationStatus } from '@/services/participation.service'
+import { hasCurrentUserSubmittedFeedback } from '@/services/feedback.service'
 import { EventBanner } from '@/components/shared/EventBanner'
 import { ActionButtons } from '@/components/shared/ActionButtons'
 import { ParticipationCardClient } from '@/components/shared/ParticipationCardClient'
+import { FeedbackFormClient } from '@/components/shared/FeedbackFormClient'
 import { LocationMapClient } from '@/components/shared/LocationMapClient'
 import { FeedbackSection } from '@/components/shared/FeedbackSection'
 
@@ -36,6 +40,18 @@ export default async function CommunityPage({ params }: Props) {
     if (!event) notFound()
 
     incrementViewCount(id)
+
+    const session = await getSession()
+    let isParticipant = false
+    let hasSubmittedFeedback = false
+    if (session && event.status === 'completed') {
+      const [participationStatus, feedbackExists] = await Promise.all([
+        getParticipationStatus(event.id),
+        hasCurrentUserSubmittedFeedback(event.id),
+      ])
+      isParticipant = participationStatus === 'joined'
+      hasSubmittedFeedback = feedbackExists
+    }
 
     const { community } = event
     const { outdoor, donation, workshop } = community
@@ -102,6 +118,12 @@ export default async function CommunityPage({ params }: Props) {
                             timeStart={timeStart}
                             timeEnd={timeEnd}
                             status={event.status}
+                        />
+
+                        <FeedbackFormClient
+                            eventId={event.id}
+                            isParticipant={isParticipant}
+                            hasSubmitted={hasSubmittedFeedback}
                         />
 
                         {hasLocation && location && (
