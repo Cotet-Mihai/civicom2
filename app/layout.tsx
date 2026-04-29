@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import { Montserrat, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Suspense } from 'react'
 import './globals.css'
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { PostHogProvider } from '@/components/providers/PostHogProvider'
+import { PostHogPageView } from '@/components/providers/PostHogPageView'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -38,6 +40,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <PostHogProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
           <TooltipProvider>{children}</TooltipProvider>
         </PostHogProvider>
         <Analytics />
