@@ -87,7 +87,7 @@ export default async function OrganizatieDetailPage({ params }: PageProps) {
             <div className="flex items-start gap-5">
               {org.logo_url ? (
                 <div className="relative size-20 lg:size-24 rounded-2xl overflow-hidden border border-border shrink-0">
-                  <Image src={org.logo_url} alt={org.name} fill className="object-cover" unoptimized />
+                  <Image src={org.logo_url} alt={org.name} fill sizes="(max-width: 1024px) 80px, 96px" className="object-cover" />
                 </div>
               ) : (
                 <div className="size-20 lg:size-24 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
