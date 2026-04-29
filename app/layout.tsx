@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Montserrat, Inter } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import {TooltipProvider} from "@/components/ui/tooltip";
 
@@ -34,7 +35,7 @@ export default function RootLayout({
       lang="ro"
       className={`${montserrat.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col"><TooltipProvider>{children}</TooltipProvider></body>
+      <body className="min-h-full flex flex-col"><TooltipProvider>{children}</TooltipProvider><Analytics /></body>
     </html>
   )
 }
