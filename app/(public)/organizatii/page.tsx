@@ -54,7 +54,7 @@ export default async function OrganizatiiPage() {
                 <div className="flex items-start gap-3">
                   {org.logo_url ? (
                     <div className="relative size-12 rounded-xl overflow-hidden border border-border shrink-0">
-                      <Image src={org.logo_url} alt={org.name} fill className="object-cover" unoptimized />
+                      <Image src={org.logo_url} alt={org.name} fill sizes="48px" className="object-cover" />
                     </div>
                   ) : (
                     <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
