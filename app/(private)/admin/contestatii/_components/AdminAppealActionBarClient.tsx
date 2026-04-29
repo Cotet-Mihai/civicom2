@@ -10,10 +10,9 @@ import { resolveAppeal } from '@/services/appeal.service'
 
 type Props = {
   appealId: string
-  eventId: string
 }
 
-export function AdminAppealActionBarClient({ appealId, eventId }: Props) {
+export function AdminAppealActionBarClient({ appealId }: Props) {
   const [isRejecting, setIsRejecting] = useState(false)
   const [note, setNote] = useState('')
   const [isLoading, setIsLoading] = useState(false)
