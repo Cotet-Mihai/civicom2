@@ -2,91 +2,113 @@ import type { Metadata } from 'next'
 import { getEvents } from '@/services/event.service'
 import type { EventFilters } from '@/services/event.service'
 import { FilterPanel } from './_components/FilterPanel'
+import { FiltersPendingProvider } from './_components/FiltersPendingContext'
 import { ActiveFiltersBarClient } from './_components/ActiveFiltersBarClient'
 import { ResultsCount } from './_components/ResultsCount'
 import { EventsListClient } from './_components/EventsListClient'
 import { EmptyState } from './_components/EmptyState'
 
 export const metadata: Metadata = {
-  title: 'Evenimente',
-  description: 'Descoperă proteste, petiții, boicoturi și activități comunitare din România.',
-  alternates: { canonical: '/evenimente' },
-  openGraph: {
-    title: 'Evenimente — CIVICOM',
+    title: 'Evenimente',
     description: 'Descoperă proteste, petiții, boicoturi și activități comunitare din România.',
-    url: 'https://civicom.ro/evenimente',
-    siteName: 'CIVICOM',
-    locale: 'ro_RO',
-    type: 'website',
-  },
+    alternates: { canonical: '/evenimente' },
+    openGraph: {
+        title: 'Evenimente — CIVICOM',
+        description: 'Descoperă proteste, petiții, boicoturi și activități comunitare din România.',
+        url: 'https://civicom.ro/evenimente',
+        siteName: 'CIVICOM',
+        locale: 'ro_RO',
+        type: 'website',
+    },
 }
 
 type PageProps = {
-  searchParams: Promise<{
-    cauta?: string
-    categorie?: string
-    sort?: string
-    data_de?: string
-    data_pana?: string
-  }>
+    searchParams: Promise<{
+        cauta?: string
+        categorie?: string
+        sort?: string
+        data_de?: string
+        data_pana?: string
+    }>
 }
 
 const VALID_CATEGORIES = ['protest', 'boycott', 'petition', 'community', 'charity'] as const
 const VALID_SORTS = ['data_desc', 'data_asc', 'participanti'] as const
 
 export default async function EventsPage({ searchParams }: PageProps) {
-  const params = await searchParams
+    const params = await searchParams
 
-  const filters: EventFilters = {
-    cauta: params.cauta,
-    categorie: VALID_CATEGORIES.includes(params.categorie as never)
-      ? (params.categorie as EventFilters['categorie'])
-      : undefined,
-    sort: VALID_SORTS.includes(params.sort as never)
-      ? (params.sort as EventFilters['sort'])
-      : undefined,
-    data_de: params.data_de,
-    data_pana: params.data_pana,
-  }
+    type ValidCategory = typeof VALID_CATEGORIES[number]
+    const rawCategorii = (params.categorie ?? '')
+        .split(',')
+        .map(c => c.trim())
+        .filter((c): c is ValidCategory => VALID_CATEGORIES.includes(c as ValidCategory))
 
-  const { events, total } = await getEvents(filters, 1)
+    const filters: EventFilters = {
+        cauta: params.cauta,
+        categorii: rawCategorii.length > 0 ? rawCategorii : undefined,
+        sort: VALID_SORTS.includes(params.sort as never)
+            ? (params.sort as EventFilters['sort'])
+            : undefined,
+        data_de: params.data_de,
+        data_pana: params.data_pana,
+    }
 
-  // filterKey forces EventsListClient to remount on filter change (resets accumulated list)
-  const filterKey = new URLSearchParams(
-    Object.fromEntries(
-      Object.entries(params).filter(([, v]) => v !== undefined)
-    ) as Record<string, string>
-  ).toString()
+    const { events, total } = await getEvents(filters, 1)
 
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-16">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr] lg:items-start lg:gap-8">
-        {/* aside = un singur grid item; FilterPanel randează intern desktop+mobile via Tailwind */}
-        <aside className="lg:sticky lg:top-20">
-          <FilterPanel filters={filters} />
-        </aside>
+    const filterKey = new URLSearchParams(
+        Object.fromEntries(
+            Object.entries(params).filter(([, v]) => v !== undefined)
+        ) as Record<string, string>
+    ).toString()
 
-        <div className="min-w-0 space-y-6">
-          <h1 className="text-2xl font-black uppercase tracking-tighter text-foreground lg:text-3xl">
-            Evenimente
-          </h1>
+    return (
+        <FiltersPendingProvider>
+        <div className="relative min-h-screen bg-background">
+            {/* Efect de glow ambiental */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute -left-1/4 top-0 h-[500px] w-[500px] rounded-full bg-primary/5 blur-[100px]" />
+            </div>
 
-          <ActiveFiltersBarClient filters={filters} />
+            <div className="relative z-10 flex flex-col lg:flex-row">
 
-          <ResultsCount total={total} />
+                {/* SIDEBAR FILTRE:
+                    - Am adăugat `lg:self-start` pentru a bloca orice mișcare la scroll
+                    - Am adăugat `lg:overflow-y-auto` direct aici pentru ca panoul să permită scroll intern dacă e cazul
+                */}
+                <aside className="w-full shrink-0 border-border/50 bg-card/30 backdrop-blur-sm lg:sticky lg:top-0 lg:h-screen lg:w-[320px] lg:self-start lg:overflow-y-auto lg:border-r">
+                    <div className="px-6 py-8 lg:px-8 lg:py-12">
+                        <FilterPanel filters={filters} />
+                    </div>
+                </aside>
 
-          {total === 0 ? (
-            <EmptyState />
-          ) : (
-            <EventsListClient
-              key={filterKey}
-              initialEvents={events}
-              total={total}
-              filters={filters}
-            />
-          )}
+                {/* ZONA DE REZULTATE */}
+                <main className="flex-1 px-6 py-8 lg:px-10 lg:py-12">
+                    <div className="mx-auto max-w-5xl space-y-6 animate-fade-in-up">
+
+                        {/* Bara de control superioară */}
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl bg-card/50 border border-border p-4 shadow-sm backdrop-blur-sm">
+                            <ActiveFiltersBarClient filters={filters} />
+                            <div className="shrink-0 text-sm font-bold text-muted-foreground">
+                                <ResultsCount total={total} />
+                            </div>
+                        </div>
+
+                        {/* Lista de Evenimente */}
+                        {total === 0 ? (
+                            <EmptyState />
+                        ) : (
+                            <EventsListClient
+                                key={filterKey}
+                                initialEvents={events}
+                                total={total}
+                                filters={filters}
+                            />
+                        )}
+                    </div>
+                </main>
+            </div>
         </div>
-      </div>
-    </div>
-  )
+        </FiltersPendingProvider>
+    )
 }

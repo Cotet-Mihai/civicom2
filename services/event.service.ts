@@ -19,7 +19,7 @@ export type EventPreview = {
 
 export type EventFilters = {
     cauta?: string
-    categorie?: 'protest' | 'boycott' | 'petition' | 'community' | 'charity'
+    categorii?: Array<'protest' | 'boycott' | 'petition' | 'community' | 'charity'>
     sort?: 'data_desc' | 'data_asc' | 'participanti'
     data_de?: string
     data_pana?: string
@@ -75,8 +75,8 @@ export async function getEvents(
     if (filters.cauta) {
         query = query.ilike('title', `%${filters.cauta}%`)
     }
-    if (filters.categorie) {
-        query = query.eq('category', filters.categorie)
+    if (filters.categorii && filters.categorii.length > 0) {
+        query = query.in('category', filters.categorii)
     }
     if (filters.data_de) {
         query = query.gte('created_at', filters.data_de)
