@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { PublicNavbar } from '@/components/layout/PublicNavbar'
+import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <PublicNavbar />
+      <Navbar />
       <main className="flex flex-1 flex-col">{children}</main>
       <Footer />
     </>
