@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getEvents } from '@/services/event.service'
 import type { EventFilters } from '@/services/event.service'
 import { FilterPanel } from './_components/FilterPanel'
+import { FilterFABClient } from './_components/FilterFABClient'
 import { FiltersPendingProvider } from './_components/FiltersPendingContext'
 import { ActiveFiltersBarClient } from './_components/ActiveFiltersBarClient'
 import { ResultsCount } from './_components/ResultsCount'
@@ -72,11 +73,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
             <div className="relative z-10 flex flex-col lg:flex-row">
 
-                {/* SIDEBAR FILTRE:
-                    - Am adăugat `lg:self-start` pentru a bloca orice mișcare la scroll
-                    - Am adăugat `lg:overflow-y-auto` direct aici pentru ca panoul să permită scroll intern dacă e cazul
-                */}
-                <aside className="w-full shrink-0 border-border/50 bg-card/30 backdrop-blur-sm lg:sticky lg:top-0 lg:h-screen lg:w-[320px] lg:self-start lg:overflow-y-auto lg:border-r">
+                <aside className="hidden shrink-0 border-border/50 bg-card/30 backdrop-blur-sm lg:sticky lg:top-16 lg:block lg:h-[calc(100vh-4rem)] lg:w-[320px] lg:self-start lg:overflow-y-auto lg:border-r">
                     <div className="px-6 py-8 lg:px-8 lg:py-12">
                         <FilterPanel filters={filters} />
                     </div>
@@ -89,7 +86,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
                         {/* Bara de control superioară */}
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl bg-card/50 border border-border p-4 shadow-sm backdrop-blur-sm">
                             <ActiveFiltersBarClient filters={filters} />
-                            <div className="shrink-0 text-sm font-bold text-muted-foreground">
+                            <div className="ml-auto shrink-0 text-sm font-bold text-muted-foreground">
                                 <ResultsCount total={total} />
                             </div>
                         </div>
@@ -109,6 +106,8 @@ export default async function EventsPage({ searchParams }: PageProps) {
                 </main>
             </div>
         </div>
+
+        <FilterFABClient filters={filters} />
         </FiltersPendingProvider>
     )
 }
