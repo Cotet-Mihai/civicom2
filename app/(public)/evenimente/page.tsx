@@ -5,6 +5,7 @@ import { FilterPanel } from './_components/FilterPanel'
 import { FilterFABClient } from './_components/FilterFABClient'
 import { FiltersPendingProvider } from './_components/FiltersPendingContext'
 import { ActiveFiltersBarClient } from './_components/ActiveFiltersBarClient'
+import { MobileSearchBarClient } from './_components/MobileSearchBarClient'
 import { ResultsCount } from './_components/ResultsCount'
 import { EventsListClient } from './_components/EventsListClient'
 import { EmptyState } from './_components/EmptyState'
@@ -83,8 +84,14 @@ export default async function EventsPage({ searchParams }: PageProps) {
                 <main className="flex-1 px-6 py-8 lg:px-10 lg:py-12">
                     <div className="mx-auto max-w-5xl space-y-6 animate-fade-in-up">
 
-                        {/* Bara de control superioară */}
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl bg-card/50 border border-border p-4 shadow-sm backdrop-blur-sm">
+                        {/* Mobile: search + count */}
+                        <div className="space-y-2 lg:hidden">
+                            <MobileSearchBarClient cauta={filters.cauta} />
+                            <ResultsCount total={total} />
+                        </div>
+
+                        {/* Desktop: filtre active + count */}
+                        <div className="hidden lg:flex flex-row items-center justify-between rounded-xl bg-card/50 border border-border p-4 shadow-sm backdrop-blur-sm">
                             <ActiveFiltersBarClient filters={filters} />
                             <div className="ml-auto shrink-0 text-sm font-bold text-muted-foreground">
                                 <ResultsCount total={total} />
