@@ -25,16 +25,28 @@ export default async function PanouEvenimentePage() {
           </div>
         ) : (
           events.map(event => (
-            <div key={event.id} className="flex items-center gap-2">
-              <div className="flex-1 min-w-0">
-                <DashboardEventRow event={event} showStatus />
+            <div key={event.id}>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <DashboardEventRow event={event} showStatus />
+                </div>
+                <CompleteEventButtonClient
+                  eventId={event.id}
+                  category={event.category}
+                  subcategory={event.subcategory}
+                  status={event.status}
+                />
               </div>
-              <CompleteEventButtonClient
-                eventId={event.id}
-                category={event.category}
-                subcategory={event.subcategory}
-                status={event.status}
-              />
+              {event.status === 'rejected' && (
+                <div className="pl-3 pb-1">
+                  <Link
+                    href={`/evenimente/${event.id}/contestatie`}
+                    className="text-xs text-destructive hover:text-destructive/80 font-medium transition-colors"
+                  >
+                    Contestează decizia →
+                  </Link>
+                </div>
+              )}
             </div>
           ))
         )}
