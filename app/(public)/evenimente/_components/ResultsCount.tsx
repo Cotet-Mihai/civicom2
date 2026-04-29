@@ -1,4 +1,3 @@
-// app/(public)/evenimente/_components/ResultsCount.tsx
 type Props = { total: number }
 
 export function ResultsCount({ total }: Props) {
