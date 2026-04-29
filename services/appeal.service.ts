@@ -198,19 +198,27 @@ export async function resolveAppeal(
 
   // Send notification to creator
   if (decision === 'approved') {
-    await createNotification(
-      creatorId,
-      'Contestație aprobată ✅',
-      `Contestația ta pentru evenimentul "${eventTitle}" a fost aprobată. Evenimentul este acum vizibil public.`,
-      'appeal_approved'
-    )
+    try {
+      await createNotification(
+        creatorId,
+        'Contestație aprobată ✅',
+        `Contestația ta pentru evenimentul "${eventTitle}" a fost aprobată. Evenimentul este acum vizibil public.`,
+        'appeal_approved'
+      )
+    } catch (err) {
+      console.error('[resolveAppeal] notification failed:', err)
+    }
   } else {
-    await createNotification(
-      creatorId,
-      'Contestație respinsă ❌',
-      `Contestația ta pentru evenimentul "${eventTitle}" a fost respinsă. Motiv: ${adminNote.trim()}`,
-      'appeal_rejected'
-    )
+    try {
+      await createNotification(
+        creatorId,
+        'Contestație respinsă ❌',
+        `Contestația ta pentru evenimentul "${eventTitle}" a fost respinsă. Motiv: ${adminNote.trim()}`,
+        'appeal_rejected'
+      )
+    } catch (err) {
+      console.error('[resolveAppeal] notification failed:', err)
+    }
   }
 
   return { ok: true }
