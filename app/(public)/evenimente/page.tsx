@@ -8,7 +8,7 @@ import { EventsListClient } from './_components/EventsListClient'
 import { EmptyState } from './_components/EmptyState'
 
 export const metadata: Metadata = {
-  title: 'evenimente',
+  title: 'Evenimente',
   description: 'Descoperă proteste, petiții, boicoturi și activități comunitare din România.',
   alternates: { canonical: '/evenimente' },
   openGraph: {
