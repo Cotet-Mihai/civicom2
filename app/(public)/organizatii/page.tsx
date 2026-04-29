@@ -10,6 +10,14 @@ export const metadata: Metadata = {
   title: 'Organizații',
   description: 'Descoperă organizațiile non-guvernamentale verificate pe CIVICOM care coordonează acțiuni civice.',
   alternates: { canonical: '/organizatii' },
+  openGraph: {
+    title: 'Organizații — CIVICOM',
+    description: 'Descoperă organizațiile non-guvernamentale verificate pe CIVICOM care coordonează acțiuni civice.',
+    url: 'https://civicom.ro/organizatii',
+    siteName: 'CIVICOM',
+    locale: 'ro_RO',
+    type: 'website',
+  },
 }
 
 function StarRating({ rating }: { rating: number }) {

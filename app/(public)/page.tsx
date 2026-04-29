@@ -15,6 +15,15 @@ import { CtaSection } from './_components/CtaSection'
 export const metadata: Metadata = {
     title: 'Acasă',
     description: 'CIVICOM — platforma civică unde găsești și creezi proteste, petiții, boicoturi și acțiuni comunitare din România.',
+    alternates: { canonical: '/' },
+    openGraph: {
+        title: 'CIVICOM — Implicare Civică',
+        description: 'Platforma civică unde găsești și creezi proteste, petiții, boicoturi și acțiuni comunitare din România.',
+        url: 'https://civicom.ro/',
+        siteName: 'CIVICOM',
+        locale: 'ro_RO',
+        type: 'website',
+    },
 }
 
 const jsonLd = {
