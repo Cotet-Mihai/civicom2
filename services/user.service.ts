@@ -168,7 +168,7 @@ export async function updateUserProfile(name: string): Promise<{ ok: true } | { 
 
   if (error) return { error: error.message }
 
-  // Sync auth metadata so DashboardNavbar reflects the new name after router.refresh()
+  // Sync auth metadata so Navbar reflects the new name after router.refresh()
   await supabase.auth.updateUser({ data: { name: name.trim() } })
 
   return { ok: true }

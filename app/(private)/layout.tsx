@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { DashboardNavbar } from '@/components/layout/DashboardNavbar'
+import { Navbar } from '@/components/layout/Navbar'
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function PrivateLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <DashboardNavbar />
+      <Navbar />
       <main className="flex flex-1 flex-col">{children}</main>
     </>
   )

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import {
   Menu, Plus, LogOut, User, LayoutDashboard,
-  Calendar, FileText, AlertCircle, Building2,
+  Calendar, FileText, AlertCircle, Building2, MapPin,
 } from 'lucide-react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -39,7 +39,7 @@ const navItems = [
   { label: 'Contestații', href: '/panou/contestatii', Icon: AlertCircle },
 ]
 
-export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Props) {
+export function NavbarActionsClient({ userName, userEmail, orgId }: Props) {
   const initial = userName?.charAt(0).toUpperCase() ?? 'U'
   const orgHref = orgId ? `/organizatie/${orgId}/panou` : '/organizatie/creeaza'
   const orgLabel = orgId ? 'Organizația mea' : 'Solicită creare ONG'
@@ -52,10 +52,7 @@ export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Pro
     <>
       {/* ─── Desktop ─── */}
       <div className="hidden items-center gap-3 md:flex">
-        <Link
-          href="/creeaza"
-          className={buttonVariants({ size: 'sm' }) + ' gap-1.5'}
-        >
+        <Link href="/creeaza" className={buttonVariants({ size: 'sm' }) + ' gap-1.5'}>
           <Plus className="size-4" />
           Creează eveniment
         </Link>
@@ -109,11 +106,7 @@ export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Pro
                 <User className="size-4" />
                 Profil
               </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                className="cursor-pointer"
-                onClick={handleSignOut}
-              >
+              <DropdownMenuItem variant="destructive" className="cursor-pointer" onClick={handleSignOut}>
                 <LogOut className="size-4" />
                 Deconectare
               </DropdownMenuItem>
@@ -140,14 +133,24 @@ export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Pro
 
           <div className="mt-4 flex flex-1 flex-col gap-0.5 overflow-y-auto">
             <p className="px-2 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Navigare
+              Explorează
+            </p>
+            <Link href="/evenimente" className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}>
+              <MapPin className="size-4" />
+              Evenimente
+            </Link>
+            <Link href="/organizatii" className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}>
+              <Building2 className="size-4" />
+              Organizații
+            </Link>
+
+            <Separator className="my-2" />
+
+            <p className="px-2 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Contul meu
             </p>
             {navItems.map(({ label, href, Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}
-              >
+              <Link key={href} href={href} className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}>
                 <Icon className="size-4" />
                 {label}
               </Link>
@@ -155,38 +158,25 @@ export function DashboardNavbarActionsClient({ userName, userEmail, orgId }: Pro
 
             <Separator className="my-2" />
 
-            <Link
-              href={orgHref}
-              className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}
-            >
+            <Link href={orgHref} className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}>
               <Building2 className="size-4" />
               {orgLabel}
             </Link>
-            <Link
-              href="/creeaza"
-              className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}
-            >
+            <Link href="/creeaza" className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}>
               <Plus className="size-4" />
               Creează eveniment
             </Link>
 
             <Separator className="my-2" />
 
-            <Link
-              href="/profil"
-              className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}
-            >
+            <Link href="/profil" className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start gap-2'}>
               <User className="size-4" />
               Profil
             </Link>
           </div>
 
           <div className="border-t border-border pt-4">
-            <Button
-              variant="destructive"
-              className="w-full gap-2"
-              onClick={handleSignOut}
-            >
+            <Button variant="destructive" className="w-full gap-2" onClick={handleSignOut}>
               <LogOut className="size-4" />
               Deconectare
             </Button>

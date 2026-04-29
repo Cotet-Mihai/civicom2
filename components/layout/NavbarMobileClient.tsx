@@ -11,7 +11,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 
-export function PublicNavbarMobileClient() {
+export function NavbarMobileClient() {
   return (
     <Sheet>
       <SheetTrigger
@@ -29,37 +29,22 @@ export function PublicNavbarMobileClient() {
         </SheetHeader>
 
         <nav className="mt-6 flex flex-1 flex-col gap-1">
-          <Link
-            href="/"
-            className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}
-          >
+          <Link href="/" className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}>
             Acasă
           </Link>
-          <Link
-            href="/evenimente"
-            className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}
-          >
+          <Link href="/evenimente" className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}>
             Evenimente
           </Link>
-          <Link
-            href="/organizatii"
-            className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}
-          >
+          <Link href="/organizatii" className={buttonVariants({ variant: 'ghost', size: 'default' }) + ' justify-start'}>
             Organizații
           </Link>
         </nav>
 
         <div className="flex flex-col gap-2 border-t border-border pt-4">
-          <Link
-            href="/autentificare"
-            className={buttonVariants({ variant: 'outline' }) + ' w-full justify-center'}
-          >
+          <Link href="/autentificare" className={buttonVariants({ variant: 'outline' }) + ' w-full justify-center'}>
             Autentifică-te
           </Link>
-          <Link
-            href="/inregistrare"
-            className={buttonVariants({ variant: 'default' }) + ' w-full justify-center'}
-          >
+          <Link href="/inregistrare" className={buttonVariants({ variant: 'default' }) + ' w-full justify-center'}>
             Înregistrează-te
           </Link>
         </div>
