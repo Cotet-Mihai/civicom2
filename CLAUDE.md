@@ -334,7 +334,7 @@ Grid selector 5 tipuri · `StepperUI` reutilizabil · `LocationPickerClient` + `
 ### ✅ Etapa 9 — Moderare Admin (`feat/admin-moderation`)
 `admin.service.ts` (approve/reject events + orgs) · `notification.service.ts` · `/admin` + sub-rute · Notificări creator la aprobare/respingere
 
-### ⬜ Etapa 10 — Contestații (`feat/appeals`)
+### ✅ Etapa 10 — Contestații (`feat/appeals`)
 `createAppeal` · `getAllAppeals` · `resolveAppeal` · `/evenimente/[id]/contestatie` · `/admin/contestatii` · Notificări decizie
 
 ### ✅ Etapa 11 — ONG-uri (`feat/organizations`)
