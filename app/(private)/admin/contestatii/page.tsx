@@ -75,7 +75,7 @@ export default async function AdminContestatiePage() {
                   <p className="text-sm text-foreground whitespace-pre-wrap">{appeal.reason}</p>
                 </div>
 
-                <AdminAppealActionBarClient appealId={appeal.id} eventId={appeal.event_id} />
+                <AdminAppealActionBarClient appealId={appeal.id} />
               </CardContent>
             </Card>
           ))
