@@ -343,7 +343,7 @@ Grid selector 5 tipuri · `StepperUI` reutilizabil · `LocationPickerClient` + `
 ### ✅ Etapa 12 — Finalizare Evenimente & Feedback (`feat/event-completion-feedback`)
 `completeEvent` (service_role) · Cron job pg_cron (auto-complete la expirare) · Buton "Marchează ca finalizat" în dashboard · `FeedbackSection` + `FeedbackFormClient` · Notificări la completion → participanți
 
-### ⬜ Etapa 13 — SEO & Performance (`feat/seo-performance`)
+### ✅ Etapa 13 — SEO & Performance (`feat/seo-performance`)
 `robots.ts` · `sitemap.ts` · JSON-LD pe toate paginile · Optimizare `next/image` · Lazy loading Leaflet/carusele · Vercel Analytics + PostHog
 
 ---
