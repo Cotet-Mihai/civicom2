@@ -1,11 +1,10 @@
 import Link from 'next/link'
-import { getSession } from '@/services/auth.service'
+import { getAuthUser } from '@/services/auth.service'
 import { getUserOrgId } from '@/services/organization.service'
 import { DashboardNavbarActionsClient } from './DashboardNavbarActionsClient'
 
 export async function DashboardNavbar() {
-  const session = await getSession()
-  const user = session?.user
+  const user = await getAuthUser()
 
   const userName: string = user?.user_metadata?.display_name ?? user?.user_metadata?.name ?? 'Utilizator'
   const userEmail: string = user?.email ?? ''

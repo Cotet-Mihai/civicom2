@@ -12,7 +12,7 @@ import {
   getOrganizationRatings,
   getUserRatingForOrganization,
 } from '@/services/organization.service'
-import { getSession } from '@/services/auth.service'
+import { getAuthUser } from '@/services/auth.service'
 import { EventCard } from '@/components/shared/EventCard'
 import { OrgRatingClient } from './_components/OrgRatingClient'
 
@@ -41,17 +41,17 @@ function formatDate(d: string) {
 export default async function OrganizatieDetailPage({ params }: PageProps) {
   const { id } = await params
 
-  const [org, events, ratings, session] = await Promise.all([
+  const [org, events, ratings, user] = await Promise.all([
     getOrganizationById(id),
     getOrganizationPublicEvents(id),
     getOrganizationRatings(id),
-    getSession(),
+    getAuthUser(),
   ])
 
   if (!org || org.status !== 'approved') notFound()
 
-  const userRating = session ? await getUserRatingForOrganization(id) : null
-  const isAuthenticated = !!session
+  const userRating = user ? await getUserRatingForOrganization(id) : null
+  const isAuthenticated = !!user
 
   const jsonLd = {
     '@context': 'https://schema.org',
