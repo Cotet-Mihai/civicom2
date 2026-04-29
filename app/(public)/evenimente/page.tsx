@@ -8,10 +8,17 @@ import { EventsListClient } from './_components/EventsListClient'
 import { EmptyState } from './_components/EmptyState'
 
 export const metadata: Metadata = {
-  title: 'Evenimente',
-  description:
-    'Descoperă proteste, petiții, boicoturi și activități comunitare din România.',
+  title: 'evenimente',
+  description: 'Descoperă proteste, petiții, boicoturi și activități comunitare din România.',
   alternates: { canonical: '/evenimente' },
+  openGraph: {
+    title: 'Evenimente — CIVICOM',
+    description: 'Descoperă proteste, petiții, boicoturi și activități comunitare din România.',
+    url: 'https://civicom.ro/evenimente',
+    siteName: 'CIVICOM',
+    locale: 'ro_RO',
+    type: 'website',
+  },
 }
 
 type PageProps = {
