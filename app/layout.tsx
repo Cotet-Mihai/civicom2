@@ -35,7 +35,10 @@ export default function RootLayout({
       lang="ro"
       className={`${montserrat.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col"><TooltipProvider>{children}</TooltipProvider><Analytics /></body>
+      <body className="min-h-full flex flex-col">
+        <TooltipProvider>{children}</TooltipProvider>
+        <Analytics />
+      </body>
     </html>
   )
 }
