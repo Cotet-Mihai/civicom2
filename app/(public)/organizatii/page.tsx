@@ -81,6 +81,20 @@ export default async function OrganizatiiPage() {
                         {orgs.map(org => (
                             <Card key={org.id} className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-md">
 
+                                {/* Banner card header */}
+                                <div className="relative w-full aspect-video overflow-hidden">
+                                  {org.banner_url ? (
+                                    <Image
+                                      src={org.banner_url}
+                                      alt={`Banner ${org.name}`}
+                                      fill
+                                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5" />
+                                  )}
+                                </div>
+
                                 {/* Glow ambiental intern - declanșat la hover */}
                                 <div className="pointer-events-none absolute right-0 top-0 -mr-8 -mt-8 size-32 rounded-full bg-primary/5 transition-all duration-500 group-hover:bg-primary/10" />
 
