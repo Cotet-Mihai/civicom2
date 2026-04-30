@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { createOrganization } from '@/services/organization.service'
 import { LogoUploadClient } from '../../_components/LogoUploadClient'
+import { BannerUploadClient } from '../../_components/BannerUploadClient'
 import { ORG_CATEGORY_LABELS } from '@/lib/constants'
 
 const TEMP_ORG_ID = 'new'
@@ -18,6 +19,7 @@ export function OngCreateFormClient() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const [categories, setCategories] = useState<string[]>([])
   const [form, setForm] = useState({ name: '', description: '', website: '', iban: '' })
 
@@ -36,6 +38,7 @@ export function OngCreateFormClient() {
       website: form.website || undefined,
       iban: form.iban || undefined,
       logo_url: logoUrl || undefined,
+      banner_url: bannerUrl || undefined,
       categories,
     })
     setLoading(false)
@@ -46,6 +49,7 @@ export function OngCreateFormClient() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <BannerUploadClient orgId={TEMP_ORG_ID} bannerUrl={bannerUrl} onBannerChange={setBannerUrl} />
       <LogoUploadClient orgId={TEMP_ORG_ID} logoUrl={logoUrl} onLogoChange={setLogoUrl} />
 
       <div className="space-y-2">
