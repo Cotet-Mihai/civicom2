@@ -78,9 +78,9 @@ export function OngSettingsFormClient({ org }: Props) {
           Domenii de activitate *
         </Label>
         <ToggleGroup
-          type="multiple"
+          multiple
           value={categories}
-          onValueChange={setCategories}
+          onValueChange={(values) => setCategories(values)}
           className="flex flex-wrap justify-start gap-2"
         >
           {Object.entries(ORG_CATEGORY_LABELS).map(([value, label]) => (
