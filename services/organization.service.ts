@@ -264,7 +264,7 @@ export async function createOrganization(data: {
   categories: string[]
 }): Promise<{ ok: true; orgId: string } | { error: string }> {
   if (data.name.trim().length < 2) return { error: 'Numele trebuie să aibă minim 2 caractere' }
-  if (!data.categories || data.categories.length === 0)
+  if (data.categories.length === 0)
     return { error: 'Selectează cel puțin un domeniu de activitate' }
 
   const supabase = await createClient()
