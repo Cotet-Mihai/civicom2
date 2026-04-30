@@ -2,11 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Building2, Globe, Star, Users, CalendarDays, CreditCard } from 'lucide-react'
+import { Building2, Globe, Star, Users, CalendarDays, CreditCard, Scale, Hash, FileText, Phone, MapPin, Mail } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
-import { ORG_CATEGORY_LABELS } from '@/lib/constants'
+import { ORG_CATEGORY_LABELS, ORG_TYPE_LABELS } from '@/lib/constants'
 import {
   getOrganizationById,
   getOrganizationPublicEvents,
@@ -140,6 +140,73 @@ export default async function OrganizatieDetailPage({ params }: PageProps) {
                       {ORG_CATEGORY_LABELS[cat] ?? cat}
                     </Badge>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Legal info */}
+            {(org.org_type || org.cui || org.reg_number || org.email || org.phone || org.address) && (
+              <div className="space-y-4">
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
+                  Informații juridice & sediu
+                </h2>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {org.org_type && (
+                    <div className="flex items-start gap-2">
+                      <Scale size={14} className="mt-0.5 shrink-0 text-muted-foreground" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tip</p>
+                        <p className="text-sm font-medium text-foreground">{ORG_TYPE_LABELS[org.org_type] ?? org.org_type}</p>
+                      </div>
+                    </div>
+                  )}
+                  {org.cui && (
+                    <div className="flex items-start gap-2">
+                      <Hash size={14} className="mt-0.5 shrink-0 text-muted-foreground" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">CUI / CIF</p>
+                        <p className="text-sm font-mono font-medium text-foreground">{org.cui}</p>
+                      </div>
+                    </div>
+                  )}
+                  {org.reg_number && (
+                    <div className="flex items-start gap-2">
+                      <FileText size={14} className="mt-0.5 shrink-0 text-muted-foreground" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nr. Registru</p>
+                        <p className="text-sm font-medium text-foreground">{org.reg_number}</p>
+                      </div>
+                    </div>
+                  )}
+                  {org.email && (
+                    <div className="flex items-start gap-2">
+                      <Mail size={14} className="mt-0.5 shrink-0 text-muted-foreground" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email</p>
+                        <a href={`mailto:${org.email}`} className="text-sm font-medium text-primary hover:underline">{org.email}</a>
+                      </div>
+                    </div>
+                  )}
+                  {org.phone && (
+                    <div className="flex items-start gap-2">
+                      <Phone size={14} className="mt-0.5 shrink-0 text-muted-foreground" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Telefon</p>
+                        <a href={`tel:${org.phone}`} className="text-sm font-medium text-primary hover:underline">{org.phone}</a>
+                      </div>
+                    </div>
+                  )}
+                  {(org.address || org.city) && (
+                    <div className="flex items-start gap-2 sm:col-span-2">
+                      <MapPin size={14} className="mt-0.5 shrink-0 text-muted-foreground" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sediu</p>
+                        <p className="text-sm font-medium text-foreground">
+                          {[org.address, org.postal_code, org.city].filter(Boolean).join(', ')}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
