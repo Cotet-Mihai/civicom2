@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { updateOrganization } from '@/services/organization.service'
 import { LogoUploadClient } from '../../../_components/LogoUploadClient'
+import { ORG_CATEGORY_LABELS } from '@/lib/constants'
 import type { OrgDetail } from '@/services/organization.service'
 
 type Props = { org: OrgDetail }
@@ -17,6 +19,7 @@ export function OngSettingsFormClient({ org }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(org.logo_url)
+  const [categories, setCategories] = useState<string[]>(org.categories)
   const [form, setForm] = useState({
     name: org.name,
     description: org.description ?? '',
@@ -31,6 +34,7 @@ export function OngSettingsFormClient({ org }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) { toast.error('Numele este obligatoriu'); return }
+    if (categories.length === 0) { toast.error('Selectează cel puțin un domeniu de activitate'); return }
     setLoading(true)
     const result = await updateOrganization(org.id, {
       name: form.name,
@@ -38,6 +42,7 @@ export function OngSettingsFormClient({ org }: Props) {
       website: form.website || null,
       iban: form.iban || null,
       logo_url: logoUrl,
+      categories,
     })
     setLoading(false)
     if ('error' in result) { toast.error(result.error); return }
@@ -66,6 +71,29 @@ export function OngSettingsFormClient({ org }: Props) {
           onChange={e => set('description', e.target.value)}
           rows={4}
         />
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          Domenii de activitate *
+        </Label>
+        <ToggleGroup
+          type="multiple"
+          value={categories}
+          onValueChange={setCategories}
+          className="flex flex-wrap justify-start gap-2"
+        >
+          {Object.entries(ORG_CATEGORY_LABELS).map(([value, label]) => (
+            <ToggleGroupItem
+              key={value}
+              value={value}
+              variant="outline"
+              className="rounded-full px-4 text-sm font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+            >
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
