@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { createOrganization } from '@/services/organization.service'
 import { LogoUploadClient } from '../../_components/LogoUploadClient'
+import { ORG_CATEGORY_LABELS } from '@/lib/constants'
 
 const TEMP_ORG_ID = 'new'
 
@@ -16,6 +18,7 @@ export function OngCreateFormClient() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [categories, setCategories] = useState<string[]>([])
   const [form, setForm] = useState({ name: '', description: '', website: '', iban: '' })
 
   function set(field: string, value: string) {
@@ -25,6 +28,7 @@ export function OngCreateFormClient() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) { toast.error('Numele organizației este obligatoriu'); return }
+    if (categories.length === 0) { toast.error('Selectează cel puțin un domeniu de activitate'); return }
     setLoading(true)
     const result = await createOrganization({
       name: form.name,
@@ -32,6 +36,7 @@ export function OngCreateFormClient() {
       website: form.website || undefined,
       iban: form.iban || undefined,
       logo_url: logoUrl || undefined,
+      categories,
     })
     setLoading(false)
     if ('error' in result) { toast.error(result.error); return }
@@ -67,6 +72,29 @@ export function OngCreateFormClient() {
           onChange={e => set('description', e.target.value)}
           rows={4}
         />
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          Domenii de activitate *
+        </Label>
+        <ToggleGroup
+          type="multiple"
+          value={categories}
+          onValueChange={setCategories}
+          className="flex flex-wrap justify-start gap-2"
+        >
+          {Object.entries(ORG_CATEGORY_LABELS).map(([value, label]) => (
+            <ToggleGroupItem
+              key={value}
+              value={value}
+              variant="outline"
+              className="rounded-full px-4 text-sm font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+            >
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
