@@ -50,3 +50,12 @@ export async function uploadOrgBanner(file: File, orgId: string): Promise<string
   const { data } = supabase.storage.from('org-banners').getPublicUrl(path)
   return data.publicUrl
 }
+
+export async function uploadOrgDocument(file: File, orgId: string): Promise<string | null> {
+  const supabase = getClient()
+  const ext = file.name.split('.').pop()
+  const path = `${orgId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const { error } = await supabase.storage.from('org-documents').upload(path, file, { upsert: false })
+  if (error) { console.error('[uploadOrgDocument]', error.message); return null }
+  return path
+}
