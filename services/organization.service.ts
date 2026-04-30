@@ -41,6 +41,15 @@ export type OrgDetail = {
   members: OrgMember[]
   events_count: number
   categories: string[]
+  cui: string | null
+  reg_number: string | null
+  org_type: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  postal_code: string | null
+  city: string | null
+  documents: OrgDocument[]
 }
 
 export type OrgEvent = {
@@ -60,6 +69,14 @@ export type OrgStats = {
   rating: number
 }
 
+export type OrgDocument = {
+  id: string
+  doc_type: string
+  file_name: string
+  storage_path: string
+  created_at: string
+}
+
 // ============================================================
 // INTERNAL ROW TYPES
 // ============================================================
@@ -75,6 +92,9 @@ type OrgDetailRow = {
   website: string | null; iban: string | null
   logo_url: string | null; banner_url: string | null; status: string; rating: number
   owner_id: string; created_at: string; categories: string[]
+  cui: string | null; reg_number: string | null; org_type: string | null
+  email: string | null; phone: string | null; address: string | null
+  postal_code: string | null; city: string | null
 }
 
 type OrgMemberRow = {
@@ -139,13 +159,13 @@ export async function getOrganizationById(id: string): Promise<OrgDetail | null>
 
   const { data: orgRaw, error: orgErr } = await adminClient
     .from('organizations')
-    .select('id, name, description, website, iban, logo_url, banner_url, status, rating, owner_id, created_at, categories')
+    .select('id, name, description, website, iban, logo_url, banner_url, status, rating, owner_id, created_at, categories, cui, reg_number, org_type, email, phone, address, postal_code, city')
     .eq('id', id)
     .single()
   if (orgErr || !orgRaw) return null
   const org = orgRaw as OrgDetailRow
 
-  const [{ data: membersRaw }, { count: events_count }] = await Promise.all([
+  const [{ data: membersRaw }, { count: events_count }, { data: docsRaw }] = await Promise.all([
     adminClient
       .from('organization_members')
       .select('user_id, role, joined_at, user:users!user_id(name)')
@@ -156,6 +176,11 @@ export async function getOrganizationById(id: string): Promise<OrgDetail | null>
       .select('*', { count: 'exact', head: true })
       .eq('organization_id', id)
       .in('status', ['approved', 'completed']),
+    adminClient
+      .from('org_documents')
+      .select('id, doc_type, file_name, storage_path, created_at')
+      .eq('org_id', id)
+      .order('created_at', { ascending: true }),
   ])
 
   const members: OrgMember[] = ((membersRaw ?? []) as unknown as OrgMemberRow[]).map(m => ({
@@ -165,7 +190,8 @@ export async function getOrganizationById(id: string): Promise<OrgDetail | null>
     joined_at: m.joined_at,
   }))
 
-  return { ...org, members, events_count: events_count ?? 0 }
+  const documents: OrgDocument[] = (docsRaw ?? []) as OrgDocument[]
+  return { ...org, members, events_count: events_count ?? 0, documents }
 }
 
 export async function getOrganizationPublicEvents(orgId: string): Promise<OrgEvent[]> {
@@ -265,6 +291,14 @@ export async function createOrganization(data: {
   logo_url?: string
   banner_url?: string
   categories: string[]
+  cui?: string
+  reg_number?: string
+  org_type?: string
+  email?: string
+  phone?: string
+  address?: string
+  postal_code?: string
+  city?: string
 }): Promise<{ ok: true; orgId: string } | { error: string }> {
   if (data.name.trim().length < 2) return { error: 'Numele trebuie să aibă minim 2 caractere' }
   if (data.categories.length === 0)
@@ -285,6 +319,14 @@ export async function createOrganization(data: {
       banner_url: data.banner_url || null,
       owner_id: userId,
       categories: data.categories,
+      cui: data.cui?.trim() || null,
+      reg_number: data.reg_number?.trim() || null,
+      org_type: data.org_type || null,
+      email: data.email?.trim() || null,
+      phone: data.phone?.trim() || null,
+      address: data.address?.trim() || null,
+      postal_code: data.postal_code?.trim() || null,
+      city: data.city?.trim() || null,
     })
     .select('id')
     .single()
@@ -310,6 +352,14 @@ export async function updateOrganization(
     logo_url?: string | null
     banner_url?: string | null
     categories?: string[]
+    cui?: string | null
+    reg_number?: string | null
+    org_type?: string | null
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    postal_code?: string | null
+    city?: string | null
   }
 ): Promise<{ ok: true } | { error: string }> {
   const role = await getOrgMemberRole(orgId)
@@ -323,6 +373,14 @@ export async function updateOrganization(
   if (data.iban !== undefined) update.iban = data.iban || null
   if (data.logo_url !== undefined) update.logo_url = data.logo_url || null
   if (data.banner_url !== undefined) update.banner_url = data.banner_url || null
+  if (data.cui !== undefined) update.cui = data.cui?.trim() || null
+  if (data.reg_number !== undefined) update.reg_number = data.reg_number?.trim() || null
+  if (data.org_type !== undefined) update.org_type = data.org_type || null
+  if (data.email !== undefined) update.email = data.email?.trim() || null
+  if (data.phone !== undefined) update.phone = data.phone?.trim() || null
+  if (data.address !== undefined) update.address = data.address?.trim() || null
+  if (data.postal_code !== undefined) update.postal_code = data.postal_code?.trim() || null
+  if (data.city !== undefined) update.city = data.city?.trim() || null
   if (data.categories !== undefined) {
     if (data.categories.length === 0)
       return { error: 'Selectează cel puțin un domeniu de activitate' }
@@ -436,5 +494,43 @@ export async function rateOrganization(orgId: string, rating: number): Promise<{
 
   await supabase.from('organizations').update({ rating: avg }).eq('id', orgId)
 
+  return { ok: true }
+}
+
+export async function addOrgDocument(
+  orgId: string,
+  docType: string,
+  fileName: string,
+  storagePath: string
+): Promise<{ ok: true; doc: OrgDocument } | { error: string }> {
+  const role = await getOrgMemberRole(orgId)
+  if (role !== 'admin') return { error: 'Acces interzis' }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('org_documents')
+    .insert({ org_id: orgId, doc_type: docType, file_name: fileName, storage_path: storagePath })
+    .select('id, doc_type, file_name, storage_path, created_at')
+    .single()
+
+  if (error || !data) return { error: error?.message ?? 'Eroare la salvare document' }
+  return { ok: true, doc: data as OrgDocument }
+}
+
+export async function removeOrgDocument(
+  docId: string,
+  orgId: string
+): Promise<{ ok: true } | { error: string }> {
+  const role = await getOrgMemberRole(orgId)
+  if (role !== 'admin') return { error: 'Acces interzis' }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('org_documents')
+    .delete()
+    .eq('id', docId)
+    .eq('org_id', orgId)
+
+  if (error) return { error: error.message }
   return { ok: true }
 }
