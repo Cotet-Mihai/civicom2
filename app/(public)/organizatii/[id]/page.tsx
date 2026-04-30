@@ -6,6 +6,7 @@ import { Building2, Globe, Star, Users, CalendarDays, CreditCard } from 'lucide-
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
+import { ORG_CATEGORY_LABELS } from '@/lib/constants'
 import {
   getOrganizationById,
   getOrganizationPublicEvents,
@@ -117,6 +118,22 @@ export default async function OrganizatieDetailPage({ params }: PageProps) {
                   Despre organizație
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">{org.description}</p>
+              </div>
+            )}
+
+            {/* Categories */}
+            {org.categories.length > 0 && (
+              <div>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
+                  Domenii de activitate
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {org.categories.map(cat => (
+                    <Badge key={cat} variant="secondary" className="text-xs px-3 py-1 font-semibold">
+                      {ORG_CATEGORY_LABELS[cat] ?? cat}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             )}
 
