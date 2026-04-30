@@ -40,3 +40,13 @@ export async function uploadLogo(file: File, orgId: string): Promise<string | nu
   const { data } = supabase.storage.from('logos').getPublicUrl(path)
   return data.publicUrl
 }
+
+export async function uploadOrgBanner(file: File, orgId: string): Promise<string | null> {
+  const supabase = getClient()
+  const ext = file.name.split('.').pop()
+  const path = `${orgId}/${Date.now()}.${ext}`
+  const { error } = await supabase.storage.from('org-banners').upload(path, file, { upsert: true })
+  if (error) { console.error('[uploadOrgBanner]', error.message); return null }
+  const { data } = supabase.storage.from('org-banners').getPublicUrl(path)
+  return data.publicUrl
+}
