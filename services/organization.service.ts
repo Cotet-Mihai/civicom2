@@ -12,6 +12,7 @@ export type OrgListItem = {
   name: string
   description: string | null
   logo_url: string | null
+  banner_url: string | null
   website: string | null
   rating: number
   created_at: string
@@ -32,6 +33,7 @@ export type OrgDetail = {
   website: string | null
   iban: string | null
   logo_url: string | null
+  banner_url: string | null
   status: string
   rating: number
   owner_id: string
@@ -64,14 +66,14 @@ export type OrgStats = {
 
 type OrgRow = {
   id: string; name: string; description: string | null
-  logo_url: string | null; website: string | null
+  logo_url: string | null; banner_url: string | null; website: string | null
   rating: number; created_at: string; categories: string[]
 }
 
 type OrgDetailRow = {
   id: string; name: string; description: string | null
   website: string | null; iban: string | null
-  logo_url: string | null; status: string; rating: number
+  logo_url: string | null; banner_url: string | null; status: string; rating: number
   owner_id: string; created_at: string; categories: string[]
 }
 
@@ -125,7 +127,7 @@ export async function getOrganizations(filters?: { status?: string }): Promise<O
   const status = filters?.status ?? 'approved'
   const { data, error } = await supabase
     .from('organizations')
-    .select('id, name, description, logo_url, website, rating, created_at, categories')
+    .select('id, name, description, logo_url, banner_url, website, rating, created_at, categories')
     .eq('status', status)
     .order('rating', { ascending: false })
   if (error) console.error('[getOrganizations]', error.message)
@@ -137,7 +139,7 @@ export async function getOrganizationById(id: string): Promise<OrgDetail | null>
 
   const { data: orgRaw, error: orgErr } = await adminClient
     .from('organizations')
-    .select('id, name, description, website, iban, logo_url, status, rating, owner_id, created_at, categories')
+    .select('id, name, description, website, iban, logo_url, banner_url, status, rating, owner_id, created_at, categories')
     .eq('id', id)
     .single()
   if (orgErr || !orgRaw) return null
@@ -261,6 +263,7 @@ export async function createOrganization(data: {
   iban?: string
   website?: string
   logo_url?: string
+  banner_url?: string
   categories: string[]
 }): Promise<{ ok: true; orgId: string } | { error: string }> {
   if (data.name.trim().length < 2) return { error: 'Numele trebuie să aibă minim 2 caractere' }
@@ -279,6 +282,7 @@ export async function createOrganization(data: {
       iban: data.iban?.trim() || null,
       website: data.website?.trim() || null,
       logo_url: data.logo_url || null,
+      banner_url: data.banner_url || null,
       owner_id: userId,
       categories: data.categories,
     })
@@ -304,6 +308,7 @@ export async function updateOrganization(
     website?: string | null
     iban?: string | null
     logo_url?: string | null
+    banner_url?: string | null
     categories?: string[]
   }
 ): Promise<{ ok: true } | { error: string }> {
@@ -317,6 +322,7 @@ export async function updateOrganization(
   if (data.website !== undefined) update.website = data.website || null
   if (data.iban !== undefined) update.iban = data.iban || null
   if (data.logo_url !== undefined) update.logo_url = data.logo_url || null
+  if (data.banner_url !== undefined) update.banner_url = data.banner_url || null
   if (data.categories !== undefined) {
     if (data.categories.length === 0)
       return { error: 'Selectează cel puțin un domeniu de activitate' }
