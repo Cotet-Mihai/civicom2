@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { updateOrganization } from '@/services/organization.service'
 import { LogoUploadClient } from '../../../_components/LogoUploadClient'
+import { BannerUploadClient } from '../../../_components/BannerUploadClient'
 import { ORG_CATEGORY_LABELS } from '@/lib/constants'
 import type { OrgDetail } from '@/services/organization.service'
 
@@ -19,6 +20,7 @@ export function OngSettingsFormClient({ org }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(org.logo_url)
+  const [bannerUrl, setBannerUrl] = useState<string | null>(org.banner_url)
   const [categories, setCategories] = useState<string[]>(org.categories)
   const [form, setForm] = useState({
     name: org.name,
@@ -42,6 +44,7 @@ export function OngSettingsFormClient({ org }: Props) {
       website: form.website || null,
       iban: form.iban || null,
       logo_url: logoUrl,
+      banner_url: bannerUrl,
       categories,
     })
     setLoading(false)
@@ -52,6 +55,7 @@ export function OngSettingsFormClient({ org }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <BannerUploadClient orgId={org.id} bannerUrl={bannerUrl} onBannerChange={setBannerUrl} />
       <LogoUploadClient orgId={org.id} logoUrl={logoUrl} onLogoChange={setLogoUrl} />
 
       <div className="space-y-2">
