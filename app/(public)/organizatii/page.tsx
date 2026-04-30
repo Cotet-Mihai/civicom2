@@ -31,7 +31,7 @@ function StarRating({ rating }: { rating: number }) {
                     <Star
                         key={i}
                         size={14}
-                        className={i <= Math.round(rating) ? 'fill-primary text-primary' : 'text-muted-foreground/20'}
+                        className={i <= Math.round(rating) ? 'fill-secondary text-secondary' : 'text-muted-foreground/20'}
                     />
                 ))}
             </div>
