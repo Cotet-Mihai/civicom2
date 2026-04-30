@@ -84,6 +84,13 @@ export default async function OrganizatieDetailPage({ params }: PageProps) {
           {/* ── Left column ── */}
           <div className="lg:col-span-8 space-y-8">
 
+            {/* Banner */}
+            {org.banner_url && (
+              <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden border border-border mb-6">
+                <Image src={org.banner_url} alt={`Banner ${org.name}`} fill className="object-cover" />
+              </div>
+            )}
+
             {/* Header */}
             <div className="flex items-start gap-5">
               {org.logo_url ? (
