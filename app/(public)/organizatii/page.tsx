@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Building2, Star, Globe, ArrowRight } from 'lucide-react'
+import { Building2, Star, Globe, ArrowRight, CheckCircle2, Users } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     },
 }
 
-// Am stilizat stelele pentru a se integra în design-ul curat
 function StarRating({ rating }: { rating: number }) {
     return (
         <div className="flex items-center gap-1.5">
@@ -30,7 +29,7 @@ function StarRating({ rating }: { rating: number }) {
                 {[1, 2, 3, 4, 5].map(i => (
                     <Star
                         key={i}
-                        size={14}
+                        size={13}
                         className={i <= Math.round(rating) ? 'fill-secondary text-secondary' : 'text-muted-foreground/20'}
                     />
                 ))}
@@ -42,13 +41,18 @@ function StarRating({ rating }: { rating: number }) {
     )
 }
 
+function pickTwo(arr: string[]): string[] {
+    if (arr.length <= 2) return arr
+    const shuffled = [...arr].sort(() => Math.random() - 0.5)
+    return shuffled.slice(0, 2)
+}
+
 export default async function OrganizatiiPage() {
     const orgs = await getOrganizations()
 
     return (
         <div className="relative min-h-screen bg-background pb-20 lg:pb-28">
 
-            {/* Efect de glow ambiental specific CIVICOM */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <div className="absolute -right-1/4 top-0 h-[500px] w-[500px] rounded-full bg-primary/5 blur-[100px]" />
                 <div className="absolute -left-1/4 top-1/3 h-[400px] w-[400px] rounded-full bg-primary/5 blur-[100px]" />
@@ -56,7 +60,6 @@ export default async function OrganizatiiPage() {
 
             <div className="relative z-10 mx-auto max-w-7xl px-6 pt-12 lg:px-8 lg:pt-20">
 
-                {/* Header-ul paginii - Stilizat cu tipografia masivă CIVICOM */}
                 <div className="mb-12 animate-fade-in-up flex flex-col gap-3">
                     <h1 className="font-heading text-4xl font-black uppercase tracking-tighter text-foreground lg:text-6xl text-balance">
                         Descoperă <span className="text-primary">Organizații</span>
@@ -66,7 +69,6 @@ export default async function OrganizatiiPage() {
                     </p>
                 </div>
 
-                {/* Empty state stilizat corespunzător */}
                 {orgs.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 py-24 text-center backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                         <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
@@ -76,95 +78,110 @@ export default async function OrganizatiiPage() {
                         <p className="mt-2 text-sm text-muted-foreground">Momentan nu există organizații aprobate pe platformă.</p>
                     </div>
                 ) : (
-                    /* Grid-ul de Carduri */
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                        {orgs.map(org => (
-                            <Card key={org.id} className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-md">
+                        {orgs.map(org => {
+                            const displayCategories = pickTwo(org.categories)
+                            return (
+                                <Card key={org.id} className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-md">
 
-                                {/* Banner card header */}
-                                <div className="relative w-full aspect-video overflow-hidden">
-                                  {org.banner_url ? (
-                                    <Image
-                                      src={org.banner_url}
-                                      alt={`Banner ${org.name}`}
-                                      fill
-                                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5" />
-                                  )}
-                                </div>
-
-                                {/* Glow ambiental intern - declanșat la hover */}
-                                <div className="pointer-events-none absolute right-0 top-0 -mr-8 -mt-8 size-32 rounded-full bg-primary/5 transition-all duration-500 group-hover:bg-primary/10" />
-
-                                <CardContent className="relative flex flex-1 flex-col p-6 gap-5">
-
-                                    {/* Header Card: Logo + Titlu + Rating */}
-                                    <div className="flex items-start gap-4">
-                                        {org.logo_url ? (
-                                            <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-border bg-background shadow-sm transition-transform duration-300 group-hover:scale-105">
-                                                <Image src={org.logo_url} alt={org.name} fill sizes="56px" className="object-cover" />
-                                            </div>
+                                    {/* Banner */}
+                                    <div className="relative w-full aspect-video overflow-hidden shrink-0">
+                                        {org.banner_url ? (
+                                            <Image
+                                                src={org.banner_url}
+                                                alt={`Banner ${org.name}`}
+                                                fill
+                                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                            />
                                         ) : (
-                                            <div className="flex size-14 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/50 text-muted-foreground transition-transform duration-300 group-hover:scale-105 group-hover:bg-primary/10 group-hover:text-primary">
-                                                <Building2 size={24} />
-                                            </div>
+                                            <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5" />
                                         )}
-                                        <div className="flex flex-1 flex-col justify-center min-w-0 pt-1">
-                                            <h3 className="line-clamp-2 text-lg font-bold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
-                                                {org.name}
-                                            </h3>
-                                            <div className="mt-1.5">
-                                                <StarRating rating={org.rating} />
-                                            </div>
-                                            {org.categories.length > 0 && (
-                                                <div className="mt-2 flex flex-wrap gap-1">
-                                                    {org.categories.map(cat => (
-                                                        <Badge key={cat} variant="secondary" className="text-[10px] px-2 py-0.5 font-semibold">
-                                                            {ORG_CATEGORY_LABELS[cat] ?? cat}
-                                                        </Badge>
-                                                    ))}
+                                    </div>
+
+                                    <div className="pointer-events-none absolute right-0 top-0 -mr-8 -mt-8 size-32 rounded-full bg-primary/5 transition-all duration-500 group-hover:bg-primary/10" />
+
+                                    <CardContent className="relative flex flex-1 flex-col p-5 gap-4">
+
+                                        {/* Logo + Nume + Verificat */}
+                                        <div className="flex items-start gap-3">
+                                            {org.logo_url ? (
+                                                <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border border-border bg-background shadow-sm transition-transform duration-300 group-hover:scale-105">
+                                                    <Image src={org.logo_url} alt={org.name} fill sizes="48px" className="object-cover" />
+                                                </div>
+                                            ) : (
+                                                <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/50 text-muted-foreground transition-transform duration-300 group-hover:scale-105 group-hover:bg-primary/10 group-hover:text-primary">
+                                                    <Building2 size={22} />
                                                 </div>
                                             )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <h3 className="text-base font-bold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary line-clamp-1">
+                                                        {org.name}
+                                                    </h3>
+                                                    <CheckCircle2 size={15} className="shrink-0 text-primary" />
+                                                </div>
+                                                <div className="mt-1">
+                                                    <StarRating rating={org.rating} />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Descriere */}
-                                    {org.description && (
-                                        <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3 flex-1">
-                                            {org.description}
-                                        </p>
-                                    )}
-
-                                    {/* Footer Card: Website + Buton Acțiune */}
-                                    <div className="mt-auto flex items-center justify-between border-t border-border/50 pt-5">
-                                        {org.website ? (
-                                            <a
-                                                href={org.website}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-primary"
-                                            >
-                                                <Globe size={14} />
-                                                <span className="line-clamp-1 max-w-[120px]">Website</span>
-                                            </a>
-                                        ) : (
-                                            <span />
+                                        {/* Descriere — max 2 rânduri */}
+                                        {org.description && (
+                                            <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">
+                                                {org.description}
+                                            </p>
                                         )}
 
-                                        {/* Buton cu hover group și săgeată animată */}
-                                        <Link
-                                            href={`/organizatii/${org.id}`}
-                                            className={`${buttonVariants({ variant: 'outline', size: 'sm' })} group/btn font-semibold transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary`}
-                                        >
-                                            Detalii
-                                            <ArrowRight className="ml-1.5 size-3.5 transition-transform group-hover/btn:translate-x-1" />
-                                        </Link>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                        {/* Categorii — max 2 */}
+                                        {displayCategories.length > 0 && (
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {displayCategories.map(cat => (
+                                                    <Badge key={cat} variant="secondary" className="text-[10px] px-2 py-0.5 font-semibold">
+                                                        {ORG_CATEGORY_LABELS[cat] ?? cat}
+                                                    </Badge>
+                                                ))}
+                                                {org.categories.length > 2 && (
+                                                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-semibold text-muted-foreground">
+                                                        +{org.categories.length - 2}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Membri */}
+                                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                            <Users size={13} className="shrink-0" />
+                                            <span><strong className="text-foreground">{org.members_count}</strong> {org.members_count === 1 ? 'membru' : 'membri'}</span>
+                                        </div>
+
+                                        {/* Footer: Website + Detalii */}
+                                        <div className="mt-auto flex items-center justify-between border-t border-border/50 pt-4">
+                                            {org.website ? (
+                                                <a
+                                                    href={org.website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={`${buttonVariants({ variant: 'outline', size: 'sm' })} gap-1.5 font-semibold`}
+                                                >
+                                                    <Globe size={13} />
+                                                    Website
+                                                </a>
+                                            ) : (
+                                                <span />
+                                            )}
+                                            <Link
+                                                href={`/organizatii/${org.id}`}
+                                                className={`${buttonVariants({ variant: 'default', size: 'sm' })} group/btn font-semibold`}
+                                            >
+                                                Detalii
+                                                <ArrowRight className="ml-1.5 size-3.5 transition-transform group-hover/btn:translate-x-1" />
+                                            </Link>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )
+                        })}
                     </div>
                 )}
             </div>

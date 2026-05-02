@@ -17,6 +17,7 @@ export type OrgListItem = {
   rating: number
   created_at: string
   categories: string[]
+  members_count: number
 }
 
 export type OrgMember = {
@@ -143,15 +144,18 @@ export async function getOrgMemberRole(orgId: string): Promise<'admin' | 'member
 }
 
 export async function getOrganizations(filters?: { status?: string }): Promise<OrgListItem[]> {
-  const supabase = await createClient()
+  const adminClient = createAdminClient()
   const status = filters?.status ?? 'approved'
-  const { data, error } = await supabase
+  const { data, error } = await adminClient
     .from('organizations')
-    .select('id, name, description, logo_url, banner_url, website, rating, created_at, categories')
+    .select('id, name, description, logo_url, banner_url, website, rating, created_at, categories, organization_members(count)')
     .eq('status', status)
     .order('rating', { ascending: false })
   if (error) console.error('[getOrganizations]', error.message)
-  return (data ?? []) as OrgRow[]
+  return (data ?? []).map((row: Record<string, unknown>) => ({
+    ...row,
+    members_count: (row.organization_members as { count: number }[] | null)?.[0]?.count ?? 0,
+  })) as OrgListItem[]
 }
 
 export async function getOrganizationById(id: string): Promise<OrgDetail | null> {
