@@ -4,7 +4,13 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { ORG_CATEGORY_LABELS, ORG_CATEGORIES } from '@/lib/constants'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
+
+const SORT_LABELS: Record<string, string> = {
+    rating: 'Evaluare',
+    members: 'Membri',
+    newest: 'Cele mai noi',
+}
 
 type Props = { filteredCount: number; totalCount: number }
 
@@ -61,13 +67,13 @@ export function OrgsCategoryFilterClient({ filteredCount, totalCount }: Props) {
                 </div>
 
                 <Select
-                    value={sort || 'rating'}
-                    onValueChange={v => set('sort', !v || v === 'rating' ? '' : v)}
+                    value={sort || undefined}
+                    onValueChange={v => set('sort', v ?? '')}
                 >
                     <SelectTrigger className="h-9 w-44 text-sm font-semibold">
-                        <SelectValue />
+                        <span className="flex flex-1 text-left">{SORT_LABELS[sort] ?? 'Evaluare'}</span>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent alignItemWithTrigger={false}>
                         <SelectItem value="rating">Evaluare</SelectItem>
                         <SelectItem value="members">Membri</SelectItem>
                         <SelectItem value="newest">Cele mai noi</SelectItem>
