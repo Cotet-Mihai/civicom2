@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getOrganizations } from '@/services/organization.service'
 import { ORG_CATEGORY_LABELS } from '@/lib/constants'
+import { ExtraCategoriesBadge } from './_components/ExtraCategoriesBadge'
 
 export const metadata: Metadata = {
     title: 'Organizații',
@@ -142,9 +143,7 @@ export default async function OrganizatiiPage() {
                                                     </Badge>
                                                 ))}
                                                 {org.categories.length > 2 && (
-                                                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-semibold text-muted-foreground">
-                                                        +{org.categories.length - 2}
-                                                    </Badge>
+                                                    <ExtraCategoriesBadge categories={org.categories.slice(2)} />
                                                 )}
                                             </div>
                                         )}
