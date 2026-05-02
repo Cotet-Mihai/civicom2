@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { Suspense } from 'react'
 import './globals.css'
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from '@/components/ui/sonner'
 import { PostHogProvider } from '@/components/providers/PostHogProvider'
 import { PostHogPageView } from '@/components/providers/PostHogPageView'
 
@@ -44,6 +45,7 @@ export default function RootLayout({
             <PostHogPageView />
           </Suspense>
           <TooltipProvider>{children}</TooltipProvider>
+          <Toaster richColors position="top-right" />
         </PostHogProvider>
         <Analytics />
       </body>
