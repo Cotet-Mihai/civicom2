@@ -1,13 +1,16 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Building2, Star, Globe, ArrowRight, CheckCircle2, Users } from 'lucide-react'
+import { Suspense } from 'react'
+import { Building2, Star, Globe, ArrowRight, CheckCircle2, Users, Search } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getOrganizations } from '@/services/organization.service'
 import { ORG_CATEGORY_LABELS } from '@/lib/constants'
 import { ExtraCategoriesBadge } from './_components/ExtraCategoriesBadge'
+import { OrgsSearchBarClient } from './_components/OrgsSearchBarClient'
+import { OrgsCategoryFilterClient } from './_components/OrgsCategoryFilterClient'
 
 export const metadata: Metadata = {
     title: 'Organizații',
@@ -42,14 +45,35 @@ function StarRating({ rating }: { rating: number }) {
     )
 }
 
-function pickTwo(arr: string[]): string[] {
-    if (arr.length <= 2) return arr
-    const shuffled = [...arr].sort(() => Math.random() - 0.5)
-    return shuffled.slice(0, 2)
-}
+type SearchParams = Promise<{ q?: string; cat?: string; sort?: string }>
 
-export default async function OrganizatiiPage() {
-    const orgs = await getOrganizations()
+export default async function OrganizatiiPage({ searchParams }: { searchParams: SearchParams }) {
+    const { q = '', cat = '', sort = '' } = await searchParams
+
+    const allOrgs = await getOrganizations()
+
+    let filtered = allOrgs
+
+    if (q) {
+        const lower = q.toLowerCase()
+        filtered = filtered.filter(org =>
+            org.name.toLowerCase().includes(lower) ||
+            (org.description?.toLowerCase().includes(lower) ?? false) ||
+            org.categories.some(c => ORG_CATEGORY_LABELS[c]?.toLowerCase().includes(lower))
+        )
+    }
+    if (cat) {
+        filtered = filtered.filter(org => org.categories.includes(cat))
+    }
+    if (sort === 'members') {
+        filtered = [...filtered].sort((a, b) => b.members_count - a.members_count)
+    } else if (sort === 'newest') {
+        filtered = [...filtered].sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+    }
+
+    const hasFilter = !!(q || cat)
 
     return (
         <div className="relative min-h-screen bg-background pb-20 lg:pb-28">
@@ -61,27 +85,57 @@ export default async function OrganizatiiPage() {
 
             <div className="relative z-10 mx-auto max-w-7xl px-6 pt-12 lg:px-8 lg:pt-20">
 
-                <div className="mb-12 animate-fade-in-up flex flex-col gap-3">
-                    <h1 className="font-heading text-4xl font-black uppercase tracking-tighter text-foreground lg:text-6xl text-balance">
-                        Descoperă <span className="text-primary">Organizații</span>
-                    </h1>
-                    <p className="max-w-2xl text-base leading-relaxed text-muted-foreground text-balance">
-                        Peste <strong>{orgs.length}</strong> de organizații non-guvernamentale verificate pe CIVICOM care coordonează acțiuni civice și creează impact în comunitate.
-                    </p>
+                {/* Hero — 2-col on lg */}
+                <div className="mb-4 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center animate-fade-in-up">
+                    <div className="flex flex-col gap-3">
+                        <h1 className="font-heading text-4xl font-black uppercase tracking-tighter text-foreground lg:text-6xl text-balance">
+                            Descoperă <span className="text-primary">Organizații</span>
+                        </h1>
+                        <p className="max-w-xl text-base leading-relaxed text-muted-foreground text-balance">
+                            Peste <strong>{allOrgs.length}</strong> organizații non-guvernamentale verificate care coordonează acțiuni civice și creează impact în comunitate.
+                        </p>
+                    </div>
+                    <Suspense>
+                        <OrgsSearchBarClient />
+                    </Suspense>
                 </div>
 
-                {orgs.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 py-24 text-center backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                {/* Category filter bar */}
+                <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
+                    <Suspense>
+                        <OrgsCategoryFilterClient filteredCount={filtered.length} totalCount={allOrgs.length} />
+                    </Suspense>
+                </div>
+
+                {/* Grid / empty states */}
+                {filtered.length === 0 ? (
+                    <div
+                        className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 py-24 text-center backdrop-blur-sm animate-fade-in-up"
+                        style={{ animationDelay: '100ms' }}
+                    >
                         <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
-                            <Building2 size={32} className="text-muted-foreground/50" />
+                            {hasFilter
+                                ? <Search size={32} className="text-muted-foreground/50" />
+                                : <Building2 size={32} className="text-muted-foreground/50" />
+                            }
                         </div>
-                        <h3 className="text-xl font-bold tracking-tight text-foreground">Nicio organizație</h3>
-                        <p className="mt-2 text-sm text-muted-foreground">Momentan nu există organizații aprobate pe platformă.</p>
+                        <h3 className="text-xl font-bold tracking-tight text-foreground">
+                            {hasFilter ? 'Nicio organizație găsită' : 'Nicio organizație'}
+                        </h3>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            {hasFilter
+                                ? 'Nu există rezultate pentru filtrele aplicate. Încearcă alte criterii.'
+                                : 'Momentan nu există organizații aprobate pe platformă.'
+                            }
+                        </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                        {orgs.map(org => {
-                            const displayCategories = pickTwo(org.categories)
+                    <div
+                        className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-up"
+                        style={{ animationDelay: '100ms' }}
+                    >
+                        {filtered.map(org => {
+                            const displayCategories = org.categories.slice(0, 2)
                             return (
                                 <Card key={org.id} className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-md">
 
@@ -137,9 +191,9 @@ export default async function OrganizatiiPage() {
                                         {/* Categorii — max 2 */}
                                         {displayCategories.length > 0 && (
                                             <div className="flex flex-wrap gap-1.5">
-                                                {displayCategories.map(cat => (
-                                                    <Badge key={cat} variant="secondary" className="text-[10px] px-2 py-0.5 font-semibold">
-                                                        {ORG_CATEGORY_LABELS[cat] ?? cat}
+                                                {displayCategories.map(c => (
+                                                    <Badge key={c} variant="secondary" className="text-[10px] px-2 py-0.5 font-semibold">
+                                                        {ORG_CATEGORY_LABELS[c] ?? c}
                                                     </Badge>
                                                 ))}
                                                 {org.categories.length > 2 && (
