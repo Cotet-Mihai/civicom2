@@ -280,6 +280,16 @@ export async function getOrgCreatedEvents(orgId: string, limit?: number): Promis
   return (data ?? []) as DashboardEvent[]
 }
 
+export async function getUserAvatarUrl(authUserId: string): Promise<string | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('users')
+    .select('avatar_url')
+    .eq('auth_users_id', authUserId)
+    .single()
+  return data?.avatar_url ?? null
+}
+
 export async function updateAvatar(avatarUrl: string): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
   const userId = await getUserId()
