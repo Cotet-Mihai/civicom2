@@ -131,18 +131,13 @@ export async function getUserOrgId(userId: string): Promise<string | null> {
 }
 
 export async function getUserOrg(userId: string): Promise<{ id: string; name: string; logo_url: string | null } | null> {
+  const orgId = await getUserOrgId(userId)
+  if (!orgId) return null
   const supabase = await createClient()
-  const { data: member } = await supabase
-    .from('organization_members')
-    .select('organization_id')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle()
-  if (!member) return null
   const { data: org } = await supabase
     .from('organizations')
     .select('id, name, logo_url')
-    .eq('id', member.organization_id)
+    .eq('id', orgId)
     .single()
   return org ?? null
 }
@@ -155,7 +150,7 @@ export async function getUserOrgByAuthId(
     .from('users')
     .select('id')
     .eq('auth_users_id', authUserId)
-    .single()
+    .maybeSingle()
   if (!userRow) return null
   return getUserOrg(userRow.id)
 }
