@@ -10,14 +10,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-
-type Org = { id: string; name: string; logo_url: string | null }
+import type { DashboardOrg } from './dashboard-types'
 
 type Props = {
   userName: string
   userEmail: string
   avatarUrl: string | null
-  org: Org | null
+  org: DashboardOrg | null
 }
 
 export function DashboardContextSwitcherClient({ userName, userEmail, avatarUrl, org }: Props) {
@@ -51,9 +50,9 @@ export function DashboardContextSwitcherClient({ userName, userEmail, avatarUrl,
     <DropdownMenu>
       <DropdownMenuTrigger className="flex w-full items-center gap-3 px-4 py-4 border-b border-border hover:bg-muted/30 transition-colors focus:outline-none">
         <Avatar className="size-9 shrink-0 border border-border/50">
-          {isOrgContext && org.logo_url
-            ? <AvatarImage src={org.logo_url} alt={org.name} />
-            : <AvatarImage src={!isOrgContext ? (avatarUrl ?? undefined) : undefined} alt={userName} />
+          {isOrgContext
+            ? org.logo_url && <AvatarImage src={org.logo_url} alt={org.name} />
+            : <AvatarImage src={avatarUrl ?? undefined} alt={userName} />
           }
           <AvatarFallback className="bg-primary/10 text-sm font-bold text-primary">
             {isOrgContext ? org.name.charAt(0).toUpperCase() : userInitial}

@@ -1,14 +1,13 @@
 import { DashboardContextSwitcherClient } from './DashboardContextSwitcherClient'
 import { DashboardSidebarNavClient } from './DashboardSidebarNavClient'
 import { DashboardMobileSheetClient } from './DashboardMobileSheetClient'
-
-type Org = { id: string; name: string; logo_url: string | null }
+import type { DashboardOrg } from './dashboard-types'
 
 type Props = {
   userName: string
   userEmail: string
   avatarUrl: string | null
-  org: Org | null
+  org: DashboardOrg | null
 }
 
 export function DashboardSidebar({ userName, userEmail, avatarUrl, org }: Props) {

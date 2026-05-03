@@ -6,14 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { DashboardContextSwitcherClient } from './DashboardContextSwitcherClient'
 import { DashboardSidebarNavClient } from './DashboardSidebarNavClient'
-
-type Org = { id: string; name: string; logo_url: string | null }
+import type { DashboardOrg } from './dashboard-types'
 
 type Props = {
   userName: string
   userEmail: string
   avatarUrl: string | null
-  org: Org | null
+  org: DashboardOrg | null
 }
 
 export function DashboardMobileSheetClient({ userName, userEmail, avatarUrl, org }: Props) {

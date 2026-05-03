@@ -7,11 +7,11 @@ import {
   AlertCircle, User, Building2, Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { DashboardOrg } from './dashboard-types'
 
-type Org = { id: string; name: string; logo_url: string | null }
 type NavItem = { label: string; href: string; Icon: React.ElementType }
 
-export function DashboardSidebarNavClient({ org }: { org: Org | null }) {
+export function DashboardSidebarNavClient({ org }: { org: DashboardOrg | null }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const isOrgContext = searchParams.get('context') === 'org' && !!org
