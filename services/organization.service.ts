@@ -130,6 +130,36 @@ export async function getUserOrgId(userId: string): Promise<string | null> {
   return data?.organization_id ?? null
 }
 
+export async function getUserOrg(userId: string): Promise<{ id: string; name: string; logo_url: string | null } | null> {
+  const supabase = await createClient()
+  const { data: member } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle()
+  if (!member) return null
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('id, name, logo_url')
+    .eq('id', member.organization_id)
+    .single()
+  return org ?? null
+}
+
+export async function getUserOrgByAuthId(
+  authUserId: string
+): Promise<{ id: string; name: string; logo_url: string | null } | null> {
+  const supabase = await createClient()
+  const { data: userRow } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_users_id', authUserId)
+    .single()
+  if (!userRow) return null
+  return getUserOrg(userRow.id)
+}
+
 export async function getOrgMemberRole(orgId: string): Promise<'admin' | 'member' | null> {
   const supabase = await createClient()
   const userId = await getCurrentUserId()
