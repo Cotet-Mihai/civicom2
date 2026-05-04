@@ -1,31 +1,26 @@
-import type { Metadata } from 'next'
+'use client'
+
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { getUserProfile } from '@/services/user.service'
-import { ProfileEditFormClient } from './_components/ProfileEditFormClient'
-import { AvatarUploadClient } from './_components/AvatarUploadClient'
-import { notFound } from 'next/navigation'
+import { AvatarUploadClient } from './AvatarUploadClient'
+import { ProfileEditFormClient } from './ProfileEditFormClient'
+import type { UserProfile } from '@/services/user.service'
 
-export const metadata: Metadata = { title: 'Editează profilul' }
-
-export default async function ProfilEditarePage() {
-  const profile = await getUserProfile()
-  if (!profile) notFound()
-
+export function ProfileEditModeClient({ profile }: { profile: UserProfile }) {
   return (
-    <div className="mx-auto max-w-2xl px-4 lg:px-8 py-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link
-          href="/profil"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft size={20} />
+        <Link href="/profil" className="text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="size-5" />
         </Link>
-        <h1 className="text-2xl font-black tracking-tight text-foreground">Editează profilul</h1>
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-foreground">Editează profilul</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Modifică informațiile afișate public</p>
+        </div>
       </div>
 
-      <Card className="shadow-sm shadow-black/5 border-border">
+      <Card className="shadow-sm border-border">
         <CardContent className="p-6 space-y-8">
           <div className="space-y-3">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -37,7 +32,6 @@ export default async function ProfilEditarePage() {
               userId={profile.id}
             />
           </div>
-
           <div className="border-t border-border pt-6 space-y-3">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               Informații cont

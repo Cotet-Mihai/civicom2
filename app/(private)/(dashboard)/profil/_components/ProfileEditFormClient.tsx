@@ -29,7 +29,7 @@ export function ProfileEditFormClient({ initialName }: Props) {
     setIsLoading(false)
     if ('error' in result) { toast.error(result.error); return }
     toast.success('Profil actualizat')
-    router.refresh()
+    router.push('/profil')
   }
 
   return (
