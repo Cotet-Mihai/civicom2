@@ -6,7 +6,7 @@ import {
     Calendar, FileText, AlertCircle, Building2,
 } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,6 +21,7 @@ type Props = {
     userName: string
     userEmail: string
     orgId: string | null
+    avatarUrl: string | null
 }
 
 const navItems = [
@@ -31,7 +32,7 @@ const navItems = [
     { label: 'Contestații', href: '/panou/contestatii', Icon: AlertCircle },
 ]
 
-export function NavbarActionsClient({ userName, userEmail, orgId }: Props) {
+export function NavbarActionsClient({ userName, userEmail, orgId, avatarUrl }: Props) {
     const initial = userName?.charAt(0).toUpperCase() ?? 'U'
     const orgHref = orgId ? `/organizatie/${orgId}/panou` : '/organizatie/creeaza'
     const orgLabel = orgId ? 'Organizația mea' : 'Solicită creare ONG'
@@ -58,6 +59,7 @@ export function NavbarActionsClient({ userName, userEmail, orgId }: Props) {
                         aria-label="Meniu utilizator"
                     >
                         <Avatar className="size-8 cursor-pointer border border-border/50">
+                            <AvatarImage src={avatarUrl ?? undefined} alt={userName} />
                             <AvatarFallback className="bg-primary/10 text-sm font-bold text-primary">
                                 {initial}
                             </AvatarFallback>

@@ -46,7 +46,7 @@ export function HeroSection() {
                                     <ArrowRight className="h-4 w-4" />
                                 </Button>
                             </Link>
-                            <Link href={'#'}>
+                            <Link href={'/creeaza'}>
                                 <Button
                                     variant="outline"
                                     size="lg"

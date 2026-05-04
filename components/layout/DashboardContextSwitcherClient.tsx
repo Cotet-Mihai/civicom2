@@ -23,7 +23,10 @@ export function DashboardContextSwitcherClient({ userName, userEmail, avatarUrl,
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
-  const isOrgContext = searchParams.get('context') === 'org' && !!org
+  const isOrgContext = !!org && (
+    searchParams.get('context') === 'org' ||
+    pathname.startsWith('/organizatie/')
+  )
   const userInitial = userName.charAt(0).toUpperCase()
 
   function switchTo(context: 'user' | 'org') {

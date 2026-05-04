@@ -26,7 +26,17 @@
       "Bash(npx tsc *)",
       "Bash(echo \"TSC EXIT:$?\")",
       "Bash(node *)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(ls services/appeal*)",
+      "Bash(ls app/\\\\\\(private\\\\\\)/evenimente)",
+      "Bash(ls app/\\\\\\(private\\\\\\)/admin)",
+      "Bash(gh pr create --title 'feat: Etapa 10 — Contestații \\(Appeals\\)' --body ' *)",
+      "Bash(gh pr *)",
+      "Bash(cat next.config.ts)",
+      "Bash(cat next.config.js)",
+      "mcp__supabase__list_migrations",
+      "Bash(node_modules/.bin/tsc --version)",
+      "PowerShell(Copy-Item *)"
     ]
   },
   "enableAllProjectMcpServers": true,

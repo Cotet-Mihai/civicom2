@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
 import { getAuthUser } from '@/services/auth.service'
 import { getUserOrgId } from '@/services/organization.service'
+import { getUserAvatarUrl } from '@/services/user.service'
 import { NavbarMobileClient } from './NavbarMobileClient'
 import { NavbarMobileActionsClient } from './NavbarMobileActionsClient'
 import { NavbarActionsClient } from './NavbarActionsClient'
@@ -11,7 +12,9 @@ export async function Navbar() {
 
     const userName = user?.user_metadata?.display_name ?? user?.user_metadata?.name ?? 'Utilizator'
     const userEmail = user?.email ?? ''
-    const orgId = user ? await getUserOrgId(user.id) : null
+    const [orgId, avatarUrl] = user
+        ? await Promise.all([getUserOrgId(user.id), getUserAvatarUrl(user.id)])
+        : [null, null]
 
     return (
         <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md shadow-sm transition-all duration-300">
@@ -62,6 +65,7 @@ export async function Navbar() {
                             userName={userName}
                             userEmail={userEmail}
                             orgId={orgId}
+                            avatarUrl={avatarUrl}
                         />
                     ) : (
                         <div className="hidden items-center gap-3 md:flex">

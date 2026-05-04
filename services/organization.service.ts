@@ -563,3 +563,40 @@ export async function removeOrgDocument(
   if (error) return { error: error.message }
   return { ok: true }
 }
+
+
+// ============================================================
+// POPULAR SEARCHES
+// ============================================================
+
+export async function getPopularOrgSearches(): Promise<string[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('popular_org_searches')
+    .select('query')
+    .order('count', { ascending: false })
+    .order('updated_at', { ascending: false })
+    .limit(6)
+  return data?.map(r => r.query) ?? []
+}
+
+export async function trackOrgSearch(raw: string): Promise<void> {
+  const query = raw.trim().toLowerCase()
+  if (query.length < 3) return
+  const admin = createAdminClient()
+  const { data: existing } = await admin
+    .from('popular_org_searches')
+    .select('count')
+    .eq('query', query)
+    .single()
+  if (existing) {
+    await admin
+      .from('popular_org_searches')
+      .update({ count: existing.count + 1, updated_at: new Date().toISOString() })
+      .eq('query', query)
+  } else {
+    await admin
+      .from('popular_org_searches')
+      .insert({ query, count: 1 })
+  }
+}

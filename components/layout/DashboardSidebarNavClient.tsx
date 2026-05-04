@@ -14,32 +14,11 @@ type NavItem = { label: string; href: string; Icon: React.ElementType }
 export function DashboardSidebarNavClient({ org }: { org: DashboardOrg | null }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const isOrgContext = searchParams.get('context') === 'org' && !!org
 
-  const baseItems: NavItem[] = [
-    { label: 'Panou', href: isOrgContext ? '/panou?context=org' : '/panou', Icon: LayoutDashboard },
-    {
-      label: isOrgContext ? `Evenimente ${org?.name ?? 'ONG'}` : 'Evenimentele mele',
-      href: isOrgContext ? '/panou/evenimente?context=org' : '/panou/evenimente',
-      Icon: Calendar,
-    },
-    { label: 'Participări', href: '/panou/participari', Icon: Users },
-    { label: 'Petiții semnate', href: '/panou/petitii', Icon: FileText },
-    { label: 'Contestații', href: '/panou/contestatii', Icon: AlertCircle },
-  ]
-
-  const orgItems: NavItem[] = org
-    ? [
-        { label: 'Panou ONG', href: `/organizatie/${org.id}/panou`, Icon: Building2 },
-        { label: 'Membri', href: `/organizatie/${org.id}/membri`, Icon: Users },
-        { label: 'Setări ONG', href: `/organizatie/${org.id}/setari`, Icon: Settings },
-      ]
-    : []
-
-  const contItems: NavItem[] = [
-    { label: 'Profil', href: '/profil', Icon: User },
-    ...(org ? [{ label: org.name, href: `/organizatie/${org.id}/panou`, Icon: Building2 }] : []),
-  ]
+  const isOrgContext = org && (
+    searchParams.get('context') === 'org' ||
+    pathname.startsWith('/organizatie/')
+  )
 
   function isActive(href: string) {
     const path = href.split('?')[0]
@@ -47,11 +26,46 @@ export function DashboardSidebarNavClient({ org }: { org: DashboardOrg | null })
     return pathname.startsWith(path)
   }
 
+  const userItems: NavItem[] = [
+    { label: 'Panou', href: '/panou', Icon: LayoutDashboard },
+    { label: 'Evenimentele mele', href: '/panou/evenimente', Icon: Calendar },
+    { label: 'Participări', href: '/panou/participari', Icon: Users },
+    { label: 'Petiții semnate', href: '/panou/petitii', Icon: FileText },
+    { label: 'Contestații', href: '/panou/contestatii', Icon: AlertCircle },
+  ]
+
+  const orgActivityItems: NavItem[] = [
+    { label: 'Panou', href: '/panou?context=org', Icon: LayoutDashboard },
+    { label: 'Evenimentele mele', href: '/panou/evenimente?context=org', Icon: Calendar },
+    { label: 'Contestații', href: '/panou/contestatii', Icon: AlertCircle },
+  ]
+
+  const orgManageItems: NavItem[] = org
+    ? [
+        { label: 'Panou ONG', href: `/organizatie/${org.id}/panou`, Icon: Building2 },
+        { label: 'Evenimente', href: `/organizatie/${org.id}/evenimente`, Icon: Calendar },
+        { label: 'Membri', href: `/organizatie/${org.id}/membri`, Icon: Users },
+        { label: 'Setări', href: `/organizatie/${org.id}/setari`, Icon: Settings },
+      ]
+    : []
+
+  const contItems: NavItem[] = [
+    { label: 'Profil', href: '/profil', Icon: User },
+  ]
+
   return (
     <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-      <NavGroup label="Activitate" items={baseItems} isActive={isActive} />
-      {isOrgContext && org && <NavGroup label="Organizație" items={orgItems} isActive={isActive} />}
-      {!isOrgContext && <NavGroup label="Cont" items={contItems} isActive={isActive} />}
+      {isOrgContext ? (
+        <>
+          <NavGroup label="Activitate" items={orgActivityItems} isActive={isActive} />
+          <NavGroup label="Organizație" items={orgManageItems} isActive={isActive} />
+        </>
+      ) : (
+        <>
+          <NavGroup label="Activitate" items={userItems} isActive={isActive} />
+          <NavGroup label="Cont" items={contItems} isActive={isActive} />
+        </>
+      )}
     </nav>
   )
 }

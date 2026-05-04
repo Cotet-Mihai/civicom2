@@ -1,21 +1,21 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { ORG_CATEGORY_LABELS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { trackOrgSearch } from '@/services/organization.service'
+import { useOrgsPending } from './OrgsPendingContext'
 
-const POPULAR = ['mediu', 'educatie', 'sanatate', 'animale', 'social']
+type Props = { popularSearches: string[] }
 
-export function OrgsSearchBarClient() {
+export function OrgsSearchBarClient({ popularSearches }: Props) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const [, startTransition] = useTransition()
+    const { startTransition } = useOrgsPending()
 
-    const cat = searchParams.get('cat') ?? ''
     const [inputValue, setInputValue] = useState(() => searchParams.get('q') ?? '')
     const mountRef = useRef(true)
 
@@ -26,20 +26,22 @@ export function OrgsSearchBarClient() {
             if (inputValue) params.set('q', inputValue)
             else params.delete('q')
             startTransition(() => router.replace(`${pathname}?${params.toString()}`, { scroll: false }))
-        }, 350)
+            if (inputValue.trim().length >= 3) {
+                trackOrgSearch(inputValue)
+            }
+        }, 400)
         return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inputValue])
 
-    function setCategory(term: string) {
-        const params = new URLSearchParams(searchParams.toString())
-        if (cat === term) params.delete('cat')
-        else params.set('cat', term)
-        startTransition(() => router.replace(`${pathname}?${params.toString()}`, { scroll: false }))
+    function applyPopular(term: string) {
+        setInputValue(term)
     }
 
+    const showPopular = popularSearches.length > 0
+
     return (
-        <div className="space-y-3">
+        <div className="space-y-2">
             <div className="relative">
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -59,20 +61,17 @@ export function OrgsSearchBarClient() {
                 )}
             </div>
 
-            {!inputValue && (
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Căutări populare:</span>
-                    {POPULAR.map(term => (
+            {showPopular && (
+                <div className="flex items-center gap-x-2 overflow-hidden h-5">
+                    <span className="text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0">Căutări populare:</span>
+                    {popularSearches.map(term => (
                         <button
                             key={term}
                             type="button"
-                            onClick={() => setCategory(term)}
-                            className={cn(
-                                'text-xs font-semibold transition-colors',
-                                cat === term ? 'text-primary' : 'text-muted-foreground hover:text-primary'
-                            )}
+                            onClick={() => applyPopular(term)}
+                            className="text-xs font-semibold whitespace-nowrap shrink-0 transition-colors text-muted-foreground hover:text-primary"
                         >
-                            {ORG_CATEGORY_LABELS[term]}
+                            {term}
                         </button>
                     ))}
                 </div>
