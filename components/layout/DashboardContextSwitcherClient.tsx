@@ -30,8 +30,7 @@ export function DashboardContextSwitcherClient({ userName, userEmail, avatarUrl,
   const userInitial = userName.charAt(0).toUpperCase()
 
   function switchTo(context: 'user' | 'org') {
-    const basePath = pathname.split('?')[0]
-    router.push(context === 'org' ? `${basePath}?context=org` : basePath)
+    router.push(context === 'org' ? '/panou?context=org' : '/panou')
   }
 
   if (!org) {
