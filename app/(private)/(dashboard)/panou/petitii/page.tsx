@@ -17,7 +17,7 @@ export default async function PanouPetitiiPage() {
           <div className="py-12 text-center space-y-3">
             <p className="text-muted-foreground">Nu ai semnat nicio petiție.</p>
             <Link href="/evenimente" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-              Explorează petiții
+              Explorează evenimente
             </Link>
           </div>
         ) : (
