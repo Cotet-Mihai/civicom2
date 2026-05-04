@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getAuthUser } from '@/services/auth.service'
 import { getUserAvatarUrl } from '@/services/user.service'
-import { getUserOrgByAuthId } from '@/services/organization.service'
+import { getUserOrgByAuthId } from '@/lib/server-cache'
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

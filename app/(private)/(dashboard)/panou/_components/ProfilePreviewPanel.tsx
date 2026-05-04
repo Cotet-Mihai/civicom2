@@ -42,10 +42,6 @@ export function UserPreview({ profile }: { profile: UserProfile }) {
             </div>
           )}
           <div className="flex items-center gap-2">
-            <Mail className="size-3 text-primary shrink-0" />
-            <span>{profile.email}</span>
-          </div>
-          <div className="flex items-center gap-2">
             <Calendar className="size-3 text-primary shrink-0" />
             <span>Membru din {formatDate(profile.created_at)}</span>
           </div>

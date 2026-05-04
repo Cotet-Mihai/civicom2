@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CalendarPlus, Users, PenLine, Scale, ArrowRight } from 'lucide-react'
 import {
   getUserDashboardStats, getUserCreatedEvents, getUserParticipations,
   getUserProfile, getOrgCreatedEvents,
 } from '@/services/user.service'
-import { getOrganizationById, getOrgDashboardStats, getUserOrgByAuthId } from '@/services/organization.service'
+import { getOrganizationById, getOrgDashboardStats } from '@/services/organization.service'
+import { getUserOrgByAuthId } from '@/lib/server-cache'
 import { getAuthUser } from '@/services/auth.service'
 import { StatCardDashboard } from '@/components/shared/StatCardDashboard'
 import { DashboardEventRow } from '@/components/shared/DashboardEventRow'
@@ -26,7 +28,7 @@ export default async function PanouPage({
   const isOrgContext = context === 'org'
 
   const user = await getAuthUser()
-  if (!user) return null
+  if (!user) redirect('/autentificare')
 
   const org = await getUserOrgByAuthId(user.id)
   const isActualOrgContext = isOrgContext && !!org
