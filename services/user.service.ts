@@ -35,6 +35,9 @@ export type UserProfile = {
   name: string
   email: string
   avatar_url: string | null
+  city: string | null
+  country: string | null
+  phone: string | null
   created_at: string
 }
 
@@ -141,7 +144,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
 
   const { data } = await supabase
     .from('users')
-    .select('id, name, avatar_url, created_at')
+    .select('id, name, avatar_url, city, country, phone, created_at')
     .eq('auth_users_id', user.id)
     .single()
 
@@ -151,6 +154,9 @@ export async function getUserProfile(): Promise<UserProfile | null> {
     name: data.name,
     email: user.email ?? '',
     avatar_url: data.avatar_url ?? null,
+    city: data.city ?? null,
+    country: data.country ?? null,
+    phone: data.phone ?? null,
     created_at: data.created_at,
   }
 }
