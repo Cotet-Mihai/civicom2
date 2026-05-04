@@ -15,7 +15,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { CompleteEventButtonClient } from './_components/CompleteEventButtonClient'
 import { UserPreview, OrgPreview } from './_components/ProfilePreviewPanel'
-import { ProfileOrgToggleClient } from './_components/ProfileOrgToggleClient'
 
 export const metadata: Metadata = { title: 'Panou' }
 
@@ -139,8 +138,8 @@ export default async function PanouPage({
         {/* Preview panel dreapta */}
         {profile && (
           <div className="w-full lg:w-[300px] shrink-0">
-            {orgDetail
-              ? <ProfileOrgToggleClient profile={profile} org={orgDetail} />
+            {isActualOrgContext && orgDetail
+              ? <OrgPreview org={orgDetail} />
               : <UserPreview profile={profile} />
             }
           </div>
