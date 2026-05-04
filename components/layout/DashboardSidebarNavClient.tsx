@@ -37,7 +37,7 @@ export function DashboardSidebarNavClient({ org }: { org: DashboardOrg | null })
   const orgActivityItems: NavItem[] = [
     { label: 'Panou', href: '/panou?context=org', Icon: LayoutDashboard },
     { label: 'Evenimentele mele', href: '/panou/evenimente?context=org', Icon: Calendar },
-    { label: 'Contestații', href: '/panou/contestatii', Icon: AlertCircle },
+    { label: 'Contestații', href: '/panou/contestatii?context=org', Icon: AlertCircle },
   ]
 
   const orgManageItems: NavItem[] = org
