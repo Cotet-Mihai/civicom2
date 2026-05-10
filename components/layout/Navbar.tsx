@@ -3,6 +3,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { getAuthUser } from '@/services/auth.service'
 import { getUserOrgId } from '@/services/organization.service'
 import { getUserAvatarUrl } from '@/services/user.service'
+import { getUserNotifications } from '@/services/notification.service'
 import { NavbarMobileClient } from './NavbarMobileClient'
 import { NavbarMobileActionsClient } from './NavbarMobileActionsClient'
 import { NavbarActionsClient } from './NavbarActionsClient'
@@ -12,19 +13,25 @@ export async function Navbar() {
 
     const userName = user?.user_metadata?.display_name ?? user?.user_metadata?.name ?? 'Utilizator'
     const userEmail = user?.email ?? ''
-    const [orgId, avatarUrl] = user
-        ? await Promise.all([getUserOrgId(user.id), getUserAvatarUrl(user.id)])
-        : [null, null]
+    const [orgId, avatarUrl, notifications] = user
+        ? await Promise.all([
+              getUserOrgId(user.id),
+              getUserAvatarUrl(user.id),
+              getUserNotifications(),
+          ])
+        : [null, null, []]
+
+    const unreadCount = notifications.filter((n) => !n.read).length
 
     return (
-        <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md shadow-sm transition-all duration-300">
+        <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md shadow-sm transition-all duration-300">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
 
                 {/* Stânga: hamburger mobil | logo desktop */}
                 <div className="flex items-center gap-2">
                     <div className="md:hidden">
                         {user
-                            ? <NavbarMobileActionsClient orgId={orgId} />
+                            ? <NavbarMobileActionsClient orgId={orgId} notifications={notifications} unreadCount={unreadCount} />
                             : <NavbarMobileClient />
                         }
                     </div>
@@ -66,6 +73,8 @@ export async function Navbar() {
                             userEmail={userEmail}
                             orgId={orgId}
                             avatarUrl={avatarUrl}
+                            notifications={notifications}
+                            unreadCount={unreadCount}
                         />
                     ) : (
                         <div className="hidden items-center gap-3 md:flex">
