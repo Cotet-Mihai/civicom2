@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import {
     Plus, LogOut, User, LayoutDashboard,
     Calendar, FileText, AlertCircle, Building2,
@@ -15,13 +16,27 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { signOut } from '@/services/auth.service'
+import { NotificationBellClient } from './NotificationBellClient'
+import type { Notification } from '@/services/notification.service'
 
 type Props = {
     userName: string
     userEmail: string
     orgId: string | null
     avatarUrl: string | null
+    notifications: Notification[]
+    unreadCount: number
 }
 
 const navItems = [
@@ -32,19 +47,36 @@ const navItems = [
     { label: 'Contestații', href: '/panou/contestatii', Icon: AlertCircle },
 ]
 
-export function NavbarActionsClient({ userName, userEmail, orgId, avatarUrl }: Props) {
+export function NavbarActionsClient({ userName, userEmail, orgId, avatarUrl, notifications, unreadCount }: Props) {
     const initial = userName?.charAt(0).toUpperCase() ?? 'U'
     const orgHref = orgId ? `/organizatie/${orgId}/panou` : '/organizatie/creeaza'
     const orgLabel = orgId ? 'Organizația mea' : 'Solicită creare ONG'
-
-    async function handleSignOut() {
-        await signOut()
-    }
+    const [signOutOpen, setSignOutOpen] = useState(false)
 
     return (
         <>
+            <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Ieși din cont?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Vei fi deconectat și redirecționat spre pagina principală.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Anulează</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => signOut()}
+                            className="bg-destructive text-white hover:bg-destructive/90"
+                        >
+                            Da, deconectează-mă
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             {/* ─── Desktop ─── */}
-            <div className="hidden items-center gap-4 md:flex">
+            <div className="hidden items-center gap-3 md:flex">
                 <Link
                     href="/creeaza"
                     className={`${buttonVariants({ size: 'sm' })} gap-1.5 font-bold shadow-sm transition-all hover:ring-2 hover:ring-primary/20`}
@@ -52,6 +84,8 @@ export function NavbarActionsClient({ userName, userEmail, orgId, avatarUrl }: P
                     <Plus className="size-4" />
                     Creează eveniment
                 </Link>
+
+                <NotificationBellClient notifications={notifications} unreadCount={unreadCount} />
 
                 <DropdownMenu>
                     <DropdownMenuTrigger
@@ -103,7 +137,7 @@ export function NavbarActionsClient({ userName, userEmail, orgId, avatarUrl }: P
                                 <User className="size-4 text-muted-foreground" />
                                 Profil
                             </DropdownMenuItem>
-                            <DropdownMenuItem variant="destructive" className="mt-1 cursor-pointer rounded-md font-bold focus:bg-destructive/10" onClick={handleSignOut}>
+                            <DropdownMenuItem variant="destructive" className="mt-1 cursor-pointer rounded-md font-bold focus:bg-destructive/10" onClick={() => setSignOutOpen(true)}>
                                 <LogOut className="size-4" />
                                 Deconectare
                             </DropdownMenuItem>
