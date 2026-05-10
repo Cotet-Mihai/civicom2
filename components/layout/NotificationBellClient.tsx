@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell } from 'lucide-react'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import {
     Sheet,
     SheetContent,
@@ -49,8 +49,10 @@ export function NotificationBellClient({ notifications, unreadCount }: Props) {
 
     return (
         <>
-            <button
-                className={`${buttonVariants({ variant: 'ghost', size: 'icon' })} relative`}
+            <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
                 aria-label="Notificări"
                 onClick={() => setOpen(true)}
             >
@@ -60,11 +62,11 @@ export function NotificationBellClient({ notifications, unreadCount }: Props) {
                         {effectiveUnread > 9 ? '9+' : effectiveUnread}
                     </span>
                 )}
-            </button>
+            </Button>
 
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-sm">
-                    <SheetHeader className="flex flex-row items-center justify-between border-b border-border px-4 py-3">
+                    <SheetHeader className="flex flex-row items-center justify-between border-b border-border px-4 py-3 pr-10">
                         <SheetTitle className="font-heading font-black">Notificări</SheetTitle>
                         {effectiveUnread > 0 && (
                             <Button
