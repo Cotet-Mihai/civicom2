@@ -22,15 +22,16 @@ export async function createNotification(
   await supabase.from('notifications').insert({ user_id: userId, title, message, type })
 }
 
-export async function getUserNotifications(userId: string): Promise<Notification[]> {
+export async function getUserNotifications(): Promise<Notification[]> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
   const { data, error } = await supabase
     .from('notifications')
     .select('id, title, message, type, read, created_at')
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(20)
-
   if (error) return []
   return data ?? []
 }
