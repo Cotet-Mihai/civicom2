@@ -47,7 +47,7 @@ export function NavbarMobileActionsClient({ orgId, notifications, unreadCount }:
     const [signOutOpen, setSignOutOpen] = useState(false)
 
     const orgHref = orgId ? `/organizatie/${orgId}/panou` : '/organizatie/creeaza'
-    const orgLabel = orgId ? 'Organizația mea' : 'Solicită criere ONG'
+    const orgLabel = orgId ? 'Organizația mea' : 'Solicită creare ONG'
 
     function close() {
         setOpen(false)
