@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CIVICOM✨ — Platforma de Implicare Civică
 
-## Getting Started
+**CIVICOM** este o platformă web care centralizează acțiunile civice din România. Cetățenii și organizațiile non-guvernamentale pot crea, administra și participa la evenimente civice de orice tip — dintr-un singur loc.
 
-First, run the development server:
+> „Toate acțiunile civice sunt evenimente unificate, nu sisteme separate."
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Ce poți face pe CIVICOM
+
+- **Proteste** — organizează adunări, marșuri sau pichete cu hartă interactivă și logistică completă
+- **Boycotturi** — coordonează boicoturi de branduri cu liste de alternative
+- **Petiții** — strânge semnături cu target personalizat și urmărire în timp real
+- **Activități comunitare** — activități în aer liber, donații (materiale sau monetare), workshop-uri
+- **Evenimente caritabile** — concerte, meet & greet, livestream-uri, activități sportive cu colectare de fonduri
+
+---
+
+## Stack Tehnologic
+
+| Layer | Tehnologie |
+|---|---|
+| Framework | Next.js 15+ (App Router) |
+| Backend & Auth | Supabase (PostgreSQL + Auth + Storage) |
+| Logică server | Server Actions |
+| UI | shadcn/ui + Tailwind CSS |
+| Hărți | shadcn-map (Leaflet + React Leaflet) |
+| Notificări UI | Sonner |
+| Analytics | Vercel Analytics + PostHog |
+| Deploy | Vercel |
+
+---
+
+## Arhitectura Aplicației
+
+```
+app/
+  (auth)/          → /autentificare · /inregistrare · /reseteaza-parola
+  (public)/        → / · /evenimente · /organizatii
+  (private)/
+    panou/         → dashboard utilizator
+    profil/        → profil și editare
+    creeaza/       → creare evenimente (5 tipuri cu stepper)
+    organizatie/   → management ONG
+    evenimente/    → editare și contestații
+    admin/         → moderare (role=admin)
+
+services/          → Server Actions — toată logica de business
+components/
+  ui/              → design system (shadcn)
+  shared/          → componente reutilizabile
+  layout/          → navbar, sidebar, footer
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Funcționalități Principale
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Pentru cetățeni
+- Creare și gestionare evenimente civice în 5 categorii distincte
+- Participare la evenimente și semnare petiții
+- Urmărire dashboard personal (statistici, participări, contestații)
+- Feedback și rating pentru evenimentele finalizate
+- Contestarea deciziilor de respingere
 
-## Learn More
+### Pentru ONG-uri
+- Profil organizație cu logo, banner și membri
+- Creare evenimente în numele organizației
+- Statistici și rapoarte de activitate
+- Gestionare membri cu roluri (admin / member)
 
-To learn more about Next.js, take a look at the following resources:
+### Pentru moderatori
+- Panou admin cu statistici în timp real
+- Aprobare / respingere evenimente și organizații
+- Vizualizare comparativă a evenimentelor editate (versiunea veche vs. nouă)
+- Gestionare contestații
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Modelul de Date
 
-## Deploy on Vercel
+```
+events (tabel central)
+├── protests ────── gatherings / marches / pickets
+├── boycotts ────── boycott_brands → boycott_alternatives
+├── petitions
+├── community_activities ── outdoor_activities / donations / workshops
+└── charity_events ──────── charity_concerts / meet_greets / charity_livestreams / sports_activities
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Statusuri evenimente
+```
+pending → approved | rejected → contested → approved | rejected
+approved → completed
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Rulare Locală
+
+### Cerințe
+- Node.js 18+
+- pnpm
+- Cont Supabase
+
+### Pași
+
+```bash
+# Clonează repository-ul
+git clone https://github.com/Cotet-Mihai/civicom2.git
+cd civicom2
+
+# Instalează dependențele
+pnpm install
+
+# Configurează variabilele de mediu
+cp .env.example .env.local
+# completează NEXT_PUBLIC_SUPABASE_URL și NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# Pornește serverul de dezvoltare
+pnpm dev
+```
+
+Deschide [http://localhost:3000](http://localhost:3000) în browser.
+
+---
+
+## Design System
+
+CIVICOM folosește un design **civic, bold și autentic**:
+
+- **Culoare principală:** verde civic (`oklch(0.52 0.18 145)`)
+- **Accent:** galben strălucitor pentru elemente active
+- **Tipografie:** Montserrat ExtraBold pentru titluri, Inter pentru body
+- **Mobile-first:** proiectat și testat întâi pe mobil
+
+---
+
+## Licență
+
+Proiect privat — © 2025 CIVICOM. Toate drepturile rezervate.
