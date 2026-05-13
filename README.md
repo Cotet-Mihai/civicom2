@@ -1,86 +1,86 @@
-# CIVICOM✨ — Platforma de Implicare Civică
+# CIVICOM✨ — Civic Engagement Platform
 
-**CIVICOM** este o platformă web care centralizează acțiunile civice din România. Cetățenii și organizațiile non-guvernamentale pot crea, administra și participa la evenimente civice de orice tip — dintr-un singur loc.
+**CIVICOM** is a web platform that centralizes civic actions in Romania. Citizens and non-governmental organizations can create, manage, and participate in civic events of any type — all from one place.
 
-> „Toate acțiunile civice sunt evenimente unificate, nu sisteme separate."
-
----
-
-## Ce poți face pe CIVICOM
-
-- **Proteste** — organizează adunări, marșuri sau pichete cu hartă interactivă și logistică completă
-- **Boycotturi** — coordonează boicoturi de branduri cu liste de alternative
-- **Petiții** — strânge semnături cu target personalizat și urmărire în timp real
-- **Activități comunitare** — activități în aer liber, donații (materiale sau monetare), workshop-uri
-- **Evenimente caritabile** — concerte, meet & greet, livestream-uri, activități sportive cu colectare de fonduri
+> "All civic actions are unified events, not separate systems."
 
 ---
 
-## Stack Tehnologic
+## What You Can Do on CIVICOM
 
-| Layer | Tehnologie |
+- **Protests** — organize gatherings, marches, or pickets with an interactive map and full logistics
+- **Boycotts** — coordinate brand boycotts with lists of alternatives
+- **Petitions** — collect signatures with a custom target and real-time tracking
+- **Community Activities** — outdoor activities, donations (material or monetary), workshops
+- **Charity Events** — concerts, meet & greets, livestreams, sports activities with fundraising
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
 |---|---|
 | Framework | Next.js 15+ (App Router) |
 | Backend & Auth | Supabase (PostgreSQL + Auth + Storage) |
-| Logică server | Server Actions |
+| Server Logic | Server Actions |
 | UI | shadcn/ui + Tailwind CSS |
-| Hărți | shadcn-map (Leaflet + React Leaflet) |
-| Notificări UI | Sonner |
+| Maps | shadcn-map (Leaflet + React Leaflet) |
+| UI Notifications | Sonner |
 | Analytics | Vercel Analytics + PostHog |
-| Deploy | Vercel |
+| Deployment | Vercel |
 
 ---
 
-## Arhitectura Aplicației
+## Application Architecture
 
 ```
 app/
   (auth)/          → /autentificare · /inregistrare · /reseteaza-parola
   (public)/        → / · /evenimente · /organizatii
   (private)/
-    panou/         → dashboard utilizator
-    profil/        → profil și editare
-    creeaza/       → creare evenimente (5 tipuri cu stepper)
-    organizatie/   → management ONG
-    evenimente/    → editare și contestații
-    admin/         → moderare (role=admin)
+    panou/         → user dashboard
+    profil/        → profile and editing
+    creeaza/       → event creation (5 types with stepper)
+    organizatie/   → NGO management
+    evenimente/    → event editing and appeals
+    admin/         → moderation panel (role=admin)
 
-services/          → Server Actions — toată logica de business
+services/          → Server Actions — all business logic
 components/
   ui/              → design system (shadcn)
-  shared/          → componente reutilizabile
+  shared/          → reusable components
   layout/          → navbar, sidebar, footer
 ```
 
 ---
 
-## Funcționalități Principale
+## Key Features
 
-### Pentru cetățeni
-- Creare și gestionare evenimente civice în 5 categorii distincte
-- Participare la evenimente și semnare petiții
-- Urmărire dashboard personal (statistici, participări, contestații)
-- Feedback și rating pentru evenimentele finalizate
-- Contestarea deciziilor de respingere
+### For Citizens
+- Create and manage civic events across 5 distinct categories
+- Participate in events and sign petitions
+- Personal dashboard with statistics, participations, and appeals
+- Feedback and ratings for completed events
+- Appeal rejected decisions
 
-### Pentru ONG-uri
-- Profil organizație cu logo, banner și membri
-- Creare evenimente în numele organizației
-- Statistici și rapoarte de activitate
-- Gestionare membri cu roluri (admin / member)
+### For NGOs
+- Organization profile with logo, banner, and members
+- Create events on behalf of the organization
+- Activity statistics and reports
+- Member management with roles (admin / member)
 
-### Pentru moderatori
-- Panou admin cu statistici în timp real
-- Aprobare / respingere evenimente și organizații
-- Vizualizare comparativă a evenimentelor editate (versiunea veche vs. nouă)
-- Gestionare contestații
+### For Moderators
+- Admin panel with real-time statistics
+- Approve / reject events and organizations
+- Side-by-side comparison view for edited events (old vs. new version)
+- Manage appeals
 
 ---
 
-## Modelul de Date
+## Data Model
 
 ```
-events (tabel central)
+events (central table)
 ├── protests ────── gatherings / marches / pickets
 ├── boycotts ────── boycott_brands → boycott_alternatives
 ├── petitions
@@ -88,7 +88,7 @@ events (tabel central)
 └── charity_events ──────── charity_concerts / meet_greets / charity_livestreams / sports_activities
 ```
 
-### Statusuri evenimente
+### Event Statuses
 ```
 pending → approved | rejected → contested → approved | rejected
 approved → completed
@@ -96,46 +96,46 @@ approved → completed
 
 ---
 
-## Rulare Locală
+## Local Development
 
-### Cerințe
+### Requirements
 - Node.js 18+
 - pnpm
-- Cont Supabase
+- Supabase account
 
-### Pași
+### Steps
 
 ```bash
-# Clonează repository-ul
+# Clone the repository
 git clone https://github.com/Cotet-Mihai/civicom2.git
 cd civicom2
 
-# Instalează dependențele
+# Install dependencies
 pnpm install
 
-# Configurează variabilele de mediu
+# Configure environment variables
 cp .env.example .env.local
-# completează NEXT_PUBLIC_SUPABASE_URL și NEXT_PUBLIC_SUPABASE_ANON_KEY
+# fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-# Pornește serverul de dezvoltare
+# Start the development server
 pnpm dev
 ```
 
-Deschide [http://localhost:3000](http://localhost:3000) în browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
 ## Design System
 
-CIVICOM folosește un design **civic, bold și autentic**:
+CIVICOM uses a **civic, bold, and authentic** design language:
 
-- **Culoare principală:** verde civic (`oklch(0.52 0.18 145)`)
-- **Accent:** galben strălucitor pentru elemente active
-- **Tipografie:** Montserrat ExtraBold pentru titluri, Inter pentru body
-- **Mobile-first:** proiectat și testat întâi pe mobil
+- **Primary color:** civic green (`oklch(0.52 0.18 145)`)
+- **Accent:** bright yellow for active elements
+- **Typography:** Montserrat ExtraBold for headings, Inter for body text
+- **Mobile-first:** designed and tested on mobile first
 
 ---
 
-## Licență
+## License
 
-Proiect privat — © 2025 CIVICOM. Toate drepturile rezervate.
+Private project — © 2025 CIVICOM. All rights reserved.
