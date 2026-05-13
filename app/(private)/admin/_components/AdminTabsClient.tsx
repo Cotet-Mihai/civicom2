@@ -8,6 +8,7 @@ const tabs = [
   { label: 'Evenimente', href: '/admin/evenimente' },
   { label: 'Organizații', href: '/admin/organizatii' },
   { label: 'Contestații', href: '/admin/contestatii' },
+  { label: 'Sugestii', href: '/admin/sugestii' },
 ]
 
 export function AdminTabsClient() {

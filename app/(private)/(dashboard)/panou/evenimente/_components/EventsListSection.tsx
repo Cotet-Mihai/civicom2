@@ -87,7 +87,7 @@ export function EventsListSection({ events }: { events: DashboardEvent[] }) {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <EditEventWarningModalClient eventId={event.id} />
+                  {event.status !== 'completed' && <EditEventWarningModalClient eventId={event.id} />}
                   <CompleteEventButtonClient
                     eventId={event.id}
                     category={event.category}

@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Scale, MapPin, FolderOpen } from 'lucide-react'
+import { Scale, MapPin, FolderOpen, Info, Image } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -75,140 +76,160 @@ export function OngSettingsFormClient({ org }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <BannerUploadClient orgId={org.id} bannerUrl={bannerUrl} onBannerChange={setBannerUrl} />
-      <LogoUploadClient orgId={org.id} logoUrl={logoUrl} onLogoChange={setLogoUrl} />
 
-      {/* Informații juridice */}
-      <div className="space-y-4 pt-2">
-        <div className="flex items-center gap-2 border-b border-border/50 pb-3">
-          <Scale className="size-4 text-primary" />
-          <h3 className="text-sm font-bold tracking-tight text-foreground">Informații juridice</h3>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="cui" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">CUI / CIF</Label>
-            <Input id="cui" placeholder="RO12345678" value={form.cui} onChange={e => set('cui', e.target.value)} className="uppercase" />
+      {/* Card: Informații generale */}
+      <Card className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+        <CardContent className="p-6 space-y-5">
+          <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+            <Info className="size-4 text-primary" />
+            <h3 className="font-heading text-base font-bold tracking-tight text-foreground">Informații generale</h3>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="reg_number" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nr. Registru</Label>
-            <Input id="reg_number" placeholder="ex: 26/A/2010" value={form.reg_number} onChange={e => set('reg_number', e.target.value)} />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="settings_org_type" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tip organizație</Label>
-          <Select value={form.org_type} onValueChange={v => set('org_type', v ?? '')}>
-            <SelectTrigger id="settings_org_type"><SelectValue placeholder="Selectează tipul..." /></SelectTrigger>
-            <SelectContent>
-              {Object.entries(ORG_TYPE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="settings_email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email oficial</Label>
-            <Input id="settings_email" type="email" placeholder="contact@organizatia.ro" value={form.email} onChange={e => set('email', e.target.value)} />
+            <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nume *</Label>
+            <Input id="name" value={form.name} onChange={e => set('name', e.target.value)} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings_phone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Telefon</Label>
-            <Input id="settings_phone" type="tel" placeholder="+40 721 234 567" value={form.phone} onChange={e => set('phone', e.target.value)} />
+            <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Descriere</Label>
+            <Textarea id="description" value={form.description} onChange={e => set('description', e.target.value)} rows={4} />
           </div>
-        </div>
-      </div>
-
-      {/* Sediu */}
-      <div className="space-y-4 pt-2">
-        <div className="flex items-center gap-2 border-b border-border/50 pb-3">
-          <MapPin className="size-4 text-primary" />
-          <h3 className="text-sm font-bold tracking-tight text-foreground">Sediu</h3>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Adresă sediu</Label>
-          <Input id="address" placeholder="Str. Exemplu nr. 1" value={form.address} onChange={e => set('address', e.target.value)} />
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="postal_code" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cod poștal</Label>
-            <Input id="postal_code" placeholder="010101" value={form.postal_code} onChange={e => set('postal_code', e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Localitate</Label>
-            <Input id="city" placeholder="București" value={form.city} onChange={e => set('city', e.target.value)} />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-          Nume *
-        </Label>
-        <Input id="name" value={form.name} onChange={e => set('name', e.target.value)} required />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-          Descriere
-        </Label>
-        <Textarea
-          id="description"
-          value={form.description}
-          onChange={e => set('description', e.target.value)}
-          rows={4}
-        />
-      </div>
-
-      <div className="space-y-3">
-        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-          Domenii de activitate *
-        </Label>
-        <ToggleGroup
-          multiple
-          value={categories}
-          onValueChange={(values) => setCategories(values)}
-          className="flex flex-wrap justify-start gap-2"
-        >
-          {Object.entries(ORG_CATEGORY_LABELS).map(([value, label]) => (
-            <ToggleGroupItem
-              key={value}
-              value={value}
-              variant="outline"
-              className="rounded-full px-4 text-sm font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+          <div className="space-y-3">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Domenii de activitate *</Label>
+            <ToggleGroup
+              multiple
+              value={categories}
+              onValueChange={(values) => setCategories(values)}
+              className="flex flex-wrap justify-start"
             >
-              {label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+              {Object.entries(ORG_CATEGORY_LABELS).map(([value, label]) => (
+                <ToggleGroupItem
+                  key={value}
+                  value={value}
+                  variant="outline"
+                  className="rounded-full px-4 text-sm font-medium aria-pressed:!bg-secondary aria-pressed:!text-secondary-foreground aria-pressed:!border-secondary"
+                >
+                  {label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="website" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Website</Label>
+              <Input id="website" type="url" value={form.website} onChange={e => set('website', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="iban" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">IBAN donații</Label>
+              <Input id="iban" value={form.iban} onChange={e => set('iban', e.target.value)} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="website" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            Website
-          </Label>
-          <Input id="website" type="url" value={form.website} onChange={e => set('website', e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="iban" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            IBAN donații
-          </Label>
-          <Input id="iban" value={form.iban} onChange={e => set('iban', e.target.value)} />
-        </div>
-      </div>
+      {/* Card: Informații juridice */}
+      <Card className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+        <CardContent className="p-6 space-y-5">
+          <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+            <Scale className="size-4 text-primary" />
+            <h3 className="font-heading text-base font-bold tracking-tight text-foreground">Informații juridice</h3>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="cui" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">CUI / CIF</Label>
+              <Input id="cui" placeholder="RO12345678" value={form.cui} onChange={e => set('cui', e.target.value)} className="uppercase" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg_number" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nr. Registru</Label>
+              <Input id="reg_number" placeholder="ex: 26/A/2010" value={form.reg_number} onChange={e => set('reg_number', e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="settings_org_type" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tip organizație</Label>
+            <Select value={form.org_type} onValueChange={v => set('org_type', v ?? '')}>
+              <SelectTrigger id="settings_org_type"><SelectValue placeholder="Selectează tipul..." /></SelectTrigger>
+              <SelectContent>
+                {Object.entries(ORG_TYPE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="settings_email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email oficial</Label>
+              <Input id="settings_email" type="email" placeholder="contact@organizatia.ro" value={form.email} onChange={e => set('email', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="settings_phone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Telefon</Label>
+              <Input id="settings_phone" type="tel" placeholder="+40 721 234 567" value={form.phone} onChange={e => set('phone', e.target.value)} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Documente verificare */}
-      <div className="space-y-4 pt-2">
-        <div className="flex items-center gap-2 border-b border-border/50 pb-3">
-          <FolderOpen className="size-4 text-primary" />
-          <h3 className="text-sm font-bold tracking-tight text-foreground">Documente verificare</h3>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Încarcă documentele necesare pentru verificarea organizației. Fișiere acceptate: PDF, JPG, PNG. Maxim 10MB per fișier.
-        </p>
-        <DocumentsUploadClient orgId={org.id} documents={documents} onDocumentsChange={setDocuments} />
-      </div>
+      {/* Card: Sediu */}
+      <Card className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+        <CardContent className="p-6 space-y-5">
+          <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+            <MapPin className="size-4 text-primary" />
+            <h3 className="font-heading text-base font-bold tracking-tight text-foreground">Sediu</h3>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Adresă sediu</Label>
+            <Input id="address" placeholder="Str. Exemplu nr. 1" value={form.address} onChange={e => set('address', e.target.value)} />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="postal_code" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cod poștal</Label>
+              <Input id="postal_code" placeholder="010101" value={form.postal_code} onChange={e => set('postal_code', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Localitate</Label>
+              <Input id="city" placeholder="București" value={form.city} onChange={e => set('city', e.target.value)} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <Button type="submit" disabled={loading}>
+      {/* Card: Documente verificare */}
+      <Card className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+        <CardContent className="p-6 space-y-5">
+          <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+            <FolderOpen className="size-4 text-primary" />
+            <h3 className="font-heading text-base font-bold tracking-tight text-foreground">Documente verificare</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Încarcă documentele necesare pentru verificarea organizației. Fișiere acceptate: PDF, JPG, PNG. Maxim 10MB per fișier.
+          </p>
+          <DocumentsUploadClient orgId={org.id} documents={documents} onDocumentsChange={setDocuments} />
+        </CardContent>
+      </Card>
+
+      {/* Card: Identitate vizuală — la final, banner + logo pe același rând */}
+      <Card className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+        <CardContent className="p-6 space-y-5">
+          <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+            <Image className="size-4 text-primary" />
+            <h3 className="font-heading text-base font-bold tracking-tight text-foreground">Identitate vizuală</h3>
+          </div>
+          <div className="flex items-stretch min-h-0">
+            <div className="flex-[3] min-w-0 pr-5">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Banner</p>
+              <BannerUploadClient orgId={org.id} bannerUrl={bannerUrl} onBannerChange={setBannerUrl} />
+            </div>
+            <div className="w-px bg-border/60 shrink-0" />
+            <div className="flex-[2] min-w-0 pl-5 flex flex-col">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Logo</p>
+              <div className="flex-1 flex items-center justify-center">
+                <div className="w-24 sm:w-28">
+                  <LogoUploadClient orgId={org.id} logoUrl={logoUrl} onLogoChange={setLogoUrl} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Button type="submit" disabled={loading} className="w-full sm:w-auto">
         {loading ? 'Se salvează...' : 'Salvează modificările'}
       </Button>
     </form>

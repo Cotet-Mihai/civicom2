@@ -57,7 +57,7 @@
   --popover-foreground: oklch(0.14 0.02 155);
   --primary: oklch(0.52 0.18 145);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.78 0.17 80);
+  --secondary: oklch(0.91 0.17 97);
   --secondary-foreground: oklch(0.14 0.02 155);
   --muted: oklch(0.963 0.006 145);
   --muted-foreground: oklch(0.50 0.015 150);
@@ -523,4 +523,9 @@
   .animate-auth-in {
     animation: none;
   }
+}
+
+/* Recharts pie/donut sector — smooth filter transition on hover */
+.recharts-sector {
+  transition: filter 0.2s ease-out;
 }

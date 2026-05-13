@@ -1,87 +1,136 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from 'react-leaflet'
-import { MapPin, X } from 'lucide-react'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
+import { useEffect, useRef, useState } from 'react'
+import { useMap } from 'react-leaflet'
+import {
+    Map,
+    MapDrawControl,
+    MapDrawDelete,
+    MapDrawEdit,
+    MapDrawPolyline,
+    MapLocateControl,
+    MapTileLayer,
+    MapFullscreenControl,
+    useLeaflet,
+} from '@/components/ui/map'
+import { MapSearchControlWrapper, extractPolylines, removeDuplicatePolylines } from '@/utils/mapHelpers'
+import type L from 'leaflet'
 
-const icon = L.icon({
-  iconUrl: '/leaflet/marker-icon.png',
-  iconRetinaUrl: '/leaflet/marker-icon-2x.png',
-  shadowUrl: '/leaflet/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-})
+const BUCHAREST: [number, number] = [44.4358196, 26.1021932]
+
+function InvalidateOnVisible() {
+    const map = useMap()
+    useEffect(() => {
+        const container = map.getContainer()
+        const observer = new ResizeObserver((entries) => {
+            const rect = entries[0]?.contentRect
+            if (rect && rect.width > 0 && rect.height > 0) {
+                map.invalidateSize()
+            }
+        })
+        observer.observe(container)
+        return () => observer.disconnect()
+    }, [map])
+    return null
+}
+
+function RestorePolyline({ locations }: { locations: [number, number][] }) {
+    const map = useMap()
+    const { L } = useLeaflet()
+    useEffect(() => {
+        if (!locations.length || !L) return
+        const leaflet = L
+        const id = requestAnimationFrame(() => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let fg: any = null
+            map.eachLayer(layer => { if (!fg && layer instanceof leaflet.FeatureGroup) fg = layer })
+            if (!fg || fg.getLayers().length > 0) return
+            // Fire draw:created so MapDrawControl updates layersCount (enables Edit/Delete)
+            map.fire('draw:created', { layer: leaflet.polyline(locations), layerType: 'polyline' })
+        })
+        return () => cancelAnimationFrame(id)
+    }, [L])
+    return null
+}
+
+function labelIcon(leaflet: typeof L, text: string, color: string) {
+    return leaflet.divIcon({
+        className: '',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+        html: `<span style="position:absolute;transform:translate(-50%,-50%);background:${color};color:#fff;border-radius:9999px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap;pointer-events:none">${text}</span>`,
+    })
+}
+
+function RouteLabels({ locations }: { locations: [number, number][] }) {
+    const map = useMap()
+    const { L } = useLeaflet()
+    const markersRef = useRef<L.Marker[]>([])
+    const [isEditing, setIsEditing] = useState(false)
+
+    useEffect(() => {
+        const onStart = () => setIsEditing(true)
+        const onStop = () => setIsEditing(false)
+        map.on('draw:editstart', onStart)
+        map.on('draw:editstop', onStop)
+        map.on('draw:editcancel', onStop)
+        map.on('draw:deletestart', onStart)
+        map.on('draw:deletestop', onStop)
+        map.on('draw:deletecancel', onStop)
+        return () => {
+            map.off('draw:editstart', onStart)
+            map.off('draw:editstop', onStop)
+            map.off('draw:editcancel', onStop)
+            map.off('draw:deletestart', onStart)
+            map.off('draw:deletestop', onStop)
+            map.off('draw:deletecancel', onStop)
+        }
+    }, [map])
+
+    useEffect(() => {
+        markersRef.current.forEach(m => m.remove())
+        markersRef.current = []
+        if (!L || locations.length < 2 || isEditing) return
+        const start = L.marker(locations[0], { icon: labelIcon(L, 'Start', '#16a34a'), interactive: false }).addTo(map)
+        const end = L.marker(locations[locations.length - 1], { icon: labelIcon(L, 'Final', '#dc2626'), interactive: false }).addTo(map)
+        markersRef.current = [start, end]
+        return () => { start.remove(); end.remove(); markersRef.current = [] }
+    }, [L, locations, isEditing])
+
+    return null
+}
 
 type Props = {
-  locations: [number, number][]
-  onChange: (locs: [number, number][]) => void
+    locations: [number, number][]
+    onChange: (locs: [number, number][]) => void
 }
-
-function ClickHandler({ onAdd }: { onAdd: (loc: [number, number]) => void }) {
-  useMapEvents({
-    click(e) {
-      onAdd([e.latlng.lat, e.latlng.lng])
-    },
-  })
-  return null
-}
-
-const BUCHAREST: [number, number] = [44.4268, 26.1025]
 
 export function RoutePickerClient({ locations, onChange }: Props) {
-  function addPoint(loc: [number, number]) {
-    onChange([...locations, loc])
-  }
+    function handleOnChange(layers: L.FeatureGroup) {
+        removeDuplicatePolylines(layers)
+        const polylines = extractPolylines(layers)
+        if (polylines[0]) {
+            const latLngs = polylines[0].getLatLngs() as L.LatLng[]
+            onChange(latLngs.map(ll => [ll.lat, ll.lng]))
+        } else {
+            onChange([])
+        }
+    }
 
-  function removePoint(i: number) {
-    onChange(locations.filter((_, idx) => idx !== i))
-  }
-
-  return (
-    <div className="space-y-2">
-      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-        <MapPin size={14} /> Click pe hartă pentru a adăuga puncte de traseu (min. 2) *
-      </p>
-      <div className="h-[320px] rounded-xl overflow-hidden border border-border">
-        <MapContainer
-          center={locations[0] ?? BUCHAREST}
-          zoom={13}
-          style={{ height: '100%', width: '100%' }}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <ClickHandler onAdd={addPoint} />
-          {locations.map((loc, i) => (
-            <Marker key={i} position={loc} icon={icon} />
-          ))}
-          {locations.length >= 2 && (
-            <Polyline
-              positions={locations}
-              pathOptions={{ color: '#16a34a', weight: 4 }}
-            />
-          )}
-        </MapContainer>
-      </div>
-      {locations.length > 0 && (
-        <div className="space-y-1">
-          {locations.map((loc, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between text-xs font-mono text-muted-foreground bg-muted/50 rounded px-2 py-1"
-            >
-              <span>
-                Punct {i + 1}: {loc[0].toFixed(5)}, {loc[1].toFixed(5)}
-              </span>
-              <button
-                onClick={() => removePoint(i)}
-                className="hover:text-destructive"
-              >
-                <X size={12} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
+    return (
+        <Map center={BUCHAREST} zoom={13}>
+            <InvalidateOnVisible />
+            <MapTileLayer />
+            <MapSearchControlWrapper />
+            <MapLocateControl />
+            <MapFullscreenControl />
+            <MapDrawControl onLayersChange={handleOnChange}>
+                <MapDrawPolyline />
+                <MapDrawEdit />
+                <MapDrawDelete />
+            </MapDrawControl>
+            <RestorePolyline locations={locations} />
+            <RouteLabels locations={locations} />
+        </Map>
+    )
 }

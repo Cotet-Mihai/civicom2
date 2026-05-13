@@ -14,7 +14,7 @@ export default async function OrgEvenimentePage({ params }: PageProps) {
   const events = await getOrganizationEvents(id)
 
   return (
-    <div className="space-y-4">
+    <div className="px-4 lg:px-8 py-8 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-black tracking-tight text-foreground">
           Evenimente ({events.length})

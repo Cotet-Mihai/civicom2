@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Clock, Building2, MessageSquareWarning } from 'lucide-react'
-import { StatCardDashboard } from '@/components/shared/StatCardDashboard'
+import { StatsBanner } from '@/components/shared/StatsBanner'
 import { getAdminStats, getPendingEvents } from '@/services/admin.service'
 import { AdminTabsClient } from './_components/AdminTabsClient'
 import { buttonVariants } from '@/components/ui/button'
@@ -28,11 +28,15 @@ export default async function AdminPage() {
       <h1 className="text-2xl font-black tracking-tight text-foreground">Admin</h1>
       <AdminTabsClient />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCardDashboard label="Evenimente în așteptare" value={stats.pendingEvents} icon={Clock} />
-        <StatCardDashboard label="Organizații în așteptare" value={stats.pendingOrgs} icon={Building2} />
-        <StatCardDashboard label="Contestații active" value={stats.pendingAppeals} icon={MessageSquareWarning} />
-      </div>
+      <StatsBanner
+        badge="Moderare"
+        title="Cereri în așteptare"
+        items={[
+          { icon: Clock,               iconClassName: 'size-4 text-secondary',  value: stats.pendingEvents,  label: 'Evenimente' },
+          { icon: Building2,           iconClassName: 'size-4 text-primary',    value: stats.pendingOrgs,    label: 'Organizații' },
+          { icon: MessageSquareWarning, iconClassName: 'size-4 text-green-400', value: stats.pendingAppeals, label: 'Contestații' },
+        ]}
+      />
 
       <div className="space-y-3">
         <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">

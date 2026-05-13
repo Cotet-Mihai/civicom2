@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { Phone, Package, Gift, Images, HandHeart, TrendingUp } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { getCommunityById, incrementViewCount } from '@/services/event.service'
+import { getCommunityById, incrementViewCount, getEventStatusForOwner } from '@/services/event.service'
 import { getAuthUser } from '@/services/auth.service'
 import { getParticipationStatus } from '@/services/participation.service'
 import { hasCurrentUserSubmittedFeedback } from '@/services/feedback.service'
@@ -14,6 +14,7 @@ import { ParticipationCardClient } from '@/components/shared/ParticipationCardCl
 import { FeedbackFormClient } from '@/components/shared/FeedbackFormClient'
 import { LocationMapClient } from '@/components/shared/LocationMapClient'
 import { FeedbackSection } from '@/components/shared/FeedbackSection'
+import { PendingEventPage } from '@/components/shared/PendingEventPage'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -37,7 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CommunityPage({ params }: Props) {
     const { id } = await params
     const event = await getCommunityById(id)
-    if (!event) notFound()
+
+    if (!event) {
+        const status = await getEventStatusForOwner(id)
+        if (status) return <PendingEventPage />
+        notFound()
+    }
 
     incrementViewCount(id)
 

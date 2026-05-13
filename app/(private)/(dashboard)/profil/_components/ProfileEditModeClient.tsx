@@ -20,24 +20,25 @@ export function ProfileEditModeClient({ profile }: { profile: UserProfile }) {
         </div>
       </div>
 
-      <Card className="shadow-sm border-border">
-        <CardContent className="p-6 space-y-8">
-          <div className="space-y-3">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              Fotografie profil
-            </h3>
-            <AvatarUploadClient
-              currentAvatarUrl={profile.avatar_url}
-              name={profile.name}
-              userId={profile.id}
-            />
-          </div>
-          <div className="border-t border-border pt-6 space-y-3">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              Informații cont
-            </h3>
-            <ProfileEditFormClient initialName={profile.name} />
-          </div>
+      <Card className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+        <CardContent className="p-6 space-y-4">
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b border-border/50 pb-3">
+            Fotografie profil
+          </h3>
+          <AvatarUploadClient
+            currentAvatarUrl={profile.avatar_url}
+            name={profile.name}
+            userId={profile.id}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+        <CardContent className="p-6 space-y-4">
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b border-border/50 pb-3">
+            Informații cont
+          </h3>
+          <ProfileEditFormClient profile={profile} />
         </CardContent>
       </Card>
     </div>

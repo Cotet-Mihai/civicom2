@@ -52,7 +52,9 @@ export function CompleteEventButtonClient({ eventId, category, subcategory, stat
       {loading
         ? <Loader2 size={14} className="animate-spin" />
         : <CheckCircle2 size={14} />}
-      {loading ? 'Se procesează...' : 'Marchează finalizat'}
+      <span className="hidden sm:inline">
+        {loading ? 'Se procesează...' : 'Marchează finalizat'}
+      </span>
     </Button>
   )
 }

@@ -32,7 +32,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/profil') ||
     pathname.startsWith('/creeaza') ||
     pathname.startsWith('/organizatie') ||
-    pathname.startsWith('/admin')
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/completeaza-profil')
 
   const isAuthRoute =
     pathname.startsWith('/autentificare') ||
@@ -43,6 +44,20 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/autentificare'
     return NextResponse.redirect(url)
+  }
+
+  if (isPrivateRoute && user && !pathname.startsWith('/completeaza-profil')) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_profile_complete')
+      .eq('auth_users_id', user.id)
+      .single()
+
+    if (profile && !profile.is_profile_complete) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/completeaza-profil'
+      return NextResponse.redirect(url)
+    }
   }
 
   if (isAuthRoute && user) {

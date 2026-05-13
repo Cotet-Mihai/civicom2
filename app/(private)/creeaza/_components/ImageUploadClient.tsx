@@ -2,9 +2,11 @@
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
-import { Upload, X, ImageIcon } from 'lucide-react'
+import { Upload, X, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { uploadBanner, uploadGalleryImages } from '@/lib/upload'
+import { BannerCropperClient } from './BannerCropperClient'
 
 type Props = {
   userId: string
@@ -17,15 +19,16 @@ type Props = {
 export function ImageUploadClient({ userId, bannerUrl, galleryUrls, onBannerChange, onGalleryChange }: Props) {
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [uploadingGallery, setUploadingGallery] = useState(false)
-  const bannerRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
 
-  async function handleBanner(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  async function handleBannerImageReady(croppedFile: File) {
     setUploadingBanner(true)
-    const url = await uploadBanner(file, userId)
-    if (url) onBannerChange(url)
+    const url = await uploadBanner(croppedFile, userId)
+    if (url) {
+      onBannerChange(url)
+    } else {
+      toast.error('Eroare la încărcarea bannerului')
+    }
     setUploadingBanner(false)
   }
 
@@ -49,30 +52,15 @@ export function ImageUploadClient({ userId, bannerUrl, galleryUrls, onBannerChan
         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
           Banner eveniment *
         </p>
-        <div
-          onClick={() => bannerRef.current?.click()}
-          className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden border-2 border-dashed border-border bg-muted/30 flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
-        >
-          {bannerUrl ? (
-            <Image src={bannerUrl} alt="Banner" fill className="object-cover" />
-          ) : (
-            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <ImageIcon size={32} />
-              <span className="text-sm font-medium">
-                {uploadingBanner ? 'Se încarcă...' : 'Click pentru a adăuga banner'}
-              </span>
-            </div>
-          )}
-        </div>
-        <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBanner} />
-        {bannerUrl && (
-          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => onBannerChange(null)}>
-            <X size={14} className="mr-1" /> Șterge banner
-          </Button>
-        )}
+        <BannerCropperClient
+          bannerUrl={bannerUrl}
+          isUploading={uploadingBanner}
+          onImageReady={handleBannerImageReady}
+          onRemove={() => onBannerChange(null)}
+        />
       </div>
 
-      {/* Gallery */}
+      {/* Galerie */}
       <div className="space-y-2">
         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
           Galerie foto (opțional)
@@ -83,6 +71,7 @@ export function ImageUploadClient({ userId, bannerUrl, galleryUrls, onBannerChan
               <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
                 <Image src={url} alt={`Foto ${i + 1}`} fill className="object-cover" />
                 <button
+                  type="button"
                   onClick={() => removeGalleryImage(i)}
                   className="absolute top-1 right-1 size-5 rounded-full bg-destructive text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 >
@@ -92,11 +81,25 @@ export function ImageUploadClient({ userId, bannerUrl, galleryUrls, onBannerChan
             ))}
           </div>
         )}
-        <Button variant="outline" size="sm" onClick={() => galleryRef.current?.click()} disabled={uploadingGallery} className="gap-1.5">
-          <Upload size={14} />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => galleryRef.current?.click()}
+          disabled={uploadingGallery}
+          className="gap-1.5"
+        >
+          {uploadingGallery ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
           {uploadingGallery ? 'Se încarcă...' : 'Adaugă fotografii'}
         </Button>
-        <input ref={galleryRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGallery} />
+        <input
+          ref={galleryRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleGallery}
+        />
       </div>
     </div>
   )

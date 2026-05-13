@@ -13,6 +13,7 @@ export function OrgTabsClient({ orgId }: Props) {
     { label: 'Panou', href: `/organizatie/${orgId}/panou` },
     { label: 'Evenimente', href: `/organizatie/${orgId}/evenimente` },
     { label: 'Membri', href: `/organizatie/${orgId}/membri` },
+    { label: 'Contestații', href: `/organizatie/${orgId}/contestatii` },
     { label: 'Setări', href: `/organizatie/${orgId}/setari` },
   ]
 

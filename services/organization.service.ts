@@ -78,6 +78,14 @@ export type OrgDocument = {
   created_at: string
 }
 
+export type OrgAppeal = {
+  id: string
+  event_id: string
+  event_title: string
+  status: string
+  created_at: string
+}
+
 // ============================================================
 // INTERNAL ROW TYPES
 // ============================================================
@@ -233,6 +241,28 @@ export async function getOrganizationPublicEvents(orgId: string): Promise<OrgEve
     .order('created_at', { ascending: false })
   if (error) console.error('[getOrganizationPublicEvents]', error.message)
   return (data ?? []) as OrgEvent[]
+}
+
+export async function getOrgAppeals(orgId: string): Promise<OrgAppeal[]> {
+  const adminClient = createAdminClient()
+  const role = await getOrgMemberRole(orgId)
+  if (!role) return []
+
+  const { data, error } = await adminClient
+    .from('appeals')
+    .select('id, event_id, status, created_at, events!event_id!inner(title, organization_id)')
+    .eq('events.organization_id', orgId)
+    .order('created_at', { ascending: false })
+
+  if (error) console.error('[getOrgAppeals]', error.message)
+
+  return ((data ?? []) as any[]).map((row: any) => ({
+    id: row.id,
+    event_id: row.event_id,
+    event_title: row.events?.title ?? 'Eveniment necunoscut',
+    status: row.status,
+    created_at: row.created_at,
+  }))
 }
 
 export async function getOrganizationEvents(orgId: string): Promise<OrgEvent[]> {

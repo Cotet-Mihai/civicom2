@@ -6,7 +6,7 @@ import { Mic2, Users2, Heart, Radio, TrendingUp, Ticket, Play, Images } from 'lu
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { buttonVariants } from '@/components/ui/button'
-import { getCharityById, incrementViewCount } from '@/services/event.service'
+import { getCharityById, incrementViewCount, getEventStatusForOwner } from '@/services/event.service'
 import { getAuthUser } from '@/services/auth.service'
 import { getParticipationStatus } from '@/services/participation.service'
 import { hasCurrentUserSubmittedFeedback } from '@/services/feedback.service'
@@ -16,6 +16,7 @@ import { ParticipationCardClient } from '@/components/shared/ParticipationCardCl
 import { FeedbackFormClient } from '@/components/shared/FeedbackFormClient'
 import { LocationMapClient } from '@/components/shared/LocationMapClient'
 import { FeedbackSection } from '@/components/shared/FeedbackSection'
+import { PendingEventPage } from '@/components/shared/PendingEventPage'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -39,7 +40,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CharityPage({ params }: Props) {
     const { id } = await params
     const event = await getCharityById(id)
-    if (!event) notFound()
+
+    if (!event) {
+        const status = await getEventStatusForOwner(id)
+        if (status) return <PendingEventPage />
+        notFound()
+    }
 
     incrementViewCount(id)
 

@@ -18,6 +18,8 @@ export type AdminEvent = {
   creator_name: string
   created_at: string
   banner_url: string | null
+  is_edited: boolean
+  previous_snapshot: Record<string, unknown> | null
 }
 
 export type AdminOrg = {
@@ -94,6 +96,7 @@ type EventListRow = {
   id: string; title: string; category: string; subcategory: string | null
   status: string; rejection_note: string | null; creator_id: string
   banner_url: string | null; created_at: string
+  is_edited: boolean
   creator: { name: string } | null
 }
 
@@ -109,6 +112,8 @@ type EventDetailRow = {
   subcategory: string | null; status: string; rejection_note: string | null
   creator_id: string; banner_url: string | null; gallery_urls: string[] | null
   created_at: string
+  is_edited: boolean
+  previous_snapshot: Record<string, unknown> | null
   creator: { name: string } | null
 }
 
@@ -195,7 +200,7 @@ export async function getPendingEvents(limit?: number): Promise<AdminEvent[]> {
   const supabase = await createClient()
   const query = supabase
     .from('events')
-    .select('id, title, category, subcategory, status, rejection_note, creator_id, banner_url, created_at, creator:users!creator_id(name)')
+    .select('id, title, category, subcategory, status, rejection_note, creator_id, banner_url, created_at, is_edited, creator:users!creator_id(name)')
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
   const { data, error } = limit ? await query.limit(limit) : await query
@@ -211,6 +216,8 @@ export async function getPendingEvents(limit?: number): Promise<AdminEvent[]> {
     creator_name: row.creator?.name ?? 'Necunoscut',
     created_at: row.created_at,
     banner_url: row.banner_url ?? null,
+    is_edited: row.is_edited ?? false,
+    previous_snapshot: null,
   }))
 }
 
@@ -240,7 +247,7 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
 
   const { data: evtRaw } = await supabase
     .from('events')
-    .select('id, title, description, category, subcategory, status, rejection_note, creator_id, banner_url, gallery_urls, created_at, creator:users!creator_id(name)')
+    .select('id, title, description, category, subcategory, status, rejection_note, creator_id, banner_url, gallery_urls, created_at, is_edited, previous_snapshot, creator:users!creator_id(name)')
     .eq('id', id)
     .single()
 
@@ -258,6 +265,8 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
     creator_name: evt.creator?.name ?? 'Necunoscut',
     created_at: evt.created_at,
     banner_url: evt.banner_url ?? null,
+    is_edited: evt.is_edited ?? false,
+    previous_snapshot: evt.previous_snapshot ?? null,
   }
   const description: string = evt.description ?? ''
   const gallery_urls: string[] = evt.gallery_urls ?? []
@@ -475,7 +484,7 @@ export async function approveEvent(eventId: string): Promise<{ ok: true } | { er
 
   const { error } = await supabase
     .from('events')
-    .update({ status: 'approved', rejection_note: null })
+    .update({ status: 'approved', rejection_note: null, is_edited: false, previous_snapshot: null })
     .eq('id', eventId)
   if (error) return { error: error.message }
 

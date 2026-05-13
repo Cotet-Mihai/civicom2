@@ -30,7 +30,7 @@ export function LogoUploadClient({ orgId, logoUrl, onLogoChange }: Props) {
             {/* Container-ul acum este dreptunghiular (aspect-video) și ia toată lățimea, exact ca bannerul */}
             <div
                 onClick={() => inputRef.current?.click()}
-                className="group relative flex w-full aspect-video cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-transparent transition-all hover:border-primary/50 hover:bg-primary/5"
+                className="group relative flex w-full aspect-square cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-border bg-transparent transition-all hover:border-primary/50 hover:bg-primary/5"
             >
                 {logoUrl ? (
                     /* Folosim object-contain ca să nu tăiem logo-ul și p-4 ca să aibă un spațiu de respirație de la margini */

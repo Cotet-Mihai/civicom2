@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ExternalLink, Images, AlertCircle, Zap, Building2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { getBoycottById, incrementViewCount } from '@/services/event.service'
+import { getBoycottById, incrementViewCount, getEventStatusForOwner } from '@/services/event.service'
 import { getAuthUser } from '@/services/auth.service'
 import { getParticipationStatus } from '@/services/participation.service'
 import { hasCurrentUserSubmittedFeedback } from '@/services/feedback.service'
@@ -14,6 +14,7 @@ import { ActionButtons } from '@/components/shared/ActionButtons'
 import { ParticipationCardClient } from '@/components/shared/ParticipationCardClient'
 import { FeedbackFormClient } from '@/components/shared/FeedbackFormClient'
 import { FeedbackSection } from '@/components/shared/FeedbackSection'
+import { PendingEventPage } from '@/components/shared/PendingEventPage'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -37,7 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BoycottPage({ params }: Props) {
     const { id } = await params
     const event = await getBoycottById(id)
-    if (!event) notFound()
+
+    if (!event) {
+        const status = await getEventStatusForOwner(id)
+        if (status) return <PendingEventPage />
+        notFound()
+    }
 
     incrementViewCount(id)
 

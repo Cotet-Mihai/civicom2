@@ -3,12 +3,13 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Phone, Building2, Target, FileText, Images } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { getPetitionById, incrementViewCount } from '@/services/event.service'
+import { getPetitionById, incrementViewCount, getEventStatusForOwner } from '@/services/event.service'
 import { EventBanner } from '@/components/shared/EventBanner'
 import { ActionButtons } from '@/components/shared/ActionButtons'
 import { SignatureCardClient } from '@/components/shared/SignatureCardClient'
 import { FeedbackSection } from '@/components/shared/FeedbackSection'
 import { RecentSignersClient } from './_components/RecentSignersClient'
+import { PendingEventPage } from '@/components/shared/PendingEventPage'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -32,7 +33,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PetitionPage({ params }: Props) {
     const { id } = await params
     const event = await getPetitionById(id)
-    if (!event) notFound()
+
+    if (!event) {
+        const status = await getEventStatusForOwner(id)
+        if (status) return <PendingEventPage />
+        notFound()
+    }
 
     // fire-and-forget — nu blochează randarea
     incrementViewCount(id)

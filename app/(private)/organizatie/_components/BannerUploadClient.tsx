@@ -26,19 +26,37 @@ export function BannerUploadClient({ orgId, bannerUrl, onBannerChange }: Props) 
     }
 
     return (
-        <div className="space-y-3">
-            {/* Același container identic cu cel de la logo */}
+        <div className="space-y-2">
             <div
                 onClick={() => inputRef.current?.click()}
-                className="group relative flex w-full aspect-video cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-transparent transition-all hover:border-primary/50 hover:bg-primary/5"
+                className="group relative w-full overflow-hidden rounded-xl border border-border cursor-pointer transition-all hover:border-primary/50"
+                style={{ aspectRatio: '16/9' }}
             >
                 {bannerUrl ? (
-                    /* Aici păstrăm object-cover deoarece vrem ca bannerul să umple complet zona */
-                    <Image src={bannerUrl} alt="Banner" fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+                    <>
+                        <Image
+                            src={bannerUrl}
+                            alt="Banner"
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            unoptimized
+                        />
+                        {/* Overlay la hover cu indicație de schimbare */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5">
+                                <Upload size={13} className="text-foreground" />
+                                <span className="text-xs font-semibold text-foreground">Schimbă bannerul</span>
+                            </div>
+                        </div>
+                    </>
                 ) : (
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground transition-colors group-hover:text-primary">
-                        {uploading ? <Upload size={24} className="animate-pulse" /> : <ImageIcon size={24} />}
-                        <span className="text-xs font-medium">{uploading ? 'Se încarcă...' : 'Încarcă bannerul'}</span>
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-muted to-muted/60 flex flex-col items-center justify-center gap-2 transition-colors group-hover:from-primary/15">
+                        <div className="flex size-8 items-center justify-center rounded-full bg-background/80 shadow-sm text-muted-foreground group-hover:text-primary transition-colors">
+                            {uploading ? <Upload size={15} className="animate-pulse" /> : <ImageIcon size={15} />}
+                        </div>
+                        <span className="text-[11px] font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                            {uploading ? 'Se încarcă...' : 'Încarcă banner'}
+                        </span>
                     </div>
                 )}
             </div>
@@ -49,10 +67,10 @@ export function BannerUploadClient({ orgId, bannerUrl, onBannerChange }: Props) 
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    className="h-7 px-2.5 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => onBannerChange(null)}
                 >
-                    <X size={14} className="mr-1.5" /> Șterge banner
+                    <X size={12} className="mr-1" /> Șterge
                 </Button>
             )}
         </div>

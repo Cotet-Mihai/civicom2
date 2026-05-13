@@ -485,7 +485,7 @@ function MapLayersControl({
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger render={<Button type="button" variant="secondary" size="icon-sm" aria-label="Select layers" title="Select layers" className={cn(
+            <DropdownMenuTrigger render={<Button type="button" variant="outline" size="icon-sm" aria-label="Select layers" title="Select layers" className={cn(
                                     "absolute z-1000 border",
                                     position,
                                     className
@@ -766,7 +766,7 @@ function MapZoomControl({
                 <Button
                     type="button"
                     size="icon-sm"
-                    variant="secondary"
+                    variant="outline"
                     aria-label="Zoom in"
                     title="Zoom in"
                     className="border"
@@ -777,7 +777,7 @@ function MapZoomControl({
                 <Button
                     type="button"
                     size="icon-sm"
-                    variant="secondary"
+                    variant="outline"
                     aria-label="Zoom out"
                     title="Zoom out"
                     className="border"
@@ -829,7 +829,7 @@ function MapFullscreenControl({
             <Button
                 type="button"
                 size="icon-sm"
-                variant="secondary"
+                variant="outline"
                 onClick={() => map.toggleFullscreen()}
                 aria-label={
                     isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
@@ -898,7 +898,7 @@ function MapLocateControl({
             <Button
                 type="button"
                 size="icon-sm"
-                variant={location ? "default" : "secondary"}
+                variant={location ? "default" : "outline"}
                 onClick={location ? stopLocating : startLocating}
                 disabled={isLocating}
                 title={
@@ -1082,7 +1082,7 @@ function MapDrawShapeButton<T extends Draw.Feature>({
             aria-label={`Draw ${drawMode}`}
             title={`Draw ${drawMode}`}
             className={cn("border", className)}
-            variant={isActive ? "default" : "secondary"}
+            variant={isActive ? "default" : "outline"}
             disabled={activeMode === "edit" || activeMode === "delete"}
             onClick={handleClick}
             {...props}
@@ -1280,7 +1280,7 @@ function MapDrawActionButton<T extends EditToolbar.Edit | EditToolbar.Delete>({
             size="icon-sm"
             aria-label={`${drawAction === "edit" ? "Edit" : "Remove"} shapes`}
             title={`${drawAction === "edit" ? "Edit" : "Remove"} shapes`}
-            variant={isActive ? "default" : "secondary"}
+            variant={isActive ? "default" : "outline"}
             disabled={!hasFeatures}
             onClick={handleClick}
             className={cn("border", className)}
@@ -1392,7 +1392,7 @@ function MapDrawUndo({ className, ...props }: React.ComponentProps<"button">) {
         <Button
             type="button"
             size="icon-sm"
-            variant="secondary"
+            variant="outline"
             aria-label={`Undo ${activeMode}`}
             title={`Undo ${activeMode}`}
             onClick={handleUndo}

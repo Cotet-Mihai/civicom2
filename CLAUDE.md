@@ -375,7 +375,7 @@ Token-urile sunt definite în `app/globals.css` → `:root`. Dacă o componentă
 |---|---|---|
 | `--primary` | `oklch(0.52 0.18 145)` — verde civic | Butoane principale, logo, linkuri active, iconuri decorative, ring focus |
 | `--primary-foreground` | alb | Text pe fundal `bg-primary` |
-| `--secondary` | `oklch(0.78 0.17 80)` — galben auriu | Accent tipografic în headings mari, badge-uri subtipe |
+| `--secondary` | `oklch(0.91 0.17 97)` — galben strălucitor (yellow-300) | Accent tipografic în headings mari, badge-uri subtipe, stare activă ToggleGroup |
 | `--secondary-foreground` | dark | Text pe `bg-secondary` |
 | `--background` | `oklch(0.985 0.005 145)` — alb cu tentă verde | Pagini publice, suprafețe principale |
 | `--foreground` | dark green-tinted | Text principal |
@@ -595,3 +595,10 @@ CIVICOM are un caracter **civic, bold și autentic** — nu corporate, nu startu
 > **Salvare automată în CLAUDE.md:** Ori de câte ori userul spune că ceva este important sau că trebuie reținut, acel lucru se salvează automat și în acest fișier (CLAUDE.md), nu doar în memorie sau context. Nu mai e nevoie de o cerere separată.
 
 > **Fișiere de context per etapă:** La finalul fiecărei etape se creează `context/etapaN.md` cu tot ce s-a implementat — componente, tipuri, bug-uri rezolvate, decizii arhitecturale.
+
+> **Sistema memory.md — OBLIGATORIU:**
+> Fiecare folder din proiect conține un fișier `memory.md` care descrie conținutul său (fișiere, exporturi, scopuri, dependențe). Regulile sunt:
+> 1. **Citire înainte de lucru:** Înainte de a modifica sau crea ceva într-un folder, citește `memory.md`-ul acelui folder pentru context.
+> 2. **Actualizare după orice modificare:** Ori de câte ori adaugi, ștergi, redenumești sau schimbi comportamentul unui fișier dintr-un folder, actualizezi imediat `memory.md`-ul folderului respectiv.
+> 3. **Creare pentru foldere noi:** Dacă creezi un folder nou, creezi și `memory.md`-ul lui înainte de a termina task-ul.
+> 4. **Nu sări peste acest pas** — indiferent cât de mică e modificarea.

@@ -1,6 +1,6 @@
+import Link from 'next/link'
 import { DashboardContextSwitcherClient } from './DashboardContextSwitcherClient'
 import { DashboardSidebarNavClient } from './DashboardSidebarNavClient'
-import { DashboardMobileSheetClient } from './DashboardMobileSheetClient'
 import type { DashboardOrg } from './dashboard-types'
 
 type Props = {
@@ -12,27 +12,22 @@ type Props = {
 
 export function DashboardSidebar({ userName, userEmail, avatarUrl, org }: Props) {
   return (
-    <>
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-background sticky top-16 h-[calc(100vh-4rem)] overflow-hidden">
-        <DashboardContextSwitcherClient
-          userName={userName}
-          userEmail={userEmail}
-          avatarUrl={avatarUrl}
-          org={org}
-        />
-        <DashboardSidebarNavClient org={org} />
-      </aside>
-
-      {/* Mobile trigger (rendered inline în layout, nu fixed) */}
-      <div className="md:hidden">
-        <DashboardMobileSheetClient
-          userName={userName}
-          userEmail={userEmail}
-          avatarUrl={avatarUrl}
-          org={org}
-        />
+    <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-background sticky top-0 h-screen overflow-hidden">
+      <div className="flex items-center px-4 py-3 border-b border-border/50 shrink-0">
+        <Link
+          href="/"
+          className="font-heading text-xl font-black uppercase tracking-tighter text-primary hover:opacity-80 transition-opacity"
+        >
+          CIVICOM✨
+        </Link>
       </div>
-    </>
+      <DashboardContextSwitcherClient
+        userName={userName}
+        userEmail={userEmail}
+        avatarUrl={avatarUrl}
+        org={org}
+      />
+      <DashboardSidebarNavClient org={org} />
+    </aside>
   )
 }

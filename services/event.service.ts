@@ -202,6 +202,20 @@ function mapProtestRow(row: any): ProtestDetail {
     }
 }
 
+// Returnează statusul evenimentului dacă și numai dacă userul curent este creatorul lui.
+// RLS pe events permite SELECT pentru creator_id = current_user_id() indiferent de status.
+// Filtrăm doar statusurile non-publice — dacă returnează ceva, userul este owner.
+export async function getEventStatusForOwner(id: string): Promise<string | null> {
+    const supabase = await createClient()
+    const { data } = await supabase
+        .from('events')
+        .select('status')
+        .eq('id', id)
+        .in('status', ['pending', 'rejected', 'contested'])
+        .maybeSingle()
+    return data?.status ?? null
+}
+
 export const getProtestById = cache(async (id: string): Promise<ProtestDetail | null> => {
     const supabase = await createClient()
 

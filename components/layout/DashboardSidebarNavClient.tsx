@@ -1,19 +1,35 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import {
   LayoutDashboard, Calendar, Users, FileText,
   AlertCircle, User, Building2, Settings,
+  LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { signOut } from '@/services/auth.service'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import type { DashboardOrg } from './dashboard-types'
 
 type NavItem = { label: string; href: string; Icon: React.ElementType }
 
-export function DashboardSidebarNavClient({ org }: { org: DashboardOrg | null }) {
+type Props = { org: DashboardOrg | null; onClose?: () => void }
+
+export function DashboardSidebarNavClient({ org, onClose }: Props) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [signOutOpen, setSignOutOpen] = useState(false)
 
   const isOrgContext = org && (
     searchParams.get('context') === 'org' ||
@@ -34,16 +50,16 @@ export function DashboardSidebarNavClient({ org }: { org: DashboardOrg | null })
     { label: 'Contestații', href: '/panou/contestatii', Icon: AlertCircle },
   ]
 
-  const orgActivityItems: NavItem[] = [
-    { label: 'Panou', href: '/panou?context=org', Icon: LayoutDashboard },
-    { label: 'Evenimentele mele', href: '/panou/evenimente?context=org', Icon: Calendar },
-    { label: 'Contestații', href: '/panou/contestatii?context=org', Icon: AlertCircle },
-  ]
+  const orgActivityItems: NavItem[] = org
+    ? [
+        { label: 'Panou ONG', href: `/organizatie/${org.id}/panou`, Icon: Building2 },
+        { label: 'Evenimente ONG', href: '/panou/evenimente?context=org', Icon: Calendar },
+        { label: 'Contestații', href: `/organizatie/${org.id}/contestatii`, Icon: AlertCircle },
+      ]
+    : []
 
   const orgManageItems: NavItem[] = org
     ? [
-        { label: 'Panou ONG', href: `/organizatie/${org.id}/panou`, Icon: Building2 },
-        { label: 'Evenimente', href: `/organizatie/${org.id}/evenimente`, Icon: Calendar },
         { label: 'Membri', href: `/organizatie/${org.id}/membri`, Icon: Users },
         { label: 'Setări', href: `/organizatie/${org.id}/setari`, Icon: Settings },
       ]
@@ -54,28 +70,61 @@ export function DashboardSidebarNavClient({ org }: { org: DashboardOrg | null })
   ]
 
   return (
-    <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-      {isOrgContext ? (
-        <>
-          <NavGroup label="Activitate" items={orgActivityItems} isActive={isActive} />
-          <NavGroup label="Organizație" items={orgManageItems} isActive={isActive} />
-        </>
-      ) : (
-        <>
-          <NavGroup label="Activitate" items={userItems} isActive={isActive} />
-          <NavGroup label="Cont" items={contItems} isActive={isActive} />
-        </>
-      )}
-    </nav>
+    <>
+      <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ieși din cont?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vei fi deconectat și redirecționat spre pagina principală.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anulează</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => signOut()}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Da, deconectează-mă
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        {isOrgContext ? (
+          <>
+            <NavGroup label="Activitate" items={orgActivityItems} isActive={isActive} onClose={onClose} />
+            <NavGroup label="Organizație" items={orgManageItems} isActive={isActive} onClose={onClose} />
+          </>
+        ) : (
+          <>
+            <NavGroup label="Activitate" items={userItems} isActive={isActive} onClose={onClose} />
+            <NavGroup label="Cont" items={contItems} isActive={isActive} onClose={onClose} />
+          </>
+        )}
+      </nav>
+
+      <div className="shrink-0 border-t border-border px-3 py-3">
+        <button
+          onClick={() => { onClose?.(); setSignOutOpen(true) }}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+        >
+          <LogOut className="size-4 shrink-0" />
+          Deconectare
+        </button>
+      </div>
+    </>
   )
 }
 
 function NavGroup({
-  label, items, isActive,
+  label, items, isActive, onClose,
 }: {
   label: string
   items: NavItem[]
   isActive: (href: string) => boolean
+  onClose?: () => void
 }) {
   return (
     <div>
@@ -87,6 +136,7 @@ function NavGroup({
           <Link
             key={href}
             href={href}
+            onClick={onClose}
             className={cn(
               'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors border-l-2',
               isActive(href)

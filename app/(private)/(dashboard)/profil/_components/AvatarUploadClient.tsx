@@ -17,6 +17,29 @@ type Props = {
 const MAX_SIZE_BYTES = 2 * 1024 * 1024 // 2MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
+async function convertToWebP(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { reject(new Error('Canvas indisponibil')); return }
+      ctx.drawImage(img, 0, 0)
+      canvas.toBlob(
+        blob => blob ? resolve(blob) : reject(new Error('Conversie eșuată')),
+        'image/webp',
+        0.9
+      )
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Imagine invalidă')) }
+    img.src = url
+  })
+}
+
 export function AvatarUploadClient({ currentAvatarUrl, name, userId }: Props) {
   const [preview, setPreview] = useState<string | null>(currentAvatarUrl)
   const [isLoading, setIsLoading] = useState(false)
@@ -57,12 +80,12 @@ export function AvatarUploadClient({ currentAvatarUrl, name, userId }: Props) {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
-      const ext = file.name.split('.').pop() ?? 'jpg'
-      const path = `${userId}.${ext}`
+      const webpBlob = await convertToWebP(file)
+      const path = `${userId}.webp`
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(path, file, { upsert: true })
+        .upload(path, webpBlob, { upsert: true, contentType: 'image/webp' })
 
       if (uploadError) throw uploadError
 

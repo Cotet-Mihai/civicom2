@@ -33,7 +33,14 @@ export default async function AdminEvenimentePage() {
           events.map(ev => (
             <div key={ev.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-4 gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{ev.title}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-foreground truncate">{ev.title}</p>
+                  {ev.is_edited ? (
+                    <span className="shrink-0 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Editat</span>
+                  ) : (
+                    <span className="shrink-0 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">Nou</span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                     {CATEGORY_LABEL[ev.category] ?? ev.category}
