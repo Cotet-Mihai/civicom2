@@ -197,12 +197,19 @@ export async function getEventViewsEvolution(
     bucketKey = (d) => d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
   }
 
-  const { data: snapshots } = await admin
-    .from('event_view_snapshots')
-    .select('taken_at, view_count')
-    .eq('event_id', eventId)
-    .gte('taken_at', startDate.toISOString())
-    .order('taken_at', { ascending: true })
+  const [{ data: snapshots }, { data: eventRow }] = await Promise.all([
+    admin
+      .from('event_view_snapshots')
+      .select('taken_at, view_count')
+      .eq('event_id', eventId)
+      .gte('taken_at', startDate.toISOString())
+      .order('taken_at', { ascending: true }),
+    admin
+      .from('events')
+      .select('view_count')
+      .eq('id', eventId)
+      .single(),
+  ])
 
   const bucketMap: Record<string, number> = {}
   for (const snap of snapshots ?? []) {
@@ -215,12 +222,6 @@ export async function getEventViewsEvolution(
     if (bucketMap[label] !== undefined) lastKnown = bucketMap[label]
     return { label, views: lastKnown }
   })
-
-  const { data: eventRow } = await admin
-    .from('events')
-    .select('view_count')
-    .eq('id', eventId)
-    .single()
 
   filledPoints.push({ label: 'Acum', views: eventRow?.view_count ?? lastKnown })
 
