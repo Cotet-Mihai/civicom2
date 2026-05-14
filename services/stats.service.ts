@@ -103,6 +103,8 @@ export async function getProtestStats(
       : Promise.resolve({ data: [] as any[], error: null }),
   ])
 
+  if (protestResult.error) console.error('[getProtestStats] protests', protestResult.error.message)
+  if (participantsResult.error) console.error('[getProtestStats] participants', participantsResult.error.message)
   if (!protestResult.data) return null
 
   const participants: ProtestParticipant[] = (participantsResult.data ?? []).map((row: any) => ({
