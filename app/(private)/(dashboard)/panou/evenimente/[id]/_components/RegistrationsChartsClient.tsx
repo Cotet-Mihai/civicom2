@@ -25,7 +25,9 @@ export function RegistrationsChartsClient({ participants, createdAt, protestDate
 
     const dayMap: Record<string, number> = {}
     joined.forEach(p => {
-      const key = new Date(p.joined_at).toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+      const date = new Date(p.joined_at)
+      if (isNaN(date.getTime())) return
+      const key = date.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
       dayMap[key] = (dayMap[key] ?? 0) + 1
     })
 
@@ -44,7 +46,12 @@ export function RegistrationsChartsClient({ participants, createdAt, protestDate
 
   const hourlyData = useMemo(() => {
     const hourMap: Record<number, number> = {}
-    joined.forEach(p => { const h = new Date(p.joined_at).getHours(); hourMap[h] = (hourMap[h] ?? 0) + 1 })
+    joined.forEach(p => {
+      const date = new Date(p.joined_at)
+      if (isNaN(date.getTime())) return
+      const h = date.getHours()
+      hourMap[h] = (hourMap[h] ?? 0) + 1
+    })
     const maxCount = Math.max(...Object.values(hourMap), 0)
     return Array.from({ length: 24 }, (_, h) => ({
       label: `${h.toString().padStart(2, '0')}:00`,
