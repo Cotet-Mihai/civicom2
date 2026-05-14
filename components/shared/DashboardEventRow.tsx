@@ -40,6 +40,7 @@ const STATUS_CLASSES: Record<string, string> = {
 type Props = {
     event: DashboardEvent
     showStatus?: boolean
+    statsHref?: string
 }
 
 function formatDate(dateStr: string) {
@@ -50,18 +51,14 @@ function formatDate(dateStr: string) {
     })
 }
 
-export function DashboardEventRow({ event, showStatus = true }: Props) {
+export function DashboardEventRow({ event, showStatus = true, statsHref }: Props) {
     const path = CATEGORY_PATH[event.category] ?? event.category
     const href = `/evenimente/${path}/${event.id}`
 
     return (
-        <Link
-            href={href}
-            className="group flex items-center justify-between gap-4 p-4 transition-colors hover:bg-muted/30 sm:p-5"
-        >
-            <div className="flex flex-1 min-w-0 items-center gap-4">
+        <div className="group flex items-center justify-between gap-2 p-4 transition-colors hover:bg-muted/30 sm:p-5 rounded-lg">
+            <Link href={href} className="flex flex-1 min-w-0 items-center gap-4">
 
-                {/* Thumbnail actualizat cu aspect-video și efect de hover */}
                 <div className="relative aspect-video w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:w-20">
                     {event.banner_url ? (
                         <Image
@@ -75,39 +72,42 @@ export function DashboardEventRow({ event, showStatus = true }: Props) {
                     )}
                 </div>
 
-                {/* Informații text */}
                 <div className="flex flex-1 min-w-0 flex-col py-0.5">
                     <p className="truncate text-sm font-bold text-foreground transition-colors group-hover:text-primary sm:text-base">
                         {event.title}
                     </p>
 
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-medium text-muted-foreground">
-              {formatDate(event.created_at)}
-            </span>
-
-                        {/* Punct despărțitor subtil */}
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                            {formatDate(event.created_at)}
+                        </span>
                         <span className="h-1 w-1 rounded-full bg-border" />
-
                         <Badge variant="outline" className="border-transparent bg-primary/5 px-2 py-0 text-[10px] font-semibold text-primary">
                             {CATEGORY_LABEL[event.category] ?? event.category}
                         </Badge>
-
                         {showStatus && (
-                            <span
-                                className={`rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_CLASSES[event.status] ?? ''}`}
-                            >
-                {STATUS_LABEL[event.status] ?? event.status}
-              </span>
+                            <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_CLASSES[event.status] ?? ''}`}>
+                                {STATUS_LABEL[event.status] ?? event.status}
+                            </span>
                         )}
                     </div>
                 </div>
-            </div>
 
-            {/* Săgeată indicator pentru a încuraja acțiunea */}
-            <div className="flex shrink-0 text-muted-foreground/30 transition-colors group-hover:text-primary">
-                <ChevronRight className="size-5 transition-transform group-hover:translate-x-1" />
+            </Link>
+
+            <div className="flex items-center gap-2 shrink-0">
+                {statsHref && (
+                    <Link
+                        href={statsHref}
+                        className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border text-[11px] font-semibold text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
+                    >
+                        Statistici
+                    </Link>
+                )}
+                <Link href={href} className="flex text-muted-foreground/30 transition-colors group-hover:text-primary">
+                    <ChevronRight className="size-5 transition-transform group-hover:translate-x-1" />
+                </Link>
             </div>
-        </Link>
+        </div>
     )
 }

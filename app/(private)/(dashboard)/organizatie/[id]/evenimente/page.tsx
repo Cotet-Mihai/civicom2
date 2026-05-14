@@ -71,6 +71,7 @@ export default async function OrgEvenimentePage({ params }: PageProps) {
                     key={event.id}
                     event={event as DashboardEvent}
                     showStatus
+                    statsHref={event.category === 'protest' ? `/organizatie/${id}/evenimente/${event.id}` : undefined}
                   />
                 ))}
               </div>
