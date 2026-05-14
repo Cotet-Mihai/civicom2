@@ -1,19 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowRight, Image as ImageIcon, FileText, Link as LinkIcon, Scale, MapPin } from 'lucide-react'
+import { ArrowRight, Image as ImageIcon, FileText, Link as LinkIcon, Scale, MapPin, Upload, X, FileIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { createOrganization } from '@/services/organization.service'
+import { Badge } from '@/components/ui/badge'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { createOrganization, addOrgDocument } from '@/services/organization.service'
+import { uploadOrgDocument } from '@/lib/upload'
 import { LogoUploadClient } from '../../_components/LogoUploadClient'
 import { BannerUploadClient } from '../../_components/BannerUploadClient'
-import { ORG_CATEGORY_LABELS, ORG_TYPE_LABELS } from '@/lib/constants'
+import { ORG_CATEGORY_LABELS, ORG_TYPE_LABELS, ORG_DOC_TYPE_LABELS } from '@/lib/constants'
+import { LOCALITIES_BY_COUNTY } from '@/lib/romanian-localities'
+
+function formatPhone(raw: string): string {
+    const digits = raw.replace(/\D/g, '').slice(0, 9)
+    const parts: string[] = []
+    if (digits.length > 0) parts.push(digits.slice(0, 3))
+    if (digits.length > 3) parts.push(digits.slice(3, 6))
+    if (digits.length > 6) parts.push(digits.slice(6, 9))
+    return parts.join(' ')
+}
 
 const TEMP_ORG_ID = 'new'
 
@@ -23,7 +36,16 @@ export function OngCreateFormClient() {
     const [logoUrl, setLogoUrl] = useState<string | null>(null)
     const [bannerUrl, setBannerUrl] = useState<string | null>(null)
     const [categories, setCategories] = useState<string[]>([])
-    const [form, setForm] = useState({ name: '', description: '', website: '', iban: '', cui: '', reg_number: '', org_type: '', email: '', phone: '', address: '', postal_code: '', city: '' })
+    const [pendingDocs, setPendingDocs] = useState<Record<string, File | null>>({})
+    const docInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+    const [phone, setPhone] = useState('')
+    const [county, setCounty] = useState('')
+    const [city, setCity] = useState('')
+    const [form, setForm] = useState({ name: '', description: '', website: '', iban: '', cui: '', reg_number: '', org_type: '', email: '', address: '', postal_code: '' })
+
+    const isBucharest = county === 'București'
+    const cityLabel = isBucharest ? 'Sector' : 'Localitate'
+    const localities = county ? (LOCALITIES_BY_COUNTY[county] ?? []) : []
 
     function set(field: string, value: string) {
         setForm(prev => ({ ...prev, [field]: value }))
@@ -32,19 +54,28 @@ export function OngCreateFormClient() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         if (!form.name.trim()) { toast.error('Numele organizației este obligatoriu'); return }
+        if (!form.description.trim()) { toast.error('Descrierea este obligatorie'); return }
         if (categories.length === 0) { toast.error('Selectează cel puțin un domeniu de activitate'); return }
         if (!form.cui.trim()) { toast.error('CUI/CIF este obligatoriu'); return }
         if (!form.reg_number.trim()) { toast.error('Nr. Registru este obligatoriu'); return }
         if (!form.org_type) { toast.error('Tipul organizației este obligatoriu'); return }
         if (!form.email.trim()) { toast.error('Email-ul oficial este obligatoriu'); return }
-        if (!form.phone.trim()) { toast.error('Telefonul este obligatoriu'); return }
+        if (phone.replace(/\s/g, '').length !== 9) { toast.error('Numărul de telefon trebuie să aibă 9 cifre'); return }
         if (!form.address.trim()) { toast.error('Adresa sediului este obligatorie'); return }
         if (!form.postal_code.trim()) { toast.error('Codul poștal este obligatoriu'); return }
-        if (!form.city.trim()) { toast.error('Localitatea este obligatorie'); return }
+        if (!county) { toast.error('Județul este obligatoriu'); return }
+        if (!city) { toast.error('Localitatea este obligatorie'); return }
+
+        const missingDocs = Object.keys(ORG_DOC_TYPE_LABELS).filter(type => !pendingDocs[type])
+        if (missingDocs.length > 0) {
+            toast.error(`Documentele obligatorii lipsesc: ${missingDocs.map(t => ORG_DOC_TYPE_LABELS[t]).join(', ')}`)
+            return
+        }
+
         setLoading(true)
         const result = await createOrganization({
             name: form.name,
-            description: form.description || undefined,
+            description: form.description,
             website: form.website || undefined,
             iban: form.iban || undefined,
             logo_url: logoUrl || undefined,
@@ -54,15 +85,32 @@ export function OngCreateFormClient() {
             reg_number: form.reg_number,
             org_type: form.org_type,
             email: form.email,
-            phone: form.phone,
+            phone: `+40${phone.replace(/\s/g, '')}`,
             address: form.address,
             postal_code: form.postal_code,
-            city: form.city,
+            county,
+            city,
         })
-        setLoading(false)
-        if ('error' in result) { toast.error(result.error); return }
+        if ('error' in result) { setLoading(false); toast.error(result.error); return }
+
+        const { orgId } = result
+        const docResults = await Promise.all(
+            Object.entries(pendingDocs).map(async ([docType, file]) => {
+                if (!file) return null
+                const path = await uploadOrgDocument(file, orgId)
+                if (!path) return `Upload eșuat pentru ${ORG_DOC_TYPE_LABELS[docType]}`
+                const res = await addOrgDocument(orgId, docType, file.name, path)
+                if ('error' in res) return `${ORG_DOC_TYPE_LABELS[docType]}: ${res.error}`
+                return null
+            })
+        )
+        const docErrors = docResults.filter(Boolean)
+        if (docErrors.length > 0) {
+            toast.error(`Documente neîncărcate: ${docErrors.join('; ')}`)
+        }
+
         toast.success('Organizație creată! Acum este în așteptarea aprobării.')
-        router.push(`/organizatie/${result.orgId}/panou`)
+        router.push(`/organizatie/${orgId}/panou`)
     }
 
     return (
@@ -117,7 +165,7 @@ export function OngCreateFormClient() {
 
                     <div className="space-y-3">
                         <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                            Descriere
+                            Descriere *
                         </Label>
                         <Textarea
                             id="description"
@@ -172,10 +220,10 @@ export function OngCreateFormClient() {
                         Tip organizație *
                     </Label>
                     <Select value={form.org_type} onValueChange={v => set('org_type', v ?? '')}>
-                        <SelectTrigger id="org_type" className="h-11 bg-transparent transition-all hover:border-primary/50 focus:ring-primary/20">
-                            <SelectValue placeholder="Selectează tipul..." />
+                        <SelectTrigger id="org_type" className="w-full h-11 bg-transparent transition-all hover:border-primary/50 focus:ring-primary/20">
+                            <SelectValue placeholder="Selectează tipul...">{ORG_TYPE_LABELS[form.org_type]}</SelectValue>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent alignItemWithTrigger={false}>
                             {Object.entries(ORG_TYPE_LABELS).map(([value, label]) => (
                                 <SelectItem key={value} value={value}>{label}</SelectItem>
                             ))}
@@ -201,14 +249,18 @@ export function OngCreateFormClient() {
                         <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                             Telefon *
                         </Label>
-                        <Input
-                            id="phone"
-                            type="tel"
-                            placeholder="+40 721 234 567"
-                            value={form.phone}
-                            onChange={e => set('phone', e.target.value)}
-                            className="bg-transparent h-11 transition-all hover:border-primary/50 focus-visible:ring-primary/20"
-                        />
+                        <InputGroup>
+                            <InputGroupAddon>
+                                <Badge variant="secondary" className="text-xs">+40</Badge>
+                            </InputGroupAddon>
+                            <InputGroupInput
+                                id="phone"
+                                inputMode="numeric"
+                                placeholder="700 000 000"
+                                value={phone}
+                                onChange={e => setPhone(formatPhone(e.target.value))}
+                            />
+                        </InputGroup>
                     </div>
                 </div>
             </div>
@@ -228,7 +280,7 @@ export function OngCreateFormClient() {
                     </Label>
                     <Input
                         id="address"
-                        placeholder="Str. Exemplu nr. 1, Sector 1"
+                        placeholder="Str. Exemplu nr. 1"
                         value={form.address}
                         onChange={e => set('address', e.target.value)}
                         className="bg-transparent h-11 transition-all hover:border-primary/50 focus-visible:ring-primary/20"
@@ -237,29 +289,50 @@ export function OngCreateFormClient() {
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div className="space-y-3">
-                        <Label htmlFor="postal_code" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                            Cod poștal *
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                            Județ *
                         </Label>
-                        <Input
-                            id="postal_code"
-                            placeholder="010101"
-                            value={form.postal_code}
-                            onChange={e => set('postal_code', e.target.value)}
-                            className="bg-transparent h-11 transition-all hover:border-primary/50 focus-visible:ring-primary/20"
-                        />
+                        <Select value={county} onValueChange={v => { setCounty(v ?? ''); setCity('') }}>
+                            <SelectTrigger className="w-full h-11 bg-transparent transition-all hover:border-primary/50 focus:ring-primary/20">
+                                <SelectValue placeholder="Selectează județul...">{county || undefined}</SelectValue>
+                            </SelectTrigger>
+                            <SelectContent alignItemWithTrigger={false}>
+                                {Object.keys(LOCALITIES_BY_COUNTY).sort().map(c => (
+                                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-3">
-                        <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                            Localitate *
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                            {cityLabel} *
                         </Label>
-                        <Input
-                            id="city"
-                            placeholder="București"
-                            value={form.city}
-                            onChange={e => set('city', e.target.value)}
-                            className="bg-transparent h-11 transition-all hover:border-primary/50 focus-visible:ring-primary/20"
-                        />
+                        <Select value={city} onValueChange={v => setCity(v ?? '')} disabled={!county}>
+                            <SelectTrigger className="w-full h-11 bg-transparent transition-all hover:border-primary/50 focus:ring-primary/20">
+                                <SelectValue placeholder={county ? `Selectează ${cityLabel.toLowerCase()}...` : 'Selectează mai întâi județul...'}>
+                                    {city || undefined}
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent alignItemWithTrigger={false}>
+                                {localities.map(l => (
+                                    <SelectItem key={l} value={l}>{l}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
+                </div>
+
+                <div className="space-y-3">
+                    <Label htmlFor="postal_code" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        Cod poștal *
+                    </Label>
+                    <Input
+                        id="postal_code"
+                        placeholder="010101"
+                        value={form.postal_code}
+                        onChange={e => set('postal_code', e.target.value)}
+                        className="bg-transparent h-11 transition-all hover:border-primary/50 focus-visible:ring-primary/20"
+                    />
                 </div>
             </div>
 
@@ -301,7 +374,79 @@ export function OngCreateFormClient() {
                 </div>
             </div>
 
-            {/* SECȚIUNEA 3: Identitate Vizuală */}
+            {/* SECȚIUNEA 5: Documente obligatorii */}
+            <div className="space-y-6">
+                <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+                    <FileText className="size-5 text-primary" />
+                    <h3 className="font-heading text-xl font-bold tracking-tight text-foreground">
+                        Documente obligatorii
+                    </h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                    Toate documentele de mai jos sunt obligatorii pentru procesarea cererii. Formate acceptate: PDF, JPG, PNG (max. 10MB).
+                </p>
+
+                <div className="space-y-3">
+                    {Object.entries(ORG_DOC_TYPE_LABELS).map(([docType, label]) => {
+                        const file = pendingDocs[docType] ?? null
+                        return (
+                            <div
+                                key={docType}
+                                className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/30 px-4 py-3"
+                            >
+                                <span className="text-sm font-semibold text-foreground">
+                                    {label} <span className="text-destructive">*</span>
+                                </span>
+
+                                {file ? (
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                                            <FileIcon size={12} />
+                                            <span className="max-w-[180px] truncate">{file.name}</span>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                            onClick={() => setPendingDocs(prev => ({ ...prev, [docType]: null }))}
+                                        >
+                                            <X size={12} className="mr-1" /> Șterge
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 gap-1.5 text-xs"
+                                            onClick={() => docInputRefs.current[docType]?.click()}
+                                        >
+                                            <Upload size={12} /> Încarcă
+                                        </Button>
+                                        <input
+                                            ref={el => { docInputRefs.current[docType] = el }}
+                                            type="file"
+                                            accept=".pdf,.jpg,.jpeg,.png"
+                                            className="hidden"
+                                            onChange={e => {
+                                                const f = e.target.files?.[0]
+                                                if (!f) return
+                                                if (f.size > 10 * 1024 * 1024) { toast.error('Fișierul depășește 10MB'); return }
+                                                setPendingDocs(prev => ({ ...prev, [docType]: f }))
+                                                e.target.value = ''
+                                            }}
+                                        />
+                                    </>
+                                )}
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
+
+            {/* SECȚIUNEA 6: Identitate Vizuală */}
             <div className="space-y-6">
                 <div className="flex items-center gap-2 border-b border-border/50 pb-3">
                     <ImageIcon className="size-5 text-primary" />

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createNotification } from '@/services/notification.service'
 
 // ============================================================
 // PUBLIC TYPES
@@ -36,6 +37,7 @@ export type OrgDetail = {
   logo_url: string | null
   banner_url: string | null
   status: string
+  rejection_note: string | null
   rating: number
   owner_id: string
   created_at: string
@@ -49,6 +51,7 @@ export type OrgDetail = {
   phone: string | null
   address: string | null
   postal_code: string | null
+  county: string | null
   city: string | null
   documents: OrgDocument[]
 }
@@ -99,11 +102,11 @@ type OrgRow = {
 type OrgDetailRow = {
   id: string; name: string; description: string | null
   website: string | null; iban: string | null
-  logo_url: string | null; banner_url: string | null; status: string; rating: number
+  logo_url: string | null; banner_url: string | null; status: string; rejection_note: string | null; rating: number
   owner_id: string; created_at: string; categories: string[]
   cui: string | null; reg_number: string | null; org_type: string | null
   email: string | null; phone: string | null; address: string | null
-  postal_code: string | null; city: string | null
+  postal_code: string | null; county: string | null; city: string | null
 }
 
 type OrgMemberRow = {
@@ -138,13 +141,13 @@ export async function getUserOrgId(userId: string): Promise<string | null> {
   return data?.organization_id ?? null
 }
 
-export async function getUserOrg(userId: string): Promise<{ id: string; name: string; logo_url: string | null } | null> {
+export async function getUserOrg(userId: string): Promise<{ id: string; name: string; logo_url: string | null; status: string; rejection_note: string | null } | null> {
   const orgId = await getUserOrgId(userId)
   if (!orgId) return null
   const supabase = await createClient()
   const { data: org } = await supabase
     .from('organizations')
-    .select('id, name, logo_url')
+    .select('id, name, logo_url, status, rejection_note')
     .eq('id', orgId)
     .single()
   return org ?? null
@@ -152,7 +155,7 @@ export async function getUserOrg(userId: string): Promise<{ id: string; name: st
 
 export async function getUserOrgByAuthId(
   authUserId: string
-): Promise<{ id: string; name: string; logo_url: string | null } | null> {
+): Promise<{ id: string; name: string; logo_url: string | null; status: string; rejection_note: string | null } | null> {
   const supabase = await createClient()
   const { data: userRow } = await supabase
     .from('users')
@@ -161,6 +164,25 @@ export async function getUserOrgByAuthId(
     .maybeSingle()
   if (!userRow) return null
   return getUserOrg(userRow.id)
+}
+
+export async function getUserOrgs(
+  authUserId: string
+): Promise<{ id: string; name: string; logo_url: string | null; status: string }[]> {
+  const supabase = await createClient()
+  const { data: userRow } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_users_id', authUserId)
+    .maybeSingle()
+  if (!userRow) return []
+  const { data } = await supabase
+    .from('organization_members')
+    .select('organizations!organization_id(id, name, logo_url, status)')
+    .eq('user_id', userRow.id)
+  if (!data) return []
+  type OrgRow = { organizations: { id: string; name: string; logo_url: string | null; status: string } | null }
+  return (data as unknown as OrgRow[]).map(r => r.organizations).filter(Boolean) as { id: string; name: string; logo_url: string | null; status: string }[]
 }
 
 export async function getOrgMemberRole(orgId: string): Promise<'admin' | 'member' | null> {
@@ -196,7 +218,7 @@ export async function getOrganizationById(id: string): Promise<OrgDetail | null>
 
   const { data: orgRaw, error: orgErr } = await adminClient
     .from('organizations')
-    .select('id, name, description, website, iban, logo_url, banner_url, status, rating, owner_id, created_at, categories, cui, reg_number, org_type, email, phone, address, postal_code, city')
+    .select('id, name, description, website, iban, logo_url, banner_url, status, rejection_note, rating, owner_id, created_at, categories, cui, reg_number, org_type, email, phone, address, postal_code, county, city')
     .eq('id', id)
     .single()
   if (orgErr || !orgRaw) return null
@@ -357,6 +379,7 @@ export async function createOrganization(data: {
   phone?: string
   address?: string
   postal_code?: string
+  county?: string
   city?: string
 }): Promise<{ ok: true; orgId: string } | { error: string }> {
   if (data.name.trim().length < 2) return { error: 'Numele trebuie să aibă minim 2 caractere' }
@@ -385,6 +408,7 @@ export async function createOrganization(data: {
       phone: data.phone?.trim() || null,
       address: data.address?.trim() || null,
       postal_code: data.postal_code?.trim() || null,
+      county: data.county?.trim() || null,
       city: data.city?.trim() || null,
     })
     .select('id')
@@ -392,7 +416,9 @@ export async function createOrganization(data: {
 
   if (orgErr || !org) return { error: orgErr?.message ?? 'Eroare la creare organizație' }
 
-  const { error: memberErr } = await supabase
+  // Use admin client to bypass RLS — first member can't satisfy is_org_admin() yet
+  const adminClient = createAdminClient()
+  const { error: memberErr } = await adminClient
     .from('organization_members')
     .insert({ organization_id: (org as { id: string }).id, user_id: userId, role: 'admin' })
 
@@ -418,6 +444,7 @@ export async function updateOrganization(
     phone?: string | null
     address?: string | null
     postal_code?: string | null
+    county?: string | null
     city?: string | null
   }
 ): Promise<{ ok: true } | { error: string }> {
@@ -425,6 +452,14 @@ export async function updateOrganization(
   if (role !== 'admin') return { error: 'Acces interzis — trebuie să fii admin ONG' }
 
   const supabase = await createClient()
+
+  // Fetch current org snapshot before updating
+  const { data: currentOrg } = await supabase
+    .from('organizations')
+    .select('name, description, website, iban, logo_url, banner_url, categories, cui, reg_number, org_type, email, phone, address, postal_code, county, city, status')
+    .eq('id', orgId)
+    .single()
+
   const update: Record<string, unknown> = {}
   if (data.name !== undefined) update.name = data.name.trim()
   if (data.description !== undefined) update.description = data.description || null
@@ -439,6 +474,7 @@ export async function updateOrganization(
   if (data.phone !== undefined) update.phone = data.phone?.trim() || null
   if (data.address !== undefined) update.address = data.address?.trim() || null
   if (data.postal_code !== undefined) update.postal_code = data.postal_code?.trim() || null
+  if (data.county !== undefined) update.county = data.county || null
   if (data.city !== undefined) update.city = data.city?.trim() || null
   if (data.categories !== undefined) {
     if (data.categories.length === 0)
@@ -446,8 +482,49 @@ export async function updateOrganization(
     update.categories = data.categories
   }
 
+  // If org is in a review-relevant status, mark as edited and save snapshot
+  const reviewStatuses = ['pending', 'rejected', 'contested']
+  const currentStatus = currentOrg?.status as string | undefined
+  if (currentOrg && reviewStatuses.includes(currentStatus!)) {
+    update.is_edited = true
+    update.previous_snapshot = currentOrg as Record<string, unknown>
+    if (currentStatus === 'rejected') {
+      update.status = 'pending'
+      update.rejection_note = null
+    }
+  }
+
   const { error } = await supabase.from('organizations').update(update).eq('id', orgId)
   if (error) return { error: error.message }
+
+  // Notify admin if org is in review-relevant status
+  if (currentOrg && reviewStatuses.includes(currentStatus!)) {
+    try {
+      const adminClient = createAdminClient()
+      const { data: adminUser } = await adminClient
+        .from('users')
+        .select('id')
+        .eq('role', 'admin')
+        .limit(1)
+        .maybeSingle()
+      if (adminUser) {
+        const orgName = (update.name as string | undefined) ?? (currentOrg as { name?: string }).name ?? 'Necunoscut'
+        const isResubmit = currentStatus === 'rejected'
+        await createNotification(
+          (adminUser as { id: string }).id,
+          isResubmit ? 'ONG retrimis spre aprobare 🔄' : 'ONG editat ✏️',
+          isResubmit
+            ? `Organizația "${orgName}" a fost modificată și retrimisă spre aprobare.`
+            : `Organizația "${orgName}" a fost editată în timp ce era în analiză.`,
+          'org_edited',
+          `/admin/organizatii/${orgId}`
+        )
+      }
+    } catch (err) {
+      console.error('[updateOrganization] admin notification failed:', err)
+    }
+  }
+
   return { ok: true }
 }
 

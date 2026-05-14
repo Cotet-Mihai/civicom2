@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createNotification } from '@/services/notification.service'
 
 // ============================================================
@@ -16,6 +17,8 @@ export type AdminEvent = {
   rejection_note: string | null
   creator_id: string
   creator_name: string
+  org_id: string | null
+  org_name: string | null
   created_at: string
   banner_url: string | null
   is_edited: boolean
@@ -32,6 +35,37 @@ export type AdminOrg = {
   rejection_note: string | null
   created_at: string
   logo_url: string | null
+  is_edited: boolean
+}
+
+export type AdminOrgDetail = {
+  id: string
+  name: string
+  description: string | null
+  website: string | null
+  iban: string | null
+  logo_url: string | null
+  banner_url: string | null
+  status: string
+  rejection_note: string | null
+  rating: number
+  owner_id: string
+  owner_name: string
+  created_at: string
+  categories: string[]
+  cui: string | null
+  reg_number: string | null
+  org_type: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  postal_code: string | null
+  county: string | null
+  city: string | null
+  is_edited: boolean
+  previous_snapshot: Record<string, unknown> | null
+  members: { user_id: string; name: string; role: string; joined_at: string }[]
+  documents: { id: string; doc_type: string; file_name: string; storage_path: string; download_url: string | null; created_at: string }[]
 }
 
 type ProtestDetail = {
@@ -95,26 +129,50 @@ export type AdminEventDetail =
 type EventListRow = {
   id: string; title: string; category: string; subcategory: string | null
   status: string; rejection_note: string | null; creator_id: string
+  organization_id: string | null
   banner_url: string | null; created_at: string
   is_edited: boolean
   creator: { name: string } | null
+  organization: { name: string } | null
 }
 
 type OrgListRow = {
   id: string; name: string; description: string | null; owner_id: string
   status: string; rejection_note: string | null; logo_url: string | null
-  created_at: string
+  created_at: string; is_edited: boolean
   owner: { name: string } | null
+}
+
+type OrgDetailRow = {
+  id: string; name: string; description: string | null; website: string | null
+  iban: string | null; logo_url: string | null; banner_url: string | null
+  status: string; rejection_note: string | null; rating: number; owner_id: string
+  created_at: string; categories: string[] | null; cui: string | null
+  reg_number: string | null; org_type: string | null; email: string | null
+  phone: string | null; address: string | null; postal_code: string | null
+  county: string | null; city: string | null; is_edited: boolean
+  previous_snapshot: Record<string, unknown> | null
+  owner: { name: string } | null
+}
+
+type OrgMemberRow = {
+  user_id: string; role: string; joined_at: string
+  users: { name: string } | null
+}
+
+type OrgDocumentRow = {
+  id: string; doc_type: string; file_name: string; storage_path: string; created_at: string
 }
 
 type EventDetailRow = {
   id: string; title: string; description: string | null; category: string
   subcategory: string | null; status: string; rejection_note: string | null
-  creator_id: string; banner_url: string | null; gallery_urls: string[] | null
+  creator_id: string; organization_id: string | null; banner_url: string | null; gallery_urls: string[] | null
   created_at: string
   is_edited: boolean
   previous_snapshot: Record<string, unknown> | null
   creator: { name: string } | null
+  organization: { name: string } | null
 }
 
 type ProtestRow = {
@@ -156,7 +214,11 @@ type MeetGreetRow = { date: string; time_start: string; guests: string[] | null 
 type LivestreamRow = { cause: string | null; time_start: string; stream_link: string | null }
 type SportActivityRow = { date: string; time_start: string; guests: string[] | null }
 
-type EventMutationRow = { id: string; title: string; creator_id: string; status: string }
+const EVENT_CATEGORY_URL: Record<string, string> = {
+  protest: 'protest', boycott: 'boycott', petition: 'petitie', community: 'comunitar', charity: 'caritabil',
+}
+
+type EventMutationRow = { id: string; title: string; creator_id: string; status: string; category: string }
 type OrgMutationRow = { id: string; name: string; owner_id: string; status: string }
 
 // ============================================================
@@ -200,7 +262,7 @@ export async function getPendingEvents(limit?: number): Promise<AdminEvent[]> {
   const supabase = await createClient()
   const query = supabase
     .from('events')
-    .select('id, title, category, subcategory, status, rejection_note, creator_id, banner_url, created_at, is_edited, creator:users!creator_id(name)')
+    .select('id, title, category, subcategory, status, rejection_note, creator_id, organization_id, banner_url, created_at, is_edited, creator:users!creator_id(name), organization:organizations!organization_id(name)')
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
   const { data, error } = limit ? await query.limit(limit) : await query
@@ -214,6 +276,8 @@ export async function getPendingEvents(limit?: number): Promise<AdminEvent[]> {
     rejection_note: row.rejection_note ?? null,
     creator_id: row.creator_id,
     creator_name: row.creator?.name ?? 'Necunoscut',
+    org_id: row.organization_id ?? null,
+    org_name: row.organization?.name ?? null,
     created_at: row.created_at,
     banner_url: row.banner_url ?? null,
     is_edited: row.is_edited ?? false,
@@ -225,8 +289,8 @@ export async function getPendingOrgs(): Promise<AdminOrg[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('organizations')
-    .select('id, name, description, owner_id, status, rejection_note, logo_url, created_at, owner:users!owner_id(name)')
-    .eq('status', 'pending')
+    .select('id, name, description, owner_id, status, rejection_note, logo_url, created_at, is_edited, owner:users!owner_id(name)')
+    .in('status', ['pending', 'contested'])
     .order('created_at', { ascending: true })
   if (error) console.error('[getPendingOrgs]', error.message)
   return ((data ?? []) as unknown as OrgListRow[]).map(row => ({
@@ -239,7 +303,89 @@ export async function getPendingOrgs(): Promise<AdminOrg[]> {
     rejection_note: row.rejection_note ?? null,
     created_at: row.created_at,
     logo_url: row.logo_url ?? null,
+    is_edited: row.is_edited ?? false,
   }))
+}
+
+export async function getAdminOrgDetail(id: string): Promise<AdminOrgDetail | null> {
+  const adminSupabase = createAdminClient()
+
+  const { data: orgRaw, error: orgErr } = await adminSupabase
+    .from('organizations')
+    .select('id, name, description, website, iban, logo_url, banner_url, status, rejection_note, rating, owner_id, created_at, categories, cui, reg_number, org_type, email, phone, address, postal_code, county, city, is_edited, previous_snapshot, owner:users!owner_id(name)')
+    .eq('id', id)
+    .single()
+  if (orgErr || !orgRaw) {
+    if (orgErr) console.error('[getAdminOrgDetail] org', orgErr.message)
+    return null
+  }
+  const org = orgRaw as unknown as OrgDetailRow
+
+  const { data: membersRaw, error: membersErr } = await adminSupabase
+    .from('organization_members')
+    .select('user_id, role, joined_at, users(name)')
+    .eq('organization_id', id)
+    .order('joined_at', { ascending: true })
+  if (membersErr) console.error('[getAdminOrgDetail] members', membersErr.message)
+
+  const { data: docsRaw, error: docsErr } = await adminSupabase
+    .from('org_documents')
+    .select('id, doc_type, file_name, storage_path, created_at')
+    .eq('org_id', id)
+    .order('created_at', { ascending: true })
+  if (docsErr) console.error('[getAdminOrgDetail] documents', docsErr.message)
+
+  const members = ((membersRaw ?? []) as unknown as OrgMemberRow[]).map(m => ({
+    user_id: m.user_id,
+    name: m.users?.name ?? 'Necunoscut',
+    role: m.role,
+    joined_at: m.joined_at,
+  }))
+
+  const docRows = (docsRaw ?? []) as unknown as OrgDocumentRow[]
+  const signedUrls = await Promise.all(
+    docRows.map(d =>
+      adminSupabase.storage.from('org-documents').createSignedUrl(d.storage_path, 3600)
+    )
+  )
+  const documents = docRows.map((d, i) => ({
+    id: d.id,
+    doc_type: d.doc_type,
+    file_name: d.file_name,
+    storage_path: d.storage_path,
+    download_url: signedUrls[i]?.data?.signedUrl ?? null,
+    created_at: d.created_at,
+  }))
+
+  return {
+    id: org.id,
+    name: org.name,
+    description: org.description ?? null,
+    website: org.website ?? null,
+    iban: org.iban ?? null,
+    logo_url: org.logo_url ?? null,
+    banner_url: org.banner_url ?? null,
+    status: org.status,
+    rejection_note: org.rejection_note ?? null,
+    rating: org.rating ?? 0,
+    owner_id: org.owner_id,
+    owner_name: org.owner?.name ?? 'Necunoscut',
+    created_at: org.created_at,
+    categories: org.categories ?? [],
+    cui: org.cui ?? null,
+    reg_number: org.reg_number ?? null,
+    org_type: org.org_type ?? null,
+    email: org.email ?? null,
+    phone: org.phone ?? null,
+    address: org.address ?? null,
+    postal_code: org.postal_code ?? null,
+    county: org.county ?? null,
+    city: org.city ?? null,
+    is_edited: org.is_edited ?? false,
+    previous_snapshot: org.previous_snapshot ?? null,
+    members,
+    documents,
+  }
 }
 
 export async function getAdminEventDetail(id: string): Promise<AdminEventDetail | null> {
@@ -247,7 +393,7 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
 
   const { data: evtRaw } = await supabase
     .from('events')
-    .select('id, title, description, category, subcategory, status, rejection_note, creator_id, banner_url, gallery_urls, created_at, is_edited, previous_snapshot, creator:users!creator_id(name)')
+    .select('id, title, description, category, subcategory, status, rejection_note, creator_id, organization_id, banner_url, gallery_urls, created_at, is_edited, previous_snapshot, creator:users!creator_id(name), organization:organizations!organization_id(name)')
     .eq('id', id)
     .single()
 
@@ -263,6 +409,8 @@ export async function getAdminEventDetail(id: string): Promise<AdminEventDetail 
     rejection_note: evt.rejection_note ?? null,
     creator_id: evt.creator_id,
     creator_name: evt.creator?.name ?? 'Necunoscut',
+    org_id: evt.organization_id ?? null,
+    org_name: evt.organization?.name ?? null,
     created_at: evt.created_at,
     banner_url: evt.banner_url ?? null,
     is_edited: evt.is_edited ?? false,
@@ -473,7 +621,7 @@ export async function approveEvent(eventId: string): Promise<{ ok: true } | { er
 
   const { data: evtRaw } = await supabase
     .from('events')
-    .select('id, title, creator_id, status')
+    .select('id, title, creator_id, status, category')
     .eq('id', eventId)
     .single()
   if (!evtRaw) return { error: 'Eveniment negăsit' }
@@ -492,7 +640,8 @@ export async function approveEvent(eventId: string): Promise<{ ok: true } | { er
     evt.creator_id,
     'Eveniment aprobat ✅',
     `Evenimentul tău "${evt.title}" a fost aprobat și este acum vizibil public.`,
-    'event_approved'
+    'event_approved',
+    `/evenimente/${EVENT_CATEGORY_URL[evt.category] ?? evt.category}/${eventId}`
   )
   return { ok: true }
 }
@@ -506,7 +655,7 @@ export async function rejectEvent(eventId: string, note: string): Promise<{ ok: 
 
   const { data: evtRaw } = await supabase
     .from('events')
-    .select('id, title, creator_id, status')
+    .select('id, title, creator_id, status, category')
     .eq('id', eventId)
     .single()
   if (!evtRaw) return { error: 'Eveniment negăsit' }
@@ -525,7 +674,8 @@ export async function rejectEvent(eventId: string, note: string): Promise<{ ok: 
     evt.creator_id,
     'Eveniment respins ❌',
     `Evenimentul tău "${evt.title}" a fost respins. Motiv: ${note.trim()}`,
-    'event_rejected'
+    'event_rejected',
+    '/panou/evenimente'
   )
   return { ok: true }
 }
@@ -542,21 +692,32 @@ export async function approveOrg(orgId: string): Promise<{ ok: true } | { error:
     .single()
   if (!orgRaw) return { error: 'Organizație negăsită' }
   const org = orgRaw as unknown as OrgMutationRow
-  if (org.status !== 'pending') {
+  if (org.status !== 'pending' && org.status !== 'contested') {
     return { error: 'Organizația nu poate fi aprobată în starea curentă' }
   }
 
-  const { error } = await supabase
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
     .from('organizations')
-    .update({ status: 'approved', rejection_note: null })
+    .update({ status: 'approved', rejection_note: null, is_edited: false, previous_snapshot: null, contested_at: null })
     .eq('id', orgId)
   if (error) return { error: error.message }
+
+  // Close any active org appeals
+  if (org.status === 'contested') {
+    await adminClient
+      .from('org_appeals')
+      .update({ status: 'resolved', admin_note: 'Aprobat direct de admin.' })
+      .eq('org_id', orgId)
+      .in('status', ['pending', 'under_review'])
+  }
 
   await createNotification(
     org.owner_id,
     'Organizație aprobată ✅',
     `Organizația "${org.name}" a fost aprobată și este acum vizibilă public.`,
-    'org_approved'
+    'org_approved',
+    `/organizatie/${orgId}/panou`
   )
   return { ok: true }
 }
@@ -575,21 +736,32 @@ export async function rejectOrg(orgId: string, note: string): Promise<{ ok: true
     .single()
   if (!orgRaw) return { error: 'Organizație negăsită' }
   const org = orgRaw as unknown as OrgMutationRow
-  if (org.status !== 'pending') {
+  if (org.status !== 'pending' && org.status !== 'contested') {
     return { error: 'Organizația nu poate fi respinsă în starea curentă' }
   }
 
-  const { error } = await supabase
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
     .from('organizations')
     .update({ status: 'rejected', rejection_note: note.trim() })
     .eq('id', orgId)
   if (error) return { error: error.message }
 
+  // Close any active org appeals
+  if (org.status === 'contested') {
+    await adminClient
+      .from('org_appeals')
+      .update({ status: 'resolved', admin_note: note.trim() })
+      .eq('org_id', orgId)
+      .in('status', ['pending', 'under_review'])
+  }
+
   await createNotification(
     org.owner_id,
     'Organizație respinsă ❌',
     `Organizația "${org.name}" a fost respinsă. Motiv: ${note.trim()}`,
-    'org_rejected'
+    'org_rejected',
+    `/organizatie/${orgId}/panou`
   )
   return { ok: true }
 }

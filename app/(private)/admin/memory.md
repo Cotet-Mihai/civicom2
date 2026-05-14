@@ -41,13 +41,27 @@ Paginile de administrare CIVICOM — acces exclusiv pentru utilizatorii cu `role
 - **Apelează:** `approveEvent`, `rejectEvent` din `admin.service`
 
 ### organizatii/page.tsx
-- **Scop:** Lista organizatiilor pending pentru aprobare
+- **Scop:** Lista organizatiilor pending și contested pentru aprobare/respingere; fiecare card are buton "Vezi detalii" spre pagina de detaliu
 - **Tip:** Server Component
 - **Exporturi principale:** `AdminOrganizatiiPage` (default export), `metadata`
 - **Apelează:** `getPendingOrgs` din `admin.service`
+- **Note:** `getPendingOrgs` returnează acum status `pending` și `contested`; cardurile afișează badge "Editat" dacă `org.is_edited`
+
+### organizatii/[id]/page.tsx
+- **Scop:** Pagina de detaliu organizatie pentru admin — afisează toate câmpurile, membrii, documentele; comparatie Înainte/Acum dacă `is_edited && previous_snapshot`
+- **Tip:** Server Component
+- **Exporturi principale:** `AdminOrgDetailPage` (default export), `metadata`
+- **Apelează:** `getAdminOrgDetail` din `admin.service`, `AdminOrgDetailActionBarClient`
+
+### organizatii/[id]/_components/AdminOrgDetailActionBarClient.tsx
+- **Scop:** Bara de actiuni admin pentru detaliu org — butoane Aprobă/Respinge (pentru status `pending` și `contested`), textarea motiv respingere
+- **Tip:** Client Component
+- **Exporturi principale:** `AdminOrgDetailActionBarClient`
+- **Props:** `{ orgId, currentStatus, rejectionNote }`
+- **Apelează:** `approveOrg`, `rejectOrg` din `admin.service`
 
 ### organizatii/_components/AdminOrgActionBarClient.tsx
-- **Scop:** Bara de actiuni pentru aprobarea/respingerea ONG-urilor
+- **Scop:** Bara de actiuni inline pe cardurile din lista orgs — butoane Aprobă/Respinge (pentru status `pending` și `contested`)
 - **Tip:** Client Component
 - **Exporturi principale:** `AdminOrgActionBarClient`
 - **Apelează:** `approveOrg`, `rejectOrg` din `admin.service`

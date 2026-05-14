@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -20,18 +20,10 @@ type Props = {
 }
 
 export function DashboardContextSwitcherClient({ userName, userEmail, avatarUrl, org }: Props) {
-  const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
-  const isOrgContext = !!org && (
-    searchParams.get('context') === 'org' ||
-    pathname.startsWith('/organizatie/')
-  )
+  const isOrgContext = !!org && pathname.startsWith('/organizatie/')
   const userInitial = userName.charAt(0).toUpperCase()
-
-  function switchTo(context: 'user' | 'org') {
-    router.push(context === 'org' ? '/panou?context=org' : '/panou')
-  }
 
   if (!org) {
     return (
@@ -64,7 +56,7 @@ export function DashboardContextSwitcherClient({ userName, userEmail, avatarUrl,
           <p className="text-sm font-bold text-foreground truncate">
             {isOrgContext ? org.name : userName}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground truncate">
             {isOrgContext ? 'Context ONG' : userEmail}
           </p>
         </div>
@@ -73,7 +65,7 @@ export function DashboardContextSwitcherClient({ userName, userEmail, avatarUrl,
 
       <DropdownMenuContent align="start" className="w-[260px] p-1.5">
         <DropdownMenuItem
-          onClick={() => switchTo('user')}
+          onClick={() => router.push('/panou')}
           className={cn('gap-3 rounded-lg p-2 cursor-pointer', !isOrgContext && 'bg-primary/5 text-primary')}
         >
           <Avatar className="size-7">
@@ -87,7 +79,7 @@ export function DashboardContextSwitcherClient({ userName, userEmail, avatarUrl,
         </DropdownMenuItem>
 
         <DropdownMenuItem
-          onClick={() => switchTo('org')}
+          onClick={() => router.push(`/organizatie/${org.id}/panou`)}
           className={cn('gap-3 rounded-lg p-2 cursor-pointer', isOrgContext && 'bg-primary/5 text-primary')}
         >
           <Avatar className="size-7">

@@ -16,10 +16,11 @@ Paginile pentru crearea unui ONG si componentele de upload specifice organizatii
 - **Apelează:** `OngCreateFormClient`
 
 ### creeaza/_components/OngCreateFormClient.tsx
-- **Scop:** Formularul de creare ONG — toate campurile necesare (nume, CUI, tip, descriere, website, categorii, contact, adresa), upload logo + banner + documente, submit via `createOrganization`
+- **Scop:** Formularul de creare ONG — toate campurile necesare (nume, CUI, tip, descriere, website, categorii, contact, adresa), upload logo + banner, colectare locala documente (obligatorii), submit via `createOrganization` + upload documente cu orgId real dupa creare
 - **Tip:** Client Component
 - **Exporturi principale:** `OngCreateFormClient`
-- **Apelează:** `createOrganization` din `organization.service`, `LogoUploadClient`, `BannerUploadClient`, `DocumentsUploadClient`
+- **Apelează:** `createOrganization`, `addOrgDocument` din `organization.service`; `uploadOrgDocument` din `lib/upload`; `LogoUploadClient`, `BannerUploadClient`
+- **Nota documente:** Documentele (4 tipuri din `ORG_DOC_TYPE_LABELS`) sunt colectate ca `File` in state local (`pendingDocs`) fara upload imediat; uploadul se face dupa ce org e creata si avem `orgId` real. Toate 4 sunt obligatorii la submit.
 
 ## _components/ (componente reutilizabile pentru ONG)
 

@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus, X, Info, MapPin, FileText, Camera, Heart } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -74,6 +74,8 @@ export default function CreateCommunityPage() {
     const [equipmentInput, setEquipmentInput] = useState('')
     const [donationItemInput, setDonationItemInput] = useState('')
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const orgId = searchParams.get('org')
 
     useEffect(() => {
         createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
@@ -143,7 +145,7 @@ export default function CreateCommunityPage() {
         }
 
         const result = await createCommunityActivity(
-            { title: form.title, description: form.description, banner_url: form.banner_url, gallery_urls: form.gallery_urls, subcategory: form.subcategory, organization_id: null },
+            { title: form.title, description: form.description, banner_url: form.banner_url, gallery_urls: form.gallery_urls, subcategory: form.subcategory, organization_id: orgId },
             { contact_person: form.contact_person || null },
             subtypeData
         )

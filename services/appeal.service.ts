@@ -32,13 +32,21 @@ type AppealRow = {
   user: { name: string } | null
 }
 
+const EVENT_CATEGORY_URL: Record<string, string> = {
+  protest: 'protest',
+  boycott: 'boycott',
+  petition: 'petitie',
+  community: 'comunitar',
+  charity: 'caritabil',
+}
+
 type AppealDetailRow = {
   id: string
   event_id: string
   user_id: string
   reason: string
   status: string
-  event: { title: string; status: string; creator_id: string } | null
+  event: { title: string; status: string; creator_id: string; category: string } | null
 }
 
 // ============================================================
@@ -157,7 +165,7 @@ export async function resolveAppeal(
   // Fetch appeal with event info
   const { data: appealRaw } = await supabase
     .from('appeals')
-    .select('id, event_id, user_id, status, event:events!event_id(title, status, creator_id)')
+    .select('id, event_id, user_id, status, event:events!event_id(title, status, creator_id, category)')
     .eq('id', appealId)
     .single()
   if (!appealRaw) return { error: 'Contestație negăsită' }
@@ -168,6 +176,7 @@ export async function resolveAppeal(
   const eventId = appeal.event_id
   const creatorId = appeal.event?.creator_id ?? appeal.user_id
   const eventTitle = appeal.event?.title ?? 'evenimentul tău'
+  const eventCategory = appeal.event?.category ?? ''
 
   // Update event status
   if (decision === 'approved') {
@@ -203,7 +212,8 @@ export async function resolveAppeal(
         creatorId,
         'Contestație aprobată ✅',
         `Contestația ta pentru evenimentul "${eventTitle}" a fost aprobată. Evenimentul este acum vizibil public.`,
-        'appeal_approved'
+        'appeal_approved',
+        `/evenimente/${EVENT_CATEGORY_URL[eventCategory] ?? eventCategory}/${eventId}`
       )
     } catch (err) {
       console.error('[resolveAppeal] notification failed:', err)
@@ -214,7 +224,8 @@ export async function resolveAppeal(
         creatorId,
         'Contestație respinsă ❌',
         `Contestația ta pentru evenimentul "${eventTitle}" a fost respinsă. Motiv: ${adminNote.trim()}`,
-        'appeal_rejected'
+        'appeal_rejected',
+        '/panou/contestatii'
       )
     } catch (err) {
       console.error('[resolveAppeal] notification failed:', err)

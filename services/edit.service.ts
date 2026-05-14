@@ -307,12 +307,12 @@ export async function updateEvent(
   if ((evtRaw as any).creator_id !== userId) return { error: 'Acces interzis' }
   if ((evtRaw as any).status === 'completed') return { error: 'Evenimentele finalizate nu pot fi editate' }
 
+  const currentStatus = (evtRaw as any).status as string
+  const isRejected = currentStatus === 'rejected'
+
   const currentData = await getEventForEdit(eventId)
   const snapshot = currentData ? buildSnapshot(currentData) : null
 
-  // RLS "events_update" blochează update-ul de status pentru evenimentele 'approved'
-  // (USING: status NOT IN ('approved','completed')). Admin client bypass-ează RLS,
-  // la fel ca în completeEvent.
   const admin = createAdminClient()
   const { error: evtErr } = await admin
     .from('events')
@@ -321,8 +321,7 @@ export async function updateEvent(
       description: payload.description,
       banner_url: payload.banner_url,
       gallery_urls: payload.gallery_urls,
-      status: 'pending',
-      rejection_note: null,
+      ...(isRejected ? { status: 'pending', rejection_note: null } : {}),
       is_edited: true,
       previous_snapshot: snapshot,
     })

@@ -16,6 +16,7 @@ import { LogoUploadClient } from '@/app/(private)/organizatie/_components/LogoUp
 import { BannerUploadClient } from '@/app/(private)/organizatie/_components/BannerUploadClient'
 import { DocumentsUploadClient } from '@/app/(private)/organizatie/_components/DocumentsUploadClient'
 import { ORG_CATEGORY_LABELS, ORG_TYPE_LABELS } from '@/lib/constants'
+import { LOCALITIES_BY_COUNTY } from '@/lib/romanian-localities'
 import type { OrgDetail, OrgDocument } from '@/services/organization.service'
 
 type Props = { org: OrgDetail }
@@ -27,6 +28,8 @@ export function OngSettingsFormClient({ org }: Props) {
   const [bannerUrl, setBannerUrl] = useState<string | null>(org.banner_url)
   const [documents, setDocuments] = useState<OrgDocument[]>(org.documents)
   const [categories, setCategories] = useState<string[]>(org.categories)
+  const [county, setCounty] = useState(org.county ?? '')
+  const [city, setCity] = useState(org.city ?? '')
   const [form, setForm] = useState({
     name: org.name,
     description: org.description ?? '',
@@ -39,8 +42,11 @@ export function OngSettingsFormClient({ org }: Props) {
     phone: org.phone ?? '',
     address: org.address ?? '',
     postal_code: org.postal_code ?? '',
-    city: org.city ?? '',
   })
+
+  const isBucharest = county === 'București'
+  const cityLabel = isBucharest ? 'Sector' : 'Localitate'
+  const localities = county ? (LOCALITIES_BY_COUNTY[county] ?? []) : []
 
   function set(field: string, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -66,11 +72,16 @@ export function OngSettingsFormClient({ org }: Props) {
       phone: form.phone || null,
       address: form.address || null,
       postal_code: form.postal_code || null,
-      city: form.city || null,
+      county: county || null,
+      city: city || null,
     })
     setLoading(false)
     if ('error' in result) { toast.error(result.error); return }
-    toast.success('Setări salvate!')
+    if (org.status === 'rejected') {
+      toast.success('Organizația a fost retrimisă spre aprobare!')
+    } else {
+      toast.success('Setări salvate!')
+    }
     router.refresh()
   }
 
@@ -145,8 +156,8 @@ export function OngSettingsFormClient({ org }: Props) {
           <div className="space-y-2">
             <Label htmlFor="settings_org_type" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tip organizație</Label>
             <Select value={form.org_type} onValueChange={v => set('org_type', v ?? '')}>
-              <SelectTrigger id="settings_org_type"><SelectValue placeholder="Selectează tipul..." /></SelectTrigger>
-              <SelectContent>
+              <SelectTrigger id="settings_org_type" className="w-full"><SelectValue placeholder="Selectează tipul...">{ORG_TYPE_LABELS[form.org_type]}</SelectValue></SelectTrigger>
+              <SelectContent alignItemWithTrigger={false}>
                 {Object.entries(ORG_TYPE_LABELS).map(([value, label]) => (
                   <SelectItem key={value} value={value}>{label}</SelectItem>
                 ))}
@@ -179,13 +190,37 @@ export function OngSettingsFormClient({ org }: Props) {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="postal_code" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cod poștal</Label>
-              <Input id="postal_code" placeholder="010101" value={form.postal_code} onChange={e => set('postal_code', e.target.value)} />
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Județ</Label>
+              <Select value={county} onValueChange={v => { setCounty(v ?? ''); setCity('') }}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selectează județul...">{county || undefined}</SelectValue>
+                </SelectTrigger>
+                <SelectContent alignItemWithTrigger={false}>
+                  {Object.keys(LOCALITIES_BY_COUNTY).sort().map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Localitate</Label>
-              <Input id="city" placeholder="București" value={form.city} onChange={e => set('city', e.target.value)} />
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{cityLabel}</Label>
+              <Select value={city} onValueChange={v => setCity(v ?? '')} disabled={!county}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={county ? `Selectează ${cityLabel.toLowerCase()}...` : 'Selectează mai întâi județul...'}>
+                    {city || undefined}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent alignItemWithTrigger={false}>
+                  {localities.map(l => (
+                    <SelectItem key={l} value={l}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="postal_code" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cod poștal</Label>
+            <Input id="postal_code" placeholder="010101" value={form.postal_code} onChange={e => set('postal_code', e.target.value)} />
           </div>
         </CardContent>
       </Card>

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 async function getUserId(): Promise<string | null> {
   const supabase = await createClient()
@@ -62,7 +63,7 @@ export async function getUserDashboardStats(): Promise<{
     { count: petitionsSigned },
     { count: appeals },
   ] = await Promise.all([
-    supabase.from('events').select('*', { count: 'exact', head: true }).eq('creator_id', userId),
+    supabase.from('events').select('*', { count: 'exact', head: true }).eq('creator_id', userId).eq('creator_type', 'user'),
     supabase.from('event_participants').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'joined'),
     supabase.from('petition_signatures').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     supabase.from('appeals').select('*', { count: 'exact', head: true }).eq('user_id', userId),
@@ -85,6 +86,7 @@ export async function getUserCreatedEvents(limit?: number): Promise<DashboardEve
     .from('events')
     .select('id, title, category, subcategory, status, participants_count, view_count, created_at, banner_url')
     .eq('creator_id', userId)
+    .eq('creator_type', 'user')
     .order('created_at', { ascending: false })
 
   const { data } = limit ? await query.limit(limit) : await query
@@ -277,8 +279,8 @@ export async function getMyEventsChartData(
     .select('id, title, view_count, participants_count, category, status')
   const { data } = await (
     context === 'org' && orgId
-      ? query.eq('organization_id', orgId)
-      : query.eq('creator_id', userId)
+      ? query.eq('organization_id', orgId).eq('creator_type', 'ngo')
+      : query.eq('creator_id', userId).eq('creator_type', 'user')
   )
   const events = data ?? []
 
@@ -328,6 +330,7 @@ export async function getUserAvatarUrl(authUserId: string): Promise<string | nul
 // ── Evolution chart ──────────────────────────────────────────────────────────
 
 export type TimeRange = '24h' | '7d' | '30d' | '3m' | '6m' | 'all'
+export type ViewRange = 'today' | '7d' | '30d'
 export type EvolutionMetric = 'participants' | 'views' | 'signatures'
 
 export type EvolutionSeries = { id: string; name: string; color: string }
@@ -427,8 +430,8 @@ export async function getEvolutionData(
     .from('events')
     .select('id, title, participants_count, view_count, created_at')
   const scopedQuery = context === 'org' && orgId
-    ? eventsQuery.eq('organization_id', orgId)
-    : eventsQuery.eq('creator_id', userId)
+    ? eventsQuery.eq('organization_id', orgId).eq('creator_type', 'ngo')
+    : eventsQuery.eq('creator_id', userId).eq('creator_type', 'user')
 
   const { data: eventRows } = await (
     isPetition
@@ -546,4 +549,105 @@ export async function updateAvatar(avatarUrl: string): Promise<{ ok: true } | { 
 
   if (error) return { error: error.message }
   return { ok: true }
+}
+
+// ── Views evolution (snapshot-based) ─────────────────────────────────────────
+
+export async function getViewsEvolution(
+  context: 'user' | 'org',
+  range: ViewRange,
+  orgId?: string
+): Promise<EvolutionData> {
+  const supabase = createAdminClient()
+  const userId = await getUserId()
+  if (!userId) return { chartPoints: [], series: [], eventValues: {} }
+
+  const eventsQuery = supabase
+    .from('events')
+    .select('id, title, view_count')
+    .neq('category', 'petition')
+
+  const { data: eventRows } = await (
+    context === 'org' && orgId
+      ? eventsQuery.eq('organization_id', orgId).eq('creator_type', 'ngo')
+      : eventsQuery.eq('creator_id', userId).eq('creator_type', 'user')
+  )
+
+  const events = (eventRows ?? []) as Array<{ id: string; title: string; view_count: number }>
+  if (events.length === 0) return { chartPoints: [], series: [], eventValues: {} }
+
+  const now = new Date()
+  let startDate: Date
+  let labels: string[]
+  let bucketFn: (d: Date) => string
+
+  if (range === 'today') {
+    startDate = new Date(now)
+    startDate.setHours(0, 0, 0, 0)
+    labels = Array.from({ length: now.getHours() + 1 }, (_, i) =>
+      `${i.toString().padStart(2, '0')}:00`
+    )
+    bucketFn = (d) => `${d.getHours().toString().padStart(2, '0')}:00`
+  } else if (range === '7d') {
+    startDate = new Date(now)
+    startDate.setDate(now.getDate() - 6)
+    startDate.setHours(0, 0, 0, 0)
+    labels = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(startDate.getTime() + i * 86400000)
+      return d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+    })
+    bucketFn = (d) => d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+  } else {
+    startDate = new Date(now)
+    startDate.setDate(now.getDate() - 29)
+    startDate.setHours(0, 0, 0, 0)
+    labels = Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(startDate.getTime() + i * 86400000)
+      return d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+    })
+    bucketFn = (d) => d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+  }
+
+  const { data: snapshots } = await supabase
+    .from('event_view_snapshots')
+    .select('event_id, taken_at, view_count')
+    .in('event_id', events.map(e => e.id))
+    .gte('taken_at', startDate.toISOString())
+    .order('taken_at', { ascending: true })
+
+  // Group snapshots: eventId → bucket → max view_count
+  const maxPerBucket: Record<string, Record<string, number>> = {}
+  for (const snap of (snapshots ?? [])) {
+    const bucket = bucketFn(new Date(snap.taken_at))
+    if (!maxPerBucket[snap.event_id]) maxPerBucket[snap.event_id] = {}
+    const cur = maxPerBucket[snap.event_id][bucket] ?? 0
+    maxPerBucket[snap.event_id][bucket] = Math.max(cur, snap.view_count)
+  }
+
+  // Build chart points with forward-fill (cumulative total)
+  const chartPoints: Array<Record<string, string | number>> = labels.map(label => ({ label }))
+  for (const e of events) {
+    let lastValue = 0
+    for (let i = 0; i < labels.length; i++) {
+      const snapshotVal = maxPerBucket[e.id]?.[labels[i]]
+      if (snapshotVal !== undefined) lastValue = snapshotVal
+      chartPoints[i][e.id] = lastValue
+    }
+  }
+
+  // Append a final "Acum" point with the real-time view_count from events table
+  const nowPoint: Record<string, string | number> = { label: 'Acum' }
+  for (const e of events) nowPoint[e.id] = e.view_count ?? 0
+  chartPoints.push(nowPoint)
+
+  const series: EvolutionSeries[] = events.map((e, i) => ({
+    id: e.id,
+    name: e.title.length > 24 ? e.title.slice(0, 24) + '…' : e.title,
+    color: SERIES_COLORS[i % SERIES_COLORS.length],
+  }))
+
+  const eventValues: Record<string, number> = {}
+  for (const e of events) eventValues[e.id] = e.view_count ?? 0
+
+  return { chartPoints, series, eventValues }
 }

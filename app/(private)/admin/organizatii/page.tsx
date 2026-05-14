@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { Building2 } from 'lucide-react'
+import Link from 'next/link'
+import { Building2, ArrowRight } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { getPendingOrgs } from '@/services/admin.service'
 import { AdminTabsClient } from '../_components/AdminTabsClient'
 import { AdminOrgActionBarClient } from './_components/AdminOrgActionBarClient'
@@ -38,18 +40,33 @@ export default async function AdminOrganizatiiPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-black text-foreground text-base">{org.name}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-black text-foreground text-base">{org.name}</p>
+                      {org.is_edited && (
+                        <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                          Editat
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Owner: {org.owner_name} · {formatDate(org.created_at)}
                     </p>
                     {org.description && (
                       <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{org.description}</p>
                     )}
-                    <AdminOrgActionBarClient
-                      orgId={org.id}
-                      currentStatus={org.status}
-                      rejectionNote={org.rejection_note}
-                    />
+                    <div className="flex items-start justify-between gap-3 mt-3">
+                      <AdminOrgActionBarClient
+                        orgId={org.id}
+                        currentStatus={org.status}
+                        rejectionNote={org.rejection_note}
+                      />
+                      <Link href={`/admin/organizatii/${org.id}`} className="shrink-0">
+                        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                          Vezi detalii
+                          <ArrowRight size={13} />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </CardContent>

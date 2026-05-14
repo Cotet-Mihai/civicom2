@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Calendar, Users, FileText,
   AlertCircle, User, Building2, Settings,
@@ -28,13 +28,9 @@ type Props = { org: DashboardOrg | null; onClose?: () => void }
 
 export function DashboardSidebarNavClient({ org, onClose }: Props) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const [signOutOpen, setSignOutOpen] = useState(false)
 
-  const isOrgContext = org && (
-    searchParams.get('context') === 'org' ||
-    pathname.startsWith('/organizatie/')
-  )
+  const isOrgContext = org && pathname.startsWith('/organizatie/')
 
   function isActive(href: string) {
     const path = href.split('?')[0]
@@ -53,7 +49,7 @@ export function DashboardSidebarNavClient({ org, onClose }: Props) {
   const orgActivityItems: NavItem[] = org
     ? [
         { label: 'Panou ONG', href: `/organizatie/${org.id}/panou`, Icon: Building2 },
-        { label: 'Evenimente ONG', href: '/panou/evenimente?context=org', Icon: Calendar },
+        { label: 'Evenimente ONG', href: `/organizatie/${org.id}/evenimente`, Icon: Calendar },
         { label: 'Contestații', href: `/organizatie/${org.id}/contestatii`, Icon: AlertCircle },
       ]
     : []

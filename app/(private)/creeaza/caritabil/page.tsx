@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus, X, Info, MapPin, FileText, Camera } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -75,6 +75,8 @@ export default function CreateCharityPage() {
     const [newPerformer, setNewPerformer] = useState('')
     const [newGuest, setNewGuest] = useState('')
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const orgId = searchParams.get('org')
 
     useEffect(() => {
         createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
@@ -146,7 +148,7 @@ export default function CreateCharityPage() {
         }
 
         const result = await createCharityEvent(
-            { title: form.title, description: form.description, banner_url: form.banner_url, gallery_urls: form.gallery_urls, subcategory: form.subcategory, organization_id: null },
+            { title: form.title, description: form.description, banner_url: form.banner_url, gallery_urls: form.gallery_urls, subcategory: form.subcategory, organization_id: orgId },
             { target_amount: form.target_amount ? Number(form.target_amount) : null },
             subtypeData
         )

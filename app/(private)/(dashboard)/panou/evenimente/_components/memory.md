@@ -23,9 +23,10 @@ Componentele sectiunilor paginii de analiza evenimente din dashboard — statist
 - **Scop:** Grafic de evolutie in timp (Area chart) — permite selectia intervalului de timp (24h/7d/30d/3m/6m/all) si metricii (participanti/vizualizari/semnaturi); re-fetch server action la schimbarea parametrilor; selector de serii vizibile
 - **Tip:** Client Component
 - **Exporturi principale:** `EventsEvolutionChartClient`
-- **Props:** `{ initialData: EvolutionData, isOrgContext: boolean, orgId?: string }`
-- **Apelează:** `getEvolutionData` (Server Action), Recharts `Area`, `AreaChart`, shadcn `ChartContainer`
-- **State:** `timeRange`, `metric`, `data` (EvolutionData), `selectedIds` (Set<string>), `isPending` (useTransition)
+- **Props:** `{ initialData: EvolutionData, context?: 'user' | 'org', orgId?: string }` — context/orgId permit refolosirea la dashboard ONG
+- **Apelează:** `getEvolutionData` (participanți/semnături), `getViewsEvolution` (vizualizări din snapshots), Recharts `Area`, `AreaChart`, shadcn `ChartContainer`
+- **State:** `timeRange` (pentru participants/signatures), `viewRange` (pentru views: today/7d/30d), `metric`, `data`, `selectedIds`, `isPending`
+- **Comportament views:** când metrica e 'views', butoanele de interval se schimbă la Azi/7 zile/30 zile și datele vin din `event_view_snapshots` (totaluri cumulate)
 
 ### EventsListSection.tsx
 - **Scop:** Lista completa a evenimentelor cu filtrare pe status si categorie — randeaza `EventsFilterTabsClient` care primeste o render prop cu lista filtrata

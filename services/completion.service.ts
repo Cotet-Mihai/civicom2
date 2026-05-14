@@ -59,6 +59,7 @@ export async function completeEvent(
         title: 'Eveniment finalizat',
         message: `Evenimentul "${evt.title}" a fost finalizat. Lasă-ne feedback!`,
         type: 'event_completed',
+        link: '/panou/participari',
       }))
     )
     if (notifError) console.error('[completeEvent] notifications', notifError.message)

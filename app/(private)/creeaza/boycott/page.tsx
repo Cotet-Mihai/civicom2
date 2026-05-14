@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus, Info, ShoppingBag, Camera } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -59,6 +59,8 @@ export default function CreateBoycottPage() {
     const [submitting, setSubmitting] = useState(false)
     const [userId, setUserId] = useState<string | null>(null)
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const orgId = searchParams.get('org')
 
     // Brand dialog state
     const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -135,7 +137,7 @@ export default function CreateBoycottPage() {
                 description: form.description,
                 banner_url: form.banner_url,
                 gallery_urls: form.gallery_urls,
-                organization_id: null,
+                organization_id: orgId,
             },
             {
                 reason: form.reason,

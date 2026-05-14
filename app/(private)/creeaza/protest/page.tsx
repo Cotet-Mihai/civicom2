@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { User, Mail, PlusCircle, Save, Edit2, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -55,6 +55,8 @@ export default function CreateProtestPage() {
     const [submitting, setSubmitting] = useState(false)
     const [userId, setUserId] = useState<string | null>(null)
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const orgId = searchParams.get('org')
 
     // Contact dialog state
     const [contactOpen, setContactOpen] = useState(false)
@@ -160,7 +162,7 @@ export default function CreateProtestPage() {
             : { location: form.location! }
 
         const result = await createProtest(
-            { title: form.title, description: form.description, banner_url: form.banner_url, gallery_urls: form.gallery_urls, subcategory: form.subcategory, organization_id: null },
+            { title: form.title, description: form.description, banner_url: form.banner_url, gallery_urls: form.gallery_urls, subcategory: form.subcategory, organization_id: orgId },
             { date: dateStr, time_start: form.time_start, time_end: form.time_end || null, max_participants: maxPart, recommended_equipment: equipmentStr, safety_rules: form.safety_rules || null, contact_person: contactStr },
             subtypeData
         )

@@ -29,15 +29,15 @@ Server Actions — toată logica de business a aplicației CIVICOM. Niciun fiși
 - **Scop:** CRUD complet pentru organizații — lista publică, detaliu, membership, creare, editare, gestionare membri, evenimente org, stats, documente
 - **Exporturi principale:** `getUserOrgId`, `getUserOrg`, `getUserOrgByAuthId`, `getOrgMemberRole`, `getOrganizations`, `getOrganizationById`, `getOrgMembers`, `getOrgEvents`, `getOrgStats`, `getOrgDocuments`, `createOrganization`, `updateOrganization`, `addOrgMember`, `removeOrgMember`, `updateMemberRole`, `getOrgDashboardStats`, `getOrgCreatedEvents`, `getOrgAppeals`
 - **Tipuri exportate:** `OrgListItem`, `OrgMember`, `OrgDetail`, `OrgEvent`, `OrgStats`, `OrgDocument`, `OrgAppeal`
-- **Apelează:** `createClient` din `lib/supabase/server`, `createAdminClient` din `lib/supabase/admin` (pentru `getOrganizations`, `getOrganizationById` — bypass RLS)
-- **Note:** `getUserOrgByAuthId` este re-exportat și din `lib/server-cache.ts` wrapped în `cache()` pentru deduplicare; `getOrganizations` foloseste admin client pentru a evita recursivitate RLS
+- **Apelează:** `createClient` din `lib/supabase/server`, `createAdminClient` din `lib/supabase/admin` (pentru `getOrganizations`, `getOrganizationById` și notificări admin), `createNotification` din `notification.service`
+- **Note:** `getUserOrgByAuthId` este re-exportat și din `lib/server-cache.ts` wrapped în `cache()` pentru deduplicare; `getOrganizations` foloseste admin client pentru a evita recursivitate RLS; `updateOrganization` salvează snapshot + setează `is_edited=true` și trimite notificare admin dacă org-ul e în status `pending`/`rejected`/`contested`
 
 ### admin.service.ts
-- **Scop:** Moderare admin — stats pendinte, liste evenimente/orgs pendinte, detaliu eveniment pentru review, aprobare/respingere evenimente și organizații
-- **Exporturi principale:** `checkIsAdmin`, `getAdminStats`, `getPendingEvents`, `getPendingOrgs`, `getAdminEventDetail`, `approveEvent`, `rejectEvent`, `approveOrg`, `rejectOrg`
-- **Tipuri exportate:** `AdminEvent`, `AdminOrg`, `AdminEventDetail`
-- **Apelează:** `createClient`, `createNotification`
-- **Note:** `getAdminEventDetail` face query-uri secvențiale (event → subtabel specific categoriei → subtabel specific subcategoriei); `approveEvent`/`rejectEvent` trimit notificare creatorului; acceptă status `pending` și `contested` la aprobare/respingere; `AdminEvent` conține `is_edited: boolean` și `previous_snapshot: Record<string, unknown> | null` pentru funcționalitatea de comparație; `approveEvent` resetează `is_edited = false` și `previous_snapshot = null`
+- **Scop:** Moderare admin — stats pendinte, liste evenimente/orgs pendinte, detaliu eveniment/org pentru review, aprobare/respingere evenimente și organizații
+- **Exporturi principale:** `checkIsAdmin`, `getAdminStats`, `getPendingEvents`, `getPendingOrgs`, `getAdminEventDetail`, `getAdminOrgDetail`, `approveEvent`, `rejectEvent`, `approveOrg`, `rejectOrg`
+- **Tipuri exportate:** `AdminEvent`, `AdminOrg`, `AdminEventDetail`, `AdminOrgDetail`
+- **Apelează:** `createClient`, `createAdminClient`, `createNotification`
+- **Note:** `getAdminEventDetail` face query-uri secvențiale (event → subtabel specific categoriei → subtabel specific subcategoriei); `approveEvent`/`rejectEvent` trimit notificare creatorului; acceptă status `pending` și `contested` la aprobare/respingere; `AdminEvent` conține `is_edited: boolean` și `previous_snapshot: Record<string, unknown> | null` pentru funcționalitatea de comparație; `approveEvent` resetează `is_edited = false` și `previous_snapshot = null`; `getPendingOrgs` returnează acum status `pending` ȘI `contested`; `AdminOrg` conține `is_edited: boolean`; `getAdminOrgDetail` folosește `createAdminClient` (bypass RLS) și fetch members + documents; `approveOrg`/`rejectOrg` acceptă status `pending` și `contested`; `approveOrg` resetează `is_edited`, `previous_snapshot`, `contested_at`; când org are status `contested`, ambele funcții închid automat appeal-urile active din `org_appeals`
 
 ### appeal.service.ts
 - **Scop:** Contestații — creare contestație (user), listare toate contestatiile active (admin), rezolvare contestatie (admin)
@@ -59,11 +59,22 @@ Server Actions — toată logica de business a aplicației CIVICOM. Niciun fiși
 - **Apelează:** `createClient`
 - **Note:** `joinEvent` foloseste `upsert` cu `onConflict: 'event_id,user_id'`; `leaveEvent` setează `status=cancelled` (nu sterge rândul); `signPetition` tratează eroarea `23505` (unique_violation) ca succes
 
+### user.service.ts (adăugiri recente)
+- **`ViewRange`** tip exportat: `'today' | '7d' | '30d'`
+- **`getViewsEvolution(context, range, orgId?)`** — citește din `event_view_snapshots` via admin client; returnează `EvolutionData` cu valori cumulate (forward-fill per bucket orar/zilnic); exclude petițiile
+
 ### notification.service.ts
-- **Scop:** Creare notificări — funcție singulară apelată din alte servicii
-- **Exporturi principale:** `createNotification(userId, title, message, type?)`
-- **Apelează:** `createAdminClient` (bypass RLS pentru insert în `notifications`)
-- **Note:** Foloseste admin client deoarece RLS pe `notifications` permite INSERT doar via service_role
+- **Scop:** Creare notificări + citire notificări utilizator curent
+- **Exporturi principale:** `createNotification(userId, title, message, type?)`, `getUserNotifications`, `markAllNotificationsAsRead`, `markNotificationAsRead`, `deleteNotification`
+- **Apelează:** `createAdminClient` (bypass RLS pentru insert în `notifications`), `createClient`
+- **Note:** Foloseste admin client deoarece RLS pe `notifications` permite INSERT doar via service_role; `getUserNotifications` și `markAllNotificationsAsRead` rezolvă `public.users.id` din `auth_users_id` înainte de a filtra (fix bug: `notifications.user_id` stochează `public.users.id`, nu `auth.users.id`); `deleteNotification` șterge definitiv rândul din DB (apelat când userul apasă X pe o notificare)
+
+### org_appeal.service.ts
+- **Scop:** Contestații organizații — creare contestație de la owner/admin ONG, listare toate contestatiile active (admin), rezolvare contestatie (admin)
+- **Exporturi principale:** `createOrgAppeal`, `getAllOrgAppeals`, `resolveOrgAppeal`
+- **Tipuri exportate:** `AdminOrgAppeal`
+- **Apelează:** `createClient`, `createAdminClient`, `createNotification`
+- **Note:** `createOrgAppeal` validează că org are `status=rejected`, că userul e owner sau admin ONG, că nu există deja appeal activ; setează org pe `status=contested`, `contested_at=now()`; `resolveOrgAppeal` la approved resetează `is_edited`, `previous_snapshot`, `contested_at`, `rejection_note`; trimite notificare owner la rezoluție cu type `org_appeal_approved`/`org_appeal_rejected`; `getAllOrgAppeals` include câmpul `is_edited` din organizations
 
 ### completion.service.ts
 - **Scop:** Finalizare manuală evenimente (boycott, petition, donations, livestream)

@@ -30,7 +30,7 @@ const STATUS_CLASSES: Record<string, string> = {
 
 const canModerate = (status: string) => status === 'pending' || status === 'contested'
 
-export function AdminOrgActionBarClient({ orgId, currentStatus, rejectionNote }: Props) {
+export function AdminOrgDetailActionBarClient({ orgId, currentStatus, rejectionNote }: Props) {
   const [isRejecting, setIsRejecting] = useState(false)
   const [note, setNote] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -60,11 +60,14 @@ export function AdminOrgActionBarClient({ orgId, currentStatus, rejectionNote }:
   }
 
   return (
-    <div className="space-y-2 mt-3">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[currentStatus] ?? ''}`}>
-          {STATUS_LABEL[currentStatus] ?? currentStatus}
-        </span>
+    <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-sm">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status:</span>
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[currentStatus] ?? ''}`}>
+            {STATUS_LABEL[currentStatus] ?? currentStatus}
+          </span>
+        </div>
 
         {canModerate(currentStatus) && !isRejecting && (
           <div className="flex items-center gap-2">
@@ -94,7 +97,7 @@ export function AdminOrgActionBarClient({ orgId, currentStatus, rejectionNote }:
             value={note}
             onChange={e => setNote(e.target.value)}
             placeholder="Motivul respingerii (minim 10 caractere)..."
-            rows={2}
+            rows={3}
             className="text-sm"
           />
           <div className="flex gap-2">
@@ -114,9 +117,9 @@ export function AdminOrgActionBarClient({ orgId, currentStatus, rejectionNote }:
       )}
 
       {!canModerate(currentStatus) && rejectionNote && (
-        <p className="text-xs text-muted-foreground">
+        <div className="text-sm text-muted-foreground">
           <span className="font-medium">Motiv respingere:</span> {rejectionNote}
-        </p>
+        </div>
       )}
     </div>
   )

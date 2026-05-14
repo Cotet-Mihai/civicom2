@@ -1,12 +1,8 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { CalendarPlus, Users, PenLine, Scale, ArrowRight, CalendarX2, Footprints, Plus } from 'lucide-react'
-import {
-    getUserDashboardStats, getUserCreatedEvents, getUserParticipations,
-    getOrgCreatedEvents,
-} from '@/services/user.service'
-import { getOrgDashboardStats } from '@/services/organization.service'
+import { CalendarPlus, Users, PenLine, Scale, ArrowRight, CalendarX2, Footprints, Plus, AlertTriangle, Clock } from 'lucide-react'
+import { getUserDashboardStats, getUserCreatedEvents, getUserParticipations } from '@/services/user.service'
 import { getUserOrgByAuthId } from '@/lib/server-cache'
 import { getAuthUser } from '@/services/auth.service'
 import { StatsBanner } from '@/components/shared/StatsBanner'
@@ -17,32 +13,17 @@ import { CompleteEventButtonClient } from './_components/CompleteEventButtonClie
 
 export const metadata: Metadata = { title: 'Panou — CIVICOM' }
 
-export default async function PanouPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ context?: string }>
-}) {
-    const { context } = await searchParams
-    const isOrgContext = context === 'org'
-
+export default async function PanouPage() {
     const user = await getAuthUser()
     if (!user) redirect('/autentificare')
 
     const userName = user.user_metadata?.display_name ?? user.user_metadata?.name ?? 'Utilizator'
     const org = await getUserOrgByAuthId(user.id)
-    const isActualOrgContext = isOrgContext && !!org
 
     const [stats, recentEvents, recentParticipations] = await Promise.all([
-        isActualOrgContext
-            ? getOrgDashboardStats(org.id).then(s => ({
-                eventsCreated: s.eventsCount,
-                participations: 0,
-                petitionsSigned: 0,
-                appeals: 0,
-            }))
-            : getUserDashboardStats(),
-        isActualOrgContext ? getOrgCreatedEvents(org.id, 3) : getUserCreatedEvents(3),
-        isActualOrgContext ? Promise.resolve([]) : getUserParticipations(3),
+        getUserDashboardStats(),
+        getUserCreatedEvents(3),
+        getUserParticipations(3),
     ])
 
     return (
@@ -54,25 +35,56 @@ export default async function PanouPage({
 
             <div className="px-4 lg:px-8 py-8 pb-16 space-y-8">
 
+                {/* Org status banner — shown when org is not approved */}
+                {org && org.status !== 'approved' && (() => {
+                    const isRejected = org.status === 'rejected'
+                    const isPending = org.status === 'pending'
+                    const Icon = isRejected ? AlertTriangle : isPending ? Clock : Scale
+                    const colors = isRejected
+                        ? { bg: 'bg-destructive/5', border: 'border-destructive/20', text: 'text-destructive' }
+                        : isPending
+                        ? { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' }
+                        : { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' }
+                    const label = isRejected
+                        ? 'Organizația ta a fost respinsă.'
+                        : isPending
+                        ? 'Organizația ta este în așteptare și va fi analizată de echipa CIVICOM.'
+                        : 'Contestația organizației tale este în curs de analiză.'
+                    return (
+                        <div className={`rounded-2xl border ${colors.border} ${colors.bg} p-4 space-y-2`}>
+                            <div className="flex items-start gap-3">
+                                <Icon className={`size-4 shrink-0 mt-0.5 ${colors.text}`} />
+                                <div className="flex-1 min-w-0 space-y-1">
+                                    <p className={`text-sm font-bold ${colors.text}`}>{label}</p>
+                                    {org.rejection_note && (
+                                        <p className="text-sm text-muted-foreground">
+                                            <span className="font-medium">Motiv:</span> {org.rejection_note}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            <Link
+                                href={`/organizatie/${org.id}/panou`}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+                            >
+                                Vezi detalii organizație <ArrowRight className="size-3" />
+                            </Link>
+                        </div>
+                    )
+                })()}
+
                 {/* Header */}
                 <div className="flex items-center justify-between gap-4 border-b border-border/50 pb-6">
                     <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                            {isActualOrgContext ? 'Panou ONG' : 'Panou personal'}
+                            Panou personal
                         </p>
                         <h1 className="font-heading font-black uppercase tracking-tighter leading-tight">
-                            {isActualOrgContext
-                                ? <span className="text-xl text-primary md:text-2xl">{org.name}</span>
-                                : <>
-                                    <span className="block text-sm text-muted-foreground md:text-base">Bun venit,</span>
-                                    <span className="block text-xl text-foreground md:text-2xl"><span className="text-primary">{userName}</span></span>
-                                  </>
-                            }
+                            <span className="block text-sm text-muted-foreground md:text-base">Bun venit,</span>
+                            <span className="block text-xl text-foreground md:text-2xl"><span className="text-primary">{userName}</span></span>
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            {isActualOrgContext
-                                ? 'Activitatea organizației pe CIVICOM✨'
-                                : 'Activitatea ta civică pe CIVICOM✨'}
+                            Activitatea ta civică pe CIVICOM✨
                         </p>
                     </div>
                     <Link
@@ -85,35 +97,29 @@ export default async function PanouPage({
 
                 {/* Statistici */}
                 <StatsBanner
-                    badge={isActualOrgContext ? 'Statistici ONG' : 'Activitate Civică'}
-                    title={isActualOrgContext ? 'Activitate ONG' : 'Sumarul tău'}
-                    subtitle={isActualOrgContext ? `Organizația ${org!.name}` : 'Acțiunile tale pe CIVICOM✨'}
-                    items={isActualOrgContext
-                        ? [
-                            { icon: CalendarPlus, iconClassName: 'size-4 text-primary', value: stats.eventsCreated, label: 'Create' },
-                        ]
-                        : [
-                            { icon: CalendarPlus, iconClassName: 'size-4 text-primary',       value: stats.eventsCreated,   label: 'Create' },
-                            { icon: Users,        iconClassName: 'size-4 text-secondary',     value: stats.participations,  label: 'Participări' },
-                            { icon: PenLine,      iconClassName: 'size-4 text-green-400',     value: stats.petitionsSigned, label: 'Petiții' },
-                            { icon: Scale,        iconClassName: 'size-4 text-background/60', value: stats.appeals,         label: 'Contestații' },
-                        ]
-                    }
+                    badge="Activitate Civică"
+                    title="Sumarul tău"
+                    subtitle="Acțiunile tale pe CIVICOM✨"
+                    items={[
+                        { icon: CalendarPlus, iconClassName: 'size-4 text-primary',       value: stats.eventsCreated,   label: 'Create' },
+                        { icon: Users,        iconClassName: 'size-4 text-secondary',     value: stats.participations,  label: 'Participări' },
+                        { icon: PenLine,      iconClassName: 'size-4 text-green-400',     value: stats.petitionsSigned, label: 'Petiții' },
+                        { icon: Scale,        iconClassName: 'size-4 text-background/60', value: stats.appeals,         label: 'Contestații' },
+                    ]}
                 />
 
                 {/* Grid Evenimente / Participări */}
-                <div className={`grid grid-cols-1 gap-6 ${isActualOrgContext ? '' : 'lg:grid-cols-2'}`}>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
                     {/* Evenimente Recente */}
                     <Card className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
                         <CardContent className="flex flex-1 flex-col p-6 gap-4">
-
                             <div className="flex items-center justify-between border-b border-border/50 pb-3">
                                 <h2 className="font-heading text-base font-bold tracking-tight text-foreground">
-                                    {isActualOrgContext ? 'Evenimente recente' : 'Evenimentele mele'}
+                                    Evenimentele mele
                                 </h2>
                                 <Link
-                                    href={isActualOrgContext ? '/panou/evenimente?context=org' : '/panou/evenimente'}
+                                    href="/panou/evenimente"
                                     className="group flex items-center gap-1.5 text-xs font-bold text-primary transition-colors hover:text-primary/80"
                                 >
                                     Vezi toate <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
@@ -156,47 +162,44 @@ export default async function PanouPage({
                     </Card>
 
                     {/* Participări Recente */}
-                    {!isActualOrgContext && (
-                        <Card className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
-                            <CardContent className="flex flex-1 flex-col p-6 gap-4">
+                    <Card className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+                        <CardContent className="flex flex-1 flex-col p-6 gap-4">
+                            <div className="flex items-center justify-between border-b border-border/50 pb-3">
+                                <h2 className="font-heading text-base font-bold tracking-tight text-foreground">
+                                    Participări recente
+                                </h2>
+                                <Link
+                                    href="/panou/participari"
+                                    className="group flex items-center gap-1.5 text-xs font-bold text-primary transition-colors hover:text-primary/80"
+                                >
+                                    Vezi toate <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                                </Link>
+                            </div>
 
-                                <div className="flex items-center justify-between border-b border-border/50 pb-3">
-                                    <h2 className="font-heading text-base font-bold tracking-tight text-foreground">
-                                        Participări recente
-                                    </h2>
+                            {recentParticipations.length === 0 ? (
+                                <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
+                                    <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground/70">
+                                        <Footprints size={24} />
+                                    </div>
+                                    <p className="mb-5 text-sm font-medium text-muted-foreground">Nu participi la niciun eveniment.</p>
                                     <Link
-                                        href="/panou/participari"
-                                        className="group flex items-center gap-1.5 text-xs font-bold text-primary transition-colors hover:text-primary/80"
+                                        href="/evenimente"
+                                        className={`${buttonVariants({ size: 'default', variant: 'outline' })} font-bold transition-all hover:bg-primary/5 hover:text-primary hover:border-primary/50`}
                                     >
-                                        Vezi toate <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                                        Explorează evenimente
                                     </Link>
                                 </div>
-
-                                {recentParticipations.length === 0 ? (
-                                    <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
-                                        <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground/70">
-                                            <Footprints size={24} />
+                            ) : (
+                                <div className="flex flex-col divide-y divide-border/50">
+                                    {recentParticipations.map(event => (
+                                        <div key={event.id} className="py-2">
+                                            <DashboardEventRow event={event} showStatus={false} />
                                         </div>
-                                        <p className="mb-5 text-sm font-medium text-muted-foreground">Nu participi la niciun eveniment.</p>
-                                        <Link
-                                            href="/evenimente"
-                                            className={`${buttonVariants({ size: 'default', variant: 'outline' })} font-bold transition-all hover:bg-primary/5 hover:text-primary hover:border-primary/50`}
-                                        >
-                                            Explorează evenimente
-                                        </Link>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col divide-y divide-border/50">
-                                        {recentParticipations.map(event => (
-                                            <div key={event.id} className="py-2">
-                                                <DashboardEventRow event={event} showStatus={false} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
 
                 </div>
             </div>

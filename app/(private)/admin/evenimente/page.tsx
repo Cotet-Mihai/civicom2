@@ -45,7 +45,9 @@ export default async function AdminEvenimentePage() {
                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                     {CATEGORY_LABEL[ev.category] ?? ev.category}
                   </span>
-                  <span className="text-xs text-muted-foreground">{ev.creator_name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {ev.org_name ? `${ev.org_name} (${ev.creator_name})` : ev.creator_name}
+                  </span>
                   <span className="text-xs text-muted-foreground">{formatDate(ev.created_at)}</span>
                 </div>
               </div>

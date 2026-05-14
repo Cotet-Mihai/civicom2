@@ -3,12 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { MapPin, Info } from 'lucide-react'
+import { MapPin, Info, CheckCircle2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from '@/components/ui/dialog'
 import { ImageUploadClient } from '@/app/(private)/creeaza/_components/ImageUploadClient'
 import { updateEvent, type EditEventData, type UpdateEventPayload } from '@/services/edit.service'
 
@@ -137,7 +140,9 @@ type Props = {
 export function EditEventFormClient({ eventId, data, authUserId }: Props) {
   const [form, setForm] = useState<FormState>(() => initState(data))
   const [submitting, setSubmitting] = useState(false)
+  const [showResubmitDialog, setShowResubmitDialog] = useState(false)
   const router = useRouter()
+  const isRejected = data.base.status === 'rejected'
 
   function set<K extends keyof FormState>(key: K, val: FormState[K]) {
     setForm(f => ({ ...f, [key]: val }))
@@ -226,8 +231,10 @@ export function EditEventFormClient({ eventId, data, authUserId }: Props) {
 
     if ('error' in result) {
       toast.error(result.error)
+    } else if (isRejected) {
+      setShowResubmitDialog(true)
     } else {
-      toast.success('Eveniment actualizat! Urmează revalidarea de către admin.')
+      toast.success('Eveniment actualizat!')
       router.push('/panou/evenimente')
     }
   }
@@ -525,7 +532,15 @@ export function EditEventFormClient({ eventId, data, authUserId }: Props) {
       </div>
 
       {/* Avertisment status */}
-      {(data.base.status === 'approved' || data.base.status === 'contested') && (
+      {isRejected && (
+        <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+          <Info size={14} className="text-destructive mt-0.5 shrink-0" />
+          <p className="text-sm text-destructive">
+            Evenimentul a fost <span className="font-semibold">respins</span>. Salvând modificările, cererea va fi retrimisă spre revalidare.
+          </p>
+        </div>
+      )}
+      {!isRejected && (data.base.status === 'approved' || data.base.status === 'contested') && (
         <div className="flex items-start gap-2 rounded-lg bg-secondary/20 border border-secondary/30 p-3">
           <Info size={14} className="text-foreground mt-0.5 shrink-0" />
           <p className="text-sm text-foreground">
@@ -540,9 +555,31 @@ export function EditEventFormClient({ eventId, data, authUserId }: Props) {
           Anulează
         </Button>
         <Button onClick={handleSubmit} disabled={submitting}>
-          {submitting ? 'Se salvează...' : 'Salvează modificările'}
+          {submitting ? 'Se salvează...' : (isRejected ? 'Retrimite cererea' : 'Salvează modificările')}
         </Button>
       </div>
+
+      <Dialog open={showResubmitDialog} onOpenChange={setShowResubmitDialog}>
+        <DialogContent className="max-w-sm text-center">
+          <DialogHeader className="items-center">
+            <div className="flex items-center justify-center size-14 rounded-full bg-primary/10 mb-2">
+              <CheckCircle2 size={28} className="text-primary" />
+            </div>
+            <DialogTitle className="text-xl font-black">Cerere retrimisă!</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Modificările tale au fost salvate și evenimentul a fost retrimis spre revalidare. Vei fi notificat când un administrator ia o decizie.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-col gap-2 mt-2">
+            <Button className="w-full" onClick={() => router.push('/panou/evenimente')}>
+              Mergi la panou
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => setShowResubmitDialog(false)}>
+              Rămâi pe pagină
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -343,6 +343,12 @@ export default async function AdminEventDetailPage({ params }: Props) {
               <span className="font-medium text-muted-foreground">Creator: </span>
               <span className="text-foreground">{event.creator_name}</span>
             </div>
+            {event.org_name && (
+              <div>
+                <span className="font-medium text-muted-foreground">ONG: </span>
+                <span className="text-foreground">{event.org_name}</span>
+              </div>
+            )}
             <div>
               <span className="font-medium text-muted-foreground">Categorie: </span>
               <span className="text-foreground">{event.category}</span>

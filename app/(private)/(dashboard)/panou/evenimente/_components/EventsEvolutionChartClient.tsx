@@ -17,14 +17,16 @@ import {
 } from '@/components/ui/popover'
 import {
     getEvolutionData,
+    getViewsEvolution,
     type TimeRange,
+    type ViewRange,
     type EvolutionMetric,
     type EvolutionData,
 } from '@/services/user.service'
 import { TrendingUp, SlidersHorizontal, Check } from 'lucide-react'
 
 const TIME_RANGES: { value: TimeRange; label: string }[] = [
-    { value: '24h', label: '24h' },
+    { value: '24h', label: 'Azi' },
     { value: '7d', label: '7 zile' },
     { value: '30d', label: '30 zile' },
     { value: '3m', label: '3 luni' },
@@ -32,13 +34,40 @@ const TIME_RANGES: { value: TimeRange; label: string }[] = [
     { value: 'all', label: 'Toate' },
 ]
 
+const VIEW_RANGES: { value: ViewRange; label: string }[] = [
+    { value: 'today', label: 'Azi' },
+    { value: '7d', label: '7 zile' },
+    { value: '30d', label: '30 zile' },
+]
+
 const METRICS: { value: EvolutionMetric; label: string }[] = [
-    { value: 'participants', label: 'Participanți' },
     { value: 'views', label: 'Vizualizări' },
+    { value: 'participants', label: 'Participanți' },
     { value: 'signatures', label: 'Semnături petiții' },
 ]
 
 const TOP_N = 5
+
+function SortedTooltipContent(props: any) {
+    if (!props.payload) return <ChartTooltipContent {...props} />
+    const sorted = { ...props, payload: [...props.payload].sort((a: any, b: any) => (b.value ?? 0) - (a.value ?? 0)) }
+    return <ChartTooltipContent {...sorted} />
+}
+
+function makeEndDot(color: string, totalPoints: number) {
+    return function EndDot({ cx, cy, index }: any) {
+        if (index !== totalPoints - 1 || !cx || !cy) return null
+        return (
+            <g>
+                <circle cx={cx} cy={cy} r={4} fill={color} opacity={0.35}>
+                    <animate attributeName="r" values="4;11;4" dur="2s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.35;0;0.35" dur="2s" repeatCount="indefinite" />
+                </circle>
+                <circle cx={cx} cy={cy} r={4} fill={color} stroke="var(--background)" strokeWidth={2} />
+            </g>
+        )
+    }
+}
 
 function topIds(data: EvolutionData): Set<string> {
     return new Set(data.series.slice(0, TOP_N).map(s => s.id))
@@ -46,37 +75,53 @@ function topIds(data: EvolutionData): Set<string> {
 
 type Props = {
     initialData: EvolutionData
-    isOrgContext: boolean
+    context?: 'user' | 'org'
     orgId?: string
 }
 
-export function EventsEvolutionChartClient({ initialData, isOrgContext, orgId }: Props) {
-    const [timeRange, setTimeRange] = useState<TimeRange>('30d')
-    const [metric, setMetric] = useState<EvolutionMetric>('participants')
+export function EventsEvolutionChartClient({ initialData, context = 'user', orgId }: Props) {
+    const [timeRange, setTimeRange] = useState<TimeRange>('24h')
+    const [viewRange, setViewRange] = useState<ViewRange>('today')
+    const [metric, setMetric] = useState<EvolutionMetric>('views')
     const [data, setData] = useState<EvolutionData>(initialData)
     const [selectedIds, setSelectedIds] = useState<Set<string>>(() => topIds(initialData))
     const [isPending, startTransition] = useTransition()
 
-    // Reset to top 5 whenever data changes (metric or range switch)
     useEffect(() => {
         setSelectedIds(topIds(data))
     }, [data])
 
-    function fetch(range: TimeRange, m: EvolutionMetric) {
+    function fetchEvolution(range: TimeRange, m: EvolutionMetric) {
         startTransition(async () => {
-            const result = await getEvolutionData(range, m, isOrgContext ? 'org' : 'user', orgId)
+            const result = await getEvolutionData(range, m, context, orgId)
+            setData(result)
+        })
+    }
+
+    function fetchViews(vRange: ViewRange) {
+        startTransition(async () => {
+            const result = await getViewsEvolution(context, vRange, orgId)
             setData(result)
         })
     }
 
     function handleRange(range: TimeRange) {
         setTimeRange(range)
-        fetch(range, metric)
+        fetchEvolution(range, metric)
+    }
+
+    function handleViewRange(vRange: ViewRange) {
+        setViewRange(vRange)
+        fetchViews(vRange)
     }
 
     function handleMetric(m: EvolutionMetric) {
         setMetric(m)
-        fetch(timeRange, m)
+        if (m === 'views') {
+            fetchViews(viewRange)
+        } else {
+            fetchEvolution(timeRange, m)
+        }
     }
 
     function toggleEvent(id: string) {
@@ -184,20 +229,36 @@ export function EventsEvolutionChartClient({ initialData, isOrgContext, orgId }:
 
                     {/* Time range tabs */}
                     <div className="flex gap-1 flex-wrap">
-                        {TIME_RANGES.map(r => (
-                            <button
-                                key={r.value}
-                                onClick={() => handleRange(r.value)}
-                                disabled={isPending}
-                                className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-all cursor-default ${
-                                    timeRange === r.value
-                                        ? 'bg-foreground text-background'
-                                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                                }`}
-                            >
-                                {r.label}
-                            </button>
-                        ))}
+                        {metric === 'views'
+                            ? VIEW_RANGES.map(r => (
+                                <button
+                                    key={r.value}
+                                    onClick={() => handleViewRange(r.value)}
+                                    disabled={isPending}
+                                    className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-all cursor-default ${
+                                        viewRange === r.value
+                                            ? 'bg-foreground text-background'
+                                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                                    }`}
+                                >
+                                    {r.label}
+                                </button>
+                            ))
+                            : TIME_RANGES.map(r => (
+                                <button
+                                    key={r.value}
+                                    onClick={() => handleRange(r.value)}
+                                    disabled={isPending}
+                                    className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-all cursor-default ${
+                                        timeRange === r.value
+                                            ? 'bg-foreground text-background'
+                                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                                    }`}
+                                >
+                                    {r.label}
+                                </button>
+                            ))
+                        }
                     </div>
                 </div>
 
@@ -211,7 +272,10 @@ export function EventsEvolutionChartClient({ initialData, isOrgContext, orgId }:
                         </div>
                     ) : (
                         <ChartContainer config={chartConfig} className="h-[260px] w-full">
-                            <AreaChart data={data.chartPoints} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
+                            <AreaChart
+                                data={data.chartPoints}
+                                margin={{ left: 0, right: 8, top: metric === 'views' ? 22 : 4, bottom: 0 }}
+                            >
                                 <defs>
                                     {visibleSeries.map(s => (
                                         <linearGradient key={s.id} id={`fill-${s.id}`} x1="0" y1="0" x2="0" y2="1">
@@ -235,7 +299,7 @@ export function EventsEvolutionChartClient({ initialData, isOrgContext, orgId }:
                                     allowDecimals={false}
                                     width={32}
                                 />
-                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <ChartTooltip content={metric === 'views' ? <SortedTooltipContent /> : <ChartTooltipContent />} />
                                 <ChartLegend content={<ChartLegendContent />} />
                                 {visibleSeries.map(s => (
                                     <Area
@@ -246,7 +310,10 @@ export function EventsEvolutionChartClient({ initialData, isOrgContext, orgId }:
                                         stroke={s.color}
                                         strokeWidth={2}
                                         fill={`url(#fill-${s.id})`}
-                                        dot={false}
+                                        dot={metric === 'views'
+                                            ? makeEndDot(s.color, data.chartPoints.length)
+                                            : false
+                                        }
                                         activeDot={{ r: 4, strokeWidth: 0, fill: s.color }}
                                     />
                                 ))}

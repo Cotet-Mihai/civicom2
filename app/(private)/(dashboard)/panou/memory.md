@@ -5,11 +5,10 @@ Paginile principale ale dashboard-ului utilizator — sumar activitate, evenimen
 ## Fisiere
 
 ### page.tsx (Dashboard principal `/panou`)
-- **Scop:** Pagina principala dashboard — suport dual context (user/org via `?context=org`), fetch stats + recent events + participari, randeaza `StatsBanner` + grid 2 coloane cu `DashboardEventRow` + `CompleteEventButtonClient`
+- **Scop:** Pagina principala dashboard personal — fetch stats + recent events + participari, afiseaza banner org daca ONG-ul nu e aprobat
 - **Tip:** Server Component
 - **Exporturi principale:** `PanouPage` (default export), `metadata`
-- **SearchParams:** `{ context?: 'org' }` — determina daca se afiseaza date user sau org
-- **Apelează:** `getUserDashboardStats`, `getUserCreatedEvents`, `getUserParticipations`, `getOrgCreatedEvents`, `getOrgDashboardStats`, `getUserOrgByAuthId`, `StatsBanner`, `DashboardEventRow`, `CompleteEventButtonClient`
+- **Apelează:** `getUserDashboardStats`, `getUserCreatedEvents`, `getUserParticipations`, `getUserOrgByAuthId`, `StatsBanner`, `DashboardEventRow`, `CompleteEventButtonClient`
 
 ### loading.tsx
 - **Scop:** Skeleton pentru pagina principala dashboard
@@ -48,7 +47,7 @@ Paginile principale ale dashboard-ului utilizator — sumar activitate, evenimen
 - `evenimente/` — pagina detaliata de analiza a evenimentelor (stats + charts)
 
 ## Patterns & Conventii
-- Toate paginile suporta dual context: user personal (`/panou`) vs ONG (`/panou?context=org`)
+- `/panou` este exclusiv dashboard personal. Dashboardul ONG se afla la `/organizatie/[id]/panou`
 - `getAuthUser` + redirect la `/autentificare` in fiecare page (safety net dupa layout)
 - `loading.tsx` in fiecare subfolder pentru UX instant
 

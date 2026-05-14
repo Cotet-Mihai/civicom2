@@ -39,6 +39,11 @@ export async function createProtest(
   const { data: userData } = await supabase.from('users').select('id').eq('auth_users_id', user.id).single()
   if (!userData) return { error: 'Utilizator negăsit' }
 
+  if (eventBase.organization_id) {
+    const { data: orgRow } = await supabase.from('organizations').select('status').eq('id', eventBase.organization_id).single()
+    if (!orgRow || orgRow.status !== 'approved') return { error: 'Organizația trebuie să fie aprobată pentru a putea crea evenimente' }
+  }
+
   const creatorType = eventBase.organization_id ? 'ngo' : 'user'
 
   const { data: evt, error: evtErr } = await supabase.from('events').insert({

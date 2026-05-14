@@ -12,16 +12,27 @@ Paginile și layout-ul panoului de administrare al unui ONG specific — panou, 
 - **Note:** Verificare suplimentară față de layout-ul general `(dashboard)` — garantează că doar membrii pot accesa rutele ONG
 
 ### panou/page.tsx
-- **Scop:** Pagina principală a panoului ONG — statistici (membri, evenimente, rating) + lista ultimelor 5 evenimente
+- **Scop:** Pagina principală a panoului ONG — statistici (membri, evenimente, rating) + lista ultimelor 5 evenimente + banner status (pending/rejected/contested) cu butoane „Contestează decizia" și „Editează"
 - **Tip:** Server Component
 - **Exporturi principale:** `OrgPanouPage` (default export), `metadata`
-- **Apelează:** `getOrgDashboardStats`, `getOrganizationEvents` în paralel; randeaza `StatsBanner`, `DashboardEventRow`
+- **Apelează:** `getOrgDashboardStats`, `getOrganizationEvents`, `getOrganizationById` în paralel; randeaza `StatsBanner`, `DashboardEventRow`; banner status apare doar dacă `org.status !== 'approved'`; buton „Contestează" apare doar când `status === 'rejected'`
+
+### contestatie/page.tsx
+- **Scop:** Formular de contestație pentru organizație respinsă — redirecționează la panou dacă org nu e în status `rejected`
+- **Tip:** Server Component cu `OrgAppealFormClient`
+- **Exporturi principale:** `OrgContestatiePage` (default export), `metadata`
+- **Apelează:** `getOrganizationById`; redirecționează la panou dacă `org.status !== 'rejected'`
+
+### contestatii/page.tsx
+- **Scop:** Lista contestațiilor legate de EVENIMENTELE organizației (nu de org în sine) — date din tabela `appeals` filtrată după `events.organization_id`
+- **Tip:** Server Component
+- **Apelează:** `getOrgAppeals` din `organization.service`
 
 ### evenimente/page.tsx
-- **Scop:** Lista completă a evenimentelor organizației cu buton „+ Eveniment nou"
+- **Scop:** Pagina completă de evenimente ONG — statistici (stats + charts + evolutie) identice cu pagina personală + lista tuturor evenimentelor cu buton „+ Eveniment nou"
 - **Tip:** Server Component
 - **Exporturi principale:** `OrgEvenimentePage` (default export), `metadata`
-- **Apelează:** `getOrganizationEvents` din `organization.service`; randeaza `DashboardEventRow`
+- **Apelează:** `getOrganizationEvents`, `getMyEventsStats('org', id)`, `getMyEventsChartData('org', id)`, `getEvolutionData('30d', 'participants', 'org', id)` în paralel; randeaza `EventsStatsSection`, `EventsChartsSection`, `EventsEvolutionChartClient` (context="org"), `DashboardEventRow`
 
 ### membri/page.tsx
 - **Scop:** Lista membrilor organizației cu formularul de invitare (doar admin) și acțiuni per membru (schimbare rol, eliminare)
@@ -43,6 +54,8 @@ Paginile și layout-ul panoului de administrare al unui ONG specific — panou, 
 - `evenimente/` — lista evenimente ONG + loading.tsx
 - `membri/` — lista membri + `_components/` (InviteMemberFormClient, MemberActionsClient) + loading.tsx
 - `setari/` — setări ONG + `_components/` (OngSettingsFormClient) + loading.tsx
+- `contestatie/` — formular de contestație al organizației + `_components/` (OrgAppealFormClient)
+- `contestatii/` — lista contestații legate de evenimentele organizației
 
 ## Patterns & Conventii
 - Toate paginile au `loading.tsx` pentru skeleton instant la navigare

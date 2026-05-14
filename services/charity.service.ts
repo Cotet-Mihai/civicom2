@@ -30,6 +30,11 @@ export async function createCharityEvent(
   const { data: userData } = await supabase.from('users').select('id').eq('auth_users_id', user.id).single()
   if (!userData) return { error: 'Utilizator negăsit' }
 
+  if (eventBase.organization_id) {
+    const { data: orgRow } = await supabase.from('organizations').select('status').eq('id', eventBase.organization_id).single()
+    if (!orgRow || orgRow.status !== 'approved') return { error: 'Organizația trebuie să fie aprobată pentru a putea crea evenimente' }
+  }
+
   const { data: evt, error: evtErr } = await supabase.from('events').insert({
     title: eventBase.title, description: eventBase.description,
     banner_url: eventBase.banner_url, gallery_urls: eventBase.gallery_urls,

@@ -5,11 +5,10 @@ Pagina detaliata de analiza a evenimentelor din dashboard — statistici, grafic
 ## Fisiere
 
 ### page.tsx
-- **Scop:** Pagina `/panou/evenimente` — suport context user/org, fetch paralel stats + chart data + lista events + evolution data, compune sectiunile
+- **Scop:** Pagina `/panou/evenimente` — exclusiv evenimente personale ale userului, fetch paralel stats + chart data + lista events + evolution data
 - **Tip:** Server Component
 - **Exporturi principale:** `PanouEvenimentePage` (default export), `metadata`
-- **SearchParams:** `{ context?: 'org' }` — determina context user sau org
-- **Apelează:** `getMyEventsStats`, `getMyEventsChartData`, `getUserCreatedEvents`, `getOrgCreatedEvents`, `getEvolutionData`, `getUserOrgByAuthId`
+- **Apelează:** `getMyEventsStats`, `getMyEventsChartData`, `getUserCreatedEvents`, `getEvolutionData`
 - **Randeaza:** `EventsStatsSection`, `EventsChartsSection`, `EventsEvolutionChartClient`, `EventsListSection`
 
 ### loading.tsx

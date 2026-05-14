@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Info, FileText, Camera } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -44,6 +44,8 @@ export default function CreatePetitionPage() {
     const [submitting, setSubmitting] = useState(false)
     const [userId, setUserId] = useState<string | null>(null)
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const orgId = searchParams.get('org')
 
     useEffect(() => {
         createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
@@ -79,7 +81,7 @@ export default function CreatePetitionPage() {
         if (err) { toast.error(err); return }
         setSubmitting(true)
         const result = await createPetition(
-            { title: form.title, description: form.description, banner_url: form.banner_url, gallery_urls: form.gallery_urls, organization_id: null },
+            { title: form.title, description: form.description, banner_url: form.banner_url, gallery_urls: form.gallery_urls, organization_id: orgId },
             { what_is_requested: form.what_is_requested, requested_from: form.requested_from, why_important: form.why_important, target_signatures: Number(form.target_signatures), contact_person: form.contact_person || null }
         )
         setSubmitting(false)
