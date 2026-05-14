@@ -6,8 +6,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import type { ProtestParticipant } from '@/services/stats.service'
 
 const CHART_COLORS = [
-  'var(--primary)', 'var(--secondary)', '#f97316', '#06b6d4',
-  '#a855f7', '#ec4899', '#f59e0b', '#6b7280',
+  'var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)',
+  'var(--chart-5)', 'var(--chart-6)', 'var(--chart-7)', 'var(--chart-8)',
 ]
 
 function groupBy(values: string[]) {
