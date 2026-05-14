@@ -21,7 +21,7 @@ const STATUS_CLASSES: Record<string, string> = {
   pending: 'bg-secondary text-secondary-foreground',
   approved: 'bg-primary text-primary-foreground',
   rejected: 'bg-destructive text-destructive-foreground',
-  contested: 'bg-orange-500 text-white',
+  contested: 'bg-orange-500/10 text-orange-600 border border-orange-500/20',
   completed: 'bg-muted text-muted-foreground',
 }
 

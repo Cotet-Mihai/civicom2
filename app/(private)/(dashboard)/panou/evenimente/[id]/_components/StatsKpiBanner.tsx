@@ -21,8 +21,8 @@ export function StatsKpiBanner({ data }: Props) {
       items={[
         { icon: Eye,    iconClassName: 'size-4 text-primary',          value: data.view_count, label: 'Vizualizări' },
         { icon: Users,  iconClassName: 'size-4 text-secondary',        value: joined,          label: 'Participanți' },
-        { icon: Target, iconClassName: 'size-4 text-green-400',        value: `${fillRate}%`,  label: 'Fill Rate' },
-        { icon: Star,   iconClassName: 'size-4 text-yellow-400',       value: ratingValue,     label: 'Rating' },
+        { icon: Target, iconClassName: 'size-4 text-primary',           value: `${fillRate}%`,  label: 'Fill Rate' },
+        { icon: Star,   iconClassName: 'size-4 text-secondary',        value: ratingValue,     label: 'Rating' },
       ]}
     />
   )
