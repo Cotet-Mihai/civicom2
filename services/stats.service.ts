@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { ViewRange } from '@/services/user.service'
+export type { ViewRange }
 
 async function getUserId(): Promise<string | null> {
   const supabase = await createClient()
@@ -150,4 +152,77 @@ export async function getProtestStats(
     feedback: feedbackItems,
     averageRating,
   }
+}
+
+export type SingleEventViewsData = {
+  chartPoints: Array<{ label: string; views: number }>
+  range: ViewRange
+}
+
+export async function getEventViewsEvolution(
+  eventId: string,
+  range: ViewRange
+): Promise<SingleEventViewsData> {
+  const admin = createAdminClient()
+  const now = new Date()
+
+  let startDate: Date
+  let labels: string[]
+  let bucketKey: (d: Date) => string
+
+  if (range === 'today') {
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
+    const currentHour = now.getHours()
+    labels = Array.from({ length: currentHour + 1 }, (_, i) =>
+      `${i.toString().padStart(2, '0')}:00`
+    )
+    bucketKey = (d) => `${d.getHours().toString().padStart(2, '0')}:00`
+  } else if (range === '7d') {
+    startDate = new Date(now)
+    startDate.setDate(now.getDate() - 6)
+    startDate.setHours(0, 0, 0, 0)
+    labels = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(startDate.getTime() + i * 86400000)
+      return d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+    })
+    bucketKey = (d) => d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+  } else {
+    startDate = new Date(now)
+    startDate.setDate(now.getDate() - 29)
+    startDate.setHours(0, 0, 0, 0)
+    labels = Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(startDate.getTime() + i * 86400000)
+      return d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+    })
+    bucketKey = (d) => d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+  }
+
+  const { data: snapshots } = await admin
+    .from('event_view_snapshots')
+    .select('taken_at, view_count')
+    .eq('event_id', eventId)
+    .gte('taken_at', startDate.toISOString())
+    .order('taken_at', { ascending: true })
+
+  const bucketMap: Record<string, number> = {}
+  for (const snap of snapshots ?? []) {
+    const key = bucketKey(new Date(snap.taken_at))
+    bucketMap[key] = Math.max(bucketMap[key] ?? 0, snap.view_count)
+  }
+
+  let lastKnown = 0
+  const filledPoints: Array<{ label: string; views: number }> = labels.map((label) => {
+    if (bucketMap[label] !== undefined) lastKnown = bucketMap[label]
+    return { label, views: lastKnown }
+  })
+
+  const { data: eventRow } = await admin
+    .from('events')
+    .select('view_count')
+    .eq('id', eventId)
+    .single()
+
+  filledPoints.push({ label: 'Acum', views: eventRow?.view_count ?? lastKnown })
+
+  return { chartPoints: filledPoints, range }
 }
