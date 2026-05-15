@@ -54,13 +54,15 @@ export function EventsListSection({ events }: { events: DashboardEvent[] }) {
           )}
           {filtered.map(event => {
             const path = CATEGORY_PATH[event.category] ?? event.category
-            const href = `/evenimente/${path}/${event.id}`
+            const publicHref = `/evenimente/${path}/${event.id}`
+            const statsHref = event.category === 'protest' ? `/panou/evenimente/${event.id}` : undefined
+            const primaryHref = statsHref ?? publicHref
             return (
               <div
                 key={event.id}
                 className="flex items-center gap-3 rounded-xl border border-border p-3 bg-card hover:shadow-sm transition-shadow"
               >
-                <Link href={href} className="relative w-16 h-12 rounded-lg overflow-hidden border border-border shrink-0 bg-muted">
+                <Link href={primaryHref} className="relative w-16 h-12 rounded-lg overflow-hidden border border-border shrink-0 bg-muted">
                   {event.banner_url
                     ? <Image src={event.banner_url} alt={event.title} fill className="object-cover" />
                     : <div className="w-full h-full bg-primary/10" />
@@ -68,7 +70,7 @@ export function EventsListSection({ events }: { events: DashboardEvent[] }) {
                 </Link>
 
                 <div className="flex-1 min-w-0">
-                  <Link href={href} className="text-sm font-semibold text-foreground hover:text-primary transition-colors truncate block">
+                  <Link href={primaryHref} className="text-sm font-semibold text-foreground hover:text-primary transition-colors truncate block">
                     {event.title}
                   </Link>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -87,6 +89,14 @@ export function EventsListSection({ events }: { events: DashboardEvent[] }) {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                  {statsHref && (
+                    <Link
+                      href={publicHref}
+                      className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border text-[11px] font-semibold text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
+                    >
+                      Eveniment
+                    </Link>
+                  )}
                   {event.status !== 'completed' && <EditEventWarningModalClient eventId={event.id} />}
                   <CompleteEventButtonClient
                     eventId={event.id}
