@@ -53,11 +53,12 @@ function formatDate(dateStr: string) {
 
 export function DashboardEventRow({ event, showStatus = true, statsHref }: Props) {
     const path = CATEGORY_PATH[event.category] ?? event.category
-    const href = `/evenimente/${path}/${event.id}`
+    const publicHref = `/evenimente/${path}/${event.id}`
+    const primaryHref = statsHref ?? publicHref
 
     return (
         <div className="group flex items-center justify-between gap-2 p-4 transition-colors hover:bg-muted/30 sm:p-5 rounded-lg">
-            <Link href={href} className="flex flex-1 min-w-0 items-center gap-4">
+            <Link href={primaryHref} className="flex flex-1 min-w-0 items-center gap-4">
 
                 <div className="relative aspect-video w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:w-20">
                     {event.banner_url ? (
@@ -98,13 +99,13 @@ export function DashboardEventRow({ event, showStatus = true, statsHref }: Props
             <div className="flex items-center gap-2 shrink-0">
                 {statsHref && (
                     <Link
-                        href={statsHref}
+                        href={publicHref}
                         className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border text-[11px] font-semibold text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
                     >
-                        Statistici
+                        Eveniment
                     </Link>
                 )}
-                <Link href={href} className="flex text-muted-foreground/30 transition-colors group-hover:text-primary">
+                <Link href={primaryHref} className="flex text-muted-foreground/30 transition-colors group-hover:text-primary">
                     <ChevronRight className="size-5 transition-transform group-hover:translate-x-1" />
                 </Link>
             </div>
