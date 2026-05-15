@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ViewRange } from '@/services/user.service'
-export type { ViewRange }
 
 async function getUserId(): Promise<string | null> {
   const supabase = await createClient()

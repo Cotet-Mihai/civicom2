@@ -5,7 +5,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { TrendingUp } from 'lucide-react'
-import { getEventViewsEvolution, type ViewRange, type SingleEventViewsData } from '@/services/stats.service'
+import type { ViewRange } from '@/services/user.service'
+import { getEventViewsEvolution, type SingleEventViewsData } from '@/services/stats.service'
 
 const VIEW_RANGES: { value: ViewRange; label: string }[] = [
   { value: 'today', label: 'Azi' },
