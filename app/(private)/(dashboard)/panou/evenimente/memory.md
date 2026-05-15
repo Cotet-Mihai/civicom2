@@ -17,6 +17,7 @@ Pagina detaliata de analiza a evenimentelor din dashboard — statistici, grafic
 ## Sub-directoare
 
 - `_components/` — sectiunile paginii (stats, charts, list, evolution)
+- `[id]/` — pagina statistici per eveniment (protest). Server Component cu acces protejat (creator_id check)
 
 ## Dependente
 - **Importa din:** `@/services/user.service`, `@/services/auth.service`, `@/lib/server-cache`

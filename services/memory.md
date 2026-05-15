@@ -120,6 +120,14 @@ Server Actions — toată logica de business a aplicației CIVICOM. Niciun fiși
 - **Apelează:** `createClient`
 - **Note:** Inserare în ordine: `events` → `charity_events` → subtabelul specific subcategoriei
 
+### stats.service.ts
+- **Scop:** Statistici detaliate per eveniment protest — date participanți (demografii, status), feedback (rating, comentarii), medie rating, date eveniment, evoluție vizualizări
+- **Exporturi principale:** `getProtestStats`, `getEventViewsEvolution`
+- **Tipuri exportate:** `ProtestParticipant`, `ProtestFeedbackItem`, `ProtestStatsData`, `SingleEventViewsData`, `ViewRange`
+- **Apelează:** `createClient` din `lib/supabase/server`, `createAdminClient` din `lib/supabase/admin`
+- **Helper intern:** `getUserId()` — rezolvă auth.users id → users.id
+- **Note:** `getProtestStats(eventId, context, orgId?)` suportă context `'user'` (verifică creator_id) sau `'org'` (verifică membership ONG); uses admin client pentru `protests`, `event_participants`, `event_feedback` (bypass RLS); feedback returnat doar dacă evenimentul e `completed`; `getEventViewsEvolution(eventId, range)` citește `event_view_snapshots`, forward-fill gaps, adaugă punct final "Acum" cu `view_count` curent; `ViewRange` re-exportat din `user.service`
+
 ### edit.service.ts
 - **Scop:** Editare evenimente — fetch date complete pentru editare + update cu resetare status la `pending`
 - **Exporturi principale:** `getEventForEdit`, `updateEvent`
