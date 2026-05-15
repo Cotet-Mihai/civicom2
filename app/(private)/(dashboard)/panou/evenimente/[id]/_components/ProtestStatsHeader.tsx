@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { ArrowLeft, CalendarDays, Clock } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Clock, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
 import type { ProtestStatsData } from '@/services/stats.service'
 
 const SUBCATEGORY_LABELS: Record<string, string> = {
@@ -40,13 +41,22 @@ export function ProtestStatsHeader({ data, backHref }: Props) {
 
   return (
     <div className="space-y-4 border-b border-border/50 pb-6">
-      <Link
-        href={backHref}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="size-4" />
-        Înapoi la evenimente
-      </Link>
+      <div className="flex items-center justify-between gap-2">
+        <Link
+          href={backHref}
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="size-4" />
+          Înapoi la evenimente
+        </Link>
+        <Link
+          href={`/evenimente/protest/${data.id}`}
+          className={buttonVariants({ variant: 'outline' }) + ' gap-1.5 text-xs'}
+        >
+          <ExternalLink className="size-3.5" />
+          Vezi eveniment
+        </Link>
+      </div>
 
       <div className="space-y-3">
         <h1 className="text-2xl md:text-4xl font-black tracking-tighter leading-tight uppercase text-foreground italic">
