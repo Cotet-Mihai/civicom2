@@ -12,6 +12,27 @@ import type { DashboardEvent } from '@/services/user.service'
 
 export const metadata: Metadata = { title: 'Evenimente ONG — CIVICOM' }
 
+function getOrgStatsHref(event: DashboardEvent, orgId: string): string | undefined {
+  const base = `/organizatie/${orgId}/evenimente`
+  switch (event.category) {
+    case 'protest':  return `${base}/protest/${event.id}`
+    case 'boycott':  return `${base}/boycott/${event.id}`
+    case 'petition': return `${base}/petitie/${event.id}`
+    case 'community':
+      if (event.subcategory === 'outdoor')   return `${base}/comunitar/outdoor/${event.id}`
+      if (event.subcategory === 'workshop')  return `${base}/comunitar/workshop/${event.id}`
+      if (event.subcategory === 'donations') return `${base}/comunitar/donations/${event.id}`
+      return undefined
+    case 'charity':
+      if (event.subcategory === 'concert')    return `${base}/caritabil/concert/${event.id}`
+      if (event.subcategory === 'meet_greet') return `${base}/caritabil/meet_greet/${event.id}`
+      if (event.subcategory === 'livestream') return `${base}/caritabil/livestream/${event.id}`
+      if (event.subcategory === 'sport')      return `${base}/caritabil/sport/${event.id}`
+      return undefined
+    default: return undefined
+  }
+}
+
 type PageProps = { params: Promise<{ id: string }> }
 
 export default async function OrgEvenimentePage({ params }: PageProps) {
@@ -71,7 +92,7 @@ export default async function OrgEvenimentePage({ params }: PageProps) {
                     key={event.id}
                     event={event as DashboardEvent}
                     showStatus
-                    statsHref={event.category === 'protest' ? `/organizatie/${id}/evenimente/${event.id}` : undefined}
+                    statsHref={getOrgStatsHref(event as DashboardEvent, id)}
                   />
                 ))}
               </div>

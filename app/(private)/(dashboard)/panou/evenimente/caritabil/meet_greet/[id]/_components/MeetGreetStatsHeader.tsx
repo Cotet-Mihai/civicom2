@@ -1,0 +1,54 @@
+import Link from 'next/link'
+import { ArrowLeft, ExternalLink, Star } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
+import { EditEventWarningModalClient } from '../../../../_components/EditEventWarningModalClient'
+import type { CharityLiveEventStatsData } from '@/services/stats.service'
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'În așteptare', approved: 'Aprobat', rejected: 'Respins',
+  contested: 'Contestat', completed: 'Finalizat',
+}
+const STATUS_CLASSES: Record<string, string> = {
+  pending: 'bg-secondary text-secondary-foreground',
+  approved: 'bg-primary text-primary-foreground',
+  rejected: 'bg-destructive text-destructive-foreground',
+  contested: 'bg-orange-500/10 text-orange-600 border border-orange-500/20',
+  completed: 'bg-muted text-muted-foreground',
+}
+
+type Props = { data: CharityLiveEventStatsData; backHref: string }
+
+export function MeetGreetStatsHeader({ data, backHref }: Props) {
+  return (
+    <div className="space-y-4 border-b border-border/50 pb-6">
+      <div className="flex items-center justify-between gap-2">
+        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="size-4" />
+          Înapoi la evenimente
+        </Link>
+        <div className="flex items-center gap-2">
+          {data.status !== 'completed' && <EditEventWarningModalClient eventId={data.id} />}
+          <Link href={`/evenimente/caritabil/${data.id}`} className={buttonVariants({ variant: 'outline' }) + ' gap-1.5 text-xs'}>
+            <ExternalLink className="size-3.5" />
+            Vezi eveniment
+          </Link>
+        </div>
+      </div>
+      <div className="space-y-3">
+        <h1 className="text-2xl md:text-4xl font-black tracking-tighter leading-tight uppercase text-foreground italic">
+          {data.title}
+        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Star className="size-3" />
+            Meet & Greet
+          </Badge>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_CLASSES[data.status] ?? 'bg-muted text-muted-foreground'}`}>
+            {STATUS_LABELS[data.status] ?? data.status}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}

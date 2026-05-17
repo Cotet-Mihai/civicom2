@@ -33,6 +33,27 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+function getStatsHref(event: DashboardEvent): string | undefined {
+  const base = '/panou/evenimente'
+  switch (event.category) {
+    case 'protest':  return `${base}/protest/${event.id}`
+    case 'boycott':  return `${base}/boycott/${event.id}`
+    case 'petition': return `${base}/petitie/${event.id}`
+    case 'community':
+      if (event.subcategory === 'outdoor')   return `${base}/comunitar/outdoor/${event.id}`
+      if (event.subcategory === 'workshop')  return `${base}/comunitar/workshop/${event.id}`
+      if (event.subcategory === 'donations') return `${base}/comunitar/donations/${event.id}`
+      return undefined
+    case 'charity':
+      if (event.subcategory === 'concert')    return `${base}/caritabil/concert/${event.id}`
+      if (event.subcategory === 'meet_greet') return `${base}/caritabil/meet_greet/${event.id}`
+      if (event.subcategory === 'livestream') return `${base}/caritabil/livestream/${event.id}`
+      if (event.subcategory === 'sport')      return `${base}/caritabil/sport/${event.id}`
+      return undefined
+    default: return undefined
+  }
+}
+
 export function EventsListSection({ events }: { events: DashboardEvent[] }) {
   if (events.length === 0) {
     return (
@@ -55,7 +76,7 @@ export function EventsListSection({ events }: { events: DashboardEvent[] }) {
           {filtered.map(event => {
             const path = CATEGORY_PATH[event.category] ?? event.category
             const publicHref = `/evenimente/${path}/${event.id}`
-            const statsHref = event.category === 'protest' ? `/panou/evenimente/${event.id}` : undefined
+            const statsHref = getStatsHref(event)
             const primaryHref = statsHref ?? publicHref
             return (
               <div

@@ -51,7 +51,7 @@ Paginile și layout-ul panoului de administrare al unui ONG specific — panou, 
 
 - `_components/` — `OrgTabsClient`
 - `panou/` — pagina panou ONG + loading.tsx
-- `evenimente/` — lista evenimente ONG + loading.tsx
+- `evenimente/` — lista evenimente ONG + loading.tsx; pagini statistici per eveniment pentru toate tipurile: protest, boycott, petitie, comunitar/{outdoor,workshop,donations}, caritabil/{concert,meet_greet,livestream,sport}
 - `membri/` — lista membri + `_components/` (InviteMemberFormClient, MemberActionsClient) + loading.tsx
 - `setari/` — setări ONG + `_components/` (OngSettingsFormClient) + loading.tsx
 - `contestatie/` — formular de contestație al organizației + `_components/` (OrgAppealFormClient)

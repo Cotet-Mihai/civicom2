@@ -17,7 +17,16 @@ Pagina detaliata de analiza a evenimentelor din dashboard — statistici, grafic
 ## Sub-directoare
 
 - `_components/` — sectiunile paginii (stats, charts, list, evolution)
-- `[id]/` — pagina statistici per eveniment (protest). Server Component cu acces protejat (creator_id check)
+- `protest/[id]/` — statistici protest. Contine si componentele partajate (FillRateCard, DemographicsSection, RegistrationsChartsClient, SingleEventViewsChartClient, ParticipantsListClient, FeedbackStatsSection)
+- `boycott/[id]/` — statistici boycott
+- `petitie/[id]/` — statistici petitie (converteste signers in ProtestParticipant[] pentru DemographicsSection)
+- `comunitar/outdoor/[id]/` — statistici activitate aer liber (FillRateCard + eventDate)
+- `comunitar/workshop/[id]/` — statistici workshop (FillRateCard + eventDate, KPIBanner din outdoor/_components)
+- `comunitar/donations/[id]/` — statistici donații (fara FillRateCard, fara eventDate)
+- `caritabil/concert/[id]/` — statistici concert (FillRateCard + DonationsProgressCard + eventDate)
+- `caritabil/meet_greet/[id]/` — statistici meet & greet (FillRateCard + DonationsProgressCard + eventDate)
+- `caritabil/livestream/[id]/` — statistici livestream (DonationsProgressCard, fara FillRateCard)
+- `caritabil/sport/[id]/` — statistici sport (FillRateCard + DonationsProgressCard + eventDate)
 
 ## Dependente
 - **Importa din:** `@/services/user.service`, `@/services/auth.service`, `@/lib/server-cache`

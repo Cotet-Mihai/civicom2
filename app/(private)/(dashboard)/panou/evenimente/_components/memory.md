@@ -29,7 +29,7 @@ Componentele sectiunilor paginii de analiza evenimente din dashboard — statist
 - **Comportament views:** când metrica e 'views', butoanele de interval se schimbă la Azi/7 zile/30 zile și datele vin din `event_view_snapshots` (totaluri cumulate)
 
 ### EventsListSection.tsx
-- **Scop:** Lista completa a evenimentelor cu filtrare pe status si categorie — randeaza `EventsFilterTabsClient` care primeste o render prop cu lista filtrata
+- **Scop:** Lista completa a evenimentelor cu filtrare pe status si categorie — randeaza `EventsFilterTabsClient` care primeste o render prop cu lista filtrata; helper intern `getStatsHref` rezolva ruta statistici pentru toate tipurile (protest, boycott, petitie, comunitar/outdoor/workshop/donations, caritabil/concert/meet_greet/livestream/sport)
 - **Tip:** Client Component
 - **Exporturi principale:** `EventsListSection`
 - **Props:** `{ events: DashboardEvent[] }`
